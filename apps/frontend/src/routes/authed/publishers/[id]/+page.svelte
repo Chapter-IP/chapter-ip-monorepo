@@ -1,34 +1,34 @@
 <script lang="ts">
   import { useDefaultImage } from '$lib/content/image'
-  import { onMount } from 'svelte'
-  import { verifyMembership } from '$lib/membership/index.js'
-  import type { Passport } from '@credenza3/passport-evm'
-  import { get } from 'svelte/store'
-  import { passportStore } from '$lib/passport.store'
-  import { goto } from '$app/navigation'
+  // import { onMount } from 'svelte'
+  // import { verifyMembership } from '$lib/membership/index.js'
+  // import type { Passport } from '@credenza3/passport-evm'
+  // import { get } from 'svelte/store'
+  // import { passportStore } from '$lib/passport.store'
+  // import { goto } from '$app/navigation'
 
   let { data } = $props()
-  let hasMembership = $state(false)
-  let pass: Passport | null = $state(null)
+  // let hasMembership = $state(false)
+  // let pass: Passport | null = $state(null)
 
-  const purchaseSubscription = async () => {
-    const title = `Subscription license for ChapterIP`
-    pass?.openUI('payment', {
-      title,
-      memberships: [
-        {
-          contractAddress: import.meta.env.VITE_EVM_MEMBERSHIP_CONTRACT_ADDRESS,
-          membershipTokenId: String(BigInt(data.publisher.evmAddress || '')),
-        },
-      ],
-    })
-    pass?.once('PAYMENT', async () => goto('/authed/purchases'))
-  }
+  // const purchaseSubscription = async () => {
+  //   const title = `Subscription license for ChapterIP`
+  //   pass?.openUI('payment', {
+  //     title,
+  //     memberships: [
+  //       {
+  //         contractAddress: import.meta.env.VITE_EVM_MEMBERSHIP_CONTRACT_ADDRESS,
+  //         membershipTokenId: String(BigInt(data.publisher.evmAddress || '')),
+  //       },
+  //     ],
+  //   })
+  //   pass?.once('PAYMENT', async () => goto('/authed/purchases'))
+  // }
 
-  onMount(async () => {
-    pass = get(passportStore)
-    hasMembership = await verifyMembership(data.publisher.evmAddress || '', data.userAddress || '')
-  })
+  // onMount(async () => {
+  //   pass = get(passportStore)
+  //   hasMembership = await verifyMembership(data.publisher.evmAddress || '', data.userAddress || '')
+  // })
 </script>
 
 <div class="mx-auto w-full max-w-360 px-6">
@@ -51,7 +51,7 @@
         </div>
       {/if}
       <h1 id="publisher-heading" class="text-2xl font-bold text-dark">{data.publisher.title}</h1>
-      {#if !hasMembership}
+      <!-- {#if !hasMembership}
         {#if data.hasSubscription}
           <button
             class="mt-6.25 rounded-full border border-[#ddd] bg-[#eae6e2] px-6 py-1.5 text-base font-semibold text-[#202225]/50 cursor-pointer"
@@ -64,7 +64,7 @@
         <div class="p-2 my-2">
           <span>You are subscribed to this publisher.</span>
         </div>
-      {/if}
+      {/if} -->
     </div>
     {#if data.items.length > 0}
       <div class="grid grid-cols-1 gap-x-6 gap-y-12 min-[420px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 mt-15.5">
