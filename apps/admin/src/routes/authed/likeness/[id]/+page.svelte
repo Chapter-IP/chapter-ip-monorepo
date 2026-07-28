@@ -20,6 +20,7 @@
   import { notify, ToastType, ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
   import { modals, type ModalProps } from 'svelte-modals'
   import { onDestroy, onMount } from 'svelte'
+  import { openMarketplaceAndGoToDashboard } from '$lib/helpers/marketplace'
   import { STATUS, type StatusValue } from '../constants/constants'
 
   let { data } = $props()
@@ -240,10 +241,7 @@
       onSubmit: async () => {
         await goToFiles()
       },
-      onSecondary: () => {
-        window.open(import.meta.env.VITE_MARKETPLACE_URL || 'https://marketplace-staging.chapterip.com/', '_blank')
-        goToFiles()
-      },
+      onSecondary: () => openMarketplaceAndGoToDashboard(goto, likenessStore.reset),
       onClose: async () => {
         await goToFiles()
       },

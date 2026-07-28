@@ -15,6 +15,7 @@
   import { modals, type ModalProps } from 'svelte-modals'
   import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
   import { onDestroy } from 'svelte'
+  import { openMarketplaceAndGoToDashboard } from '$lib/helpers/marketplace'
   import {
     createLikenessFileNames,
     LIKENESS_FILE_BUCKETS,
@@ -150,11 +151,7 @@
           await goto(`/authed/files`)
           likenessStore.reset()
         },
-        onSecondary: () => {
-          window.open(import.meta.env.VITE_MARKETPLACE_URL || 'https://marketplace-staging.chapterip.com/', '_blank')
-          goto('/authed/files')
-          likenessStore.reset()
-        },
+        onSecondary: () => openMarketplaceAndGoToDashboard(goto, likenessStore.reset),
         onClose: async () => {
           await goto(`/authed/files`)
           likenessStore.reset()
