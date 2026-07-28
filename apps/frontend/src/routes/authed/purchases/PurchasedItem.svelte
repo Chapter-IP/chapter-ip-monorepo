@@ -4,6 +4,7 @@
   import mime from 'mime/lite'
 
   import DownloadFilesModal from './DownloadFilesModal.svelte'
+  import DownloadProgressModal, { type DownloadProgressState } from './DownloadProgressModal.svelte'
   import { BLOCK_GRACE_MS } from './helper'
   import LikenessLicenseModal from './LikenessLicenseModal.svelte'
   import LocationLicenseModal from './LocationLicenseModal.svelte'
@@ -26,7 +27,14 @@
 
   let isBlocked = $state(purchase.isBlocked)
   let now = $state(Date.now())
+  let isDownloadBusy = $state(false)
   let isDownloading = $state(false)
+  let downloadProgress = $state<DownloadProgressState>({
+    phase: 'preparing',
+    completedFiles: 0,
+    totalFiles: 0,
+    currentFileLabel: '',
+  })
   let isModalOpen = $state(false)
   let isFallbackModalOpen = $state(false)
   let fallbackFiles: DownloadableContentFile[] = $state([])
@@ -35,7 +43,7 @@
   let graceEndsAt = $state<number | null>(purchase.blockedGraceEndsAt)
 
   const modalTitleId = $derived(`${item.type}-license-${purchase.licenseTokenId}`)
-  const canDownload = $derived(!isBlocked && !isDownloading)
+  const canDownload = $derived(!isBlocked && !isDownloadBusy)
   const showGraceCountdown = $derived(graceEndsAt != null && !isBlocked && now < graceEndsAt)
   const graceCountdownText = $derived(showGraceCountdown ? formatGraceCountdown(graceEndsAt! - now) : '')
 
@@ -94,8 +102,25 @@
     }
   }
 
-  async function* fileStreamGenerator(files: DownloadableContentFile[], tracker: { failed: number }) {
+  function resetDownloadProgress() {
+    downloadProgress = {
+      phase: 'preparing',
+      completedFiles: 0,
+      totalFiles: 0,
+      currentFileLabel: '',
+    }
+  }
+
+  async function* fileStreamGenerator(
+    files: DownloadableContentFile[],
+    tracker: { failed: number },
+    onProgress: (update: Partial<DownloadProgressState>) => void,
+  ) {
+    onProgress({ phase: 'downloading', completedFiles: 0, totalFiles: files.length, currentFileLabel: '' })
+
+    let completedFiles = 0
     for (const file of files) {
+      onProgress({ currentFileLabel: file.label })
       try {
         const response = await fetch(file.url)
         if (!response.ok) throw new Error(`HTTP ${response.status}`)
@@ -116,11 +141,19 @@
       } catch (error) {
         tracker.failed++
         console.error(`Skipping ${file.label}:`, error)
+      } finally {
+        completedFiles++
+        onProgress({ completedFiles, currentFileLabel: '' })
       }
     }
+
+    onProgress({ phase: 'zipping', completedFiles: files.length, currentFileLabel: '' })
   }
 
-  async function downloadAllNativeStreaming(files: DownloadableContentFile[]) {
+  async function downloadAllNativeStreaming(files: DownloadableContentFile[]): Promise<{
+    cancelled: boolean
+    failed: number
+  }> {
     let fileHandle
     try {
       fileHandle = await showSaveFilePicker({
@@ -134,14 +167,20 @@
       })
     } catch {
       console.log('User cancelled the save dialog.')
-      return 0
+      return { cancelled: true, failed: 0 }
     }
+
+    isDownloading = true
+    resetDownloadProgress()
 
     const tracker = { failed: 0 }
     let writableStream
     try {
       writableStream = await fileHandle.createWritable()
-      const zipResponse = downloadZip(fileStreamGenerator(files, tracker))
+      const onProgress = (update: Partial<DownloadProgressState>) => {
+        downloadProgress = { ...downloadProgress, ...update }
+      }
+      const zipResponse = downloadZip(fileStreamGenerator(files, tracker, onProgress))
       if (!zipResponse.body) throw new Error('Streams are not supported')
       await zipResponse.body.pipeTo(writableStream)
     } catch (err) {
@@ -150,14 +189,14 @@
     } finally {
       await writableStream?.close().catch(() => {})
     }
-    return tracker.failed
+    return { cancelled: false, failed: tracker.failed }
   }
 
   async function downloadFiles() {
     if (!canDownload) return
 
     errorMessage = ''
-    isDownloading = true
+    isDownloadBusy = true
     let files: DownloadableContentFile[] = []
     try {
       if (!trpcClient) throw new Error('Missing TRPC client')
@@ -174,14 +213,17 @@
         return
       }
 
-      const failedCount = await downloadAllNativeStreaming(files)
+      const { cancelled, failed } = await downloadAllNativeStreaming(files)
+      if (cancelled) return
 
-      if (failedCount > 0) {
+      isDownloading = false
+      if (failed > 0) {
         fallbackFiles = files
         isFallbackModalOpen = true
       }
     } catch (error) {
       console.error('Error downloading content files:', error)
+      isDownloading = false
       if (files.length > 0) {
         fallbackFiles = files
         isFallbackModalOpen = true
@@ -190,6 +232,7 @@
       }
     } finally {
       isDownloading = false
+      isDownloadBusy = false
     }
   }
 
@@ -246,7 +289,7 @@
       disabled={!canDownload}
       onclick={downloadFiles}
     >
-      {#if isDownloading}
+      {#if isDownloadBusy}
         Downloading
       {:else if isBlocked}
         Already used
@@ -267,4 +310,8 @@
 
 {#if isFallbackModalOpen}
   <DownloadFilesModal files={fallbackFiles} title={item.downloadName} onClose={closeFallbackModal} />
+{/if}
+
+{#if isDownloading}
+  <DownloadProgressModal progress={downloadProgress} />
 {/if}

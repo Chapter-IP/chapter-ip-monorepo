@@ -4,6 +4,22 @@ import { tick } from 'svelte'
 import PurchasedItem from './PurchasedItem.svelte'
 import type { PurchasedItemView, PurchasedContentToken } from './types'
 
+vi.mock('native-file-system-adapter', () => ({
+  showSaveFilePicker: vi.fn(async () => ({
+    createWritable: vi.fn(async () => ({
+      close: vi.fn(async () => {}),
+    })),
+  })),
+}))
+
+vi.mock('client-zip', () => ({
+  downloadZip: vi.fn(() => ({
+    body: {
+      pipeTo: vi.fn(async () => {}),
+    },
+  })),
+}))
+
 type FilesLinkInput = {
   contentId: string
   licenseTokenId?: string
@@ -107,10 +123,22 @@ let queryInputs: FilesLinkInput[]
 
 beforeEach(() => {
   queryInputs = []
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => ({
+      ok: true,
+      body: new ReadableStream({
+        start(controller) {
+          controller.close()
+        },
+      }),
+    })),
+  )
 })
 
 afterEach(() => {
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 
 function getTrpcClient() {
