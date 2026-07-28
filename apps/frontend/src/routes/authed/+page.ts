@@ -11,12 +11,10 @@ export const load = async ({ parent }) => {
     trpcClient.contents.findContent.query({
       ...buildLikenessFindContentInput(contractAddress),
       limit: '100',
-      sub: '66e9e4b3af970d8aa42d2d64',
     }),
     trpcClient.contents.findContent.query({
       ...buildLocationFindContentInput(contractAddress),
       limit: '100',
-      sub: '66e9e4b3af970d8aa42d2d64',
     }),
   ])
 
