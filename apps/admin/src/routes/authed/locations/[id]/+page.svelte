@@ -45,7 +45,9 @@
     const { street, apt, city, state, zip } = $locationStore.address
     const address = street || city || state || zip ? { street, apt, city, state, zip } : undefined
     const previewImage = $locationStore.previewImage
-    const previewFileName = previewImage ? `${previewImage.name}` : undefined
+    const previewFileName = previewImage
+      ? appendOriginalExtension('preview', previewImage)
+      : (data.metadata?.preview_file_name as string | undefined)
     const existingNames = $locationStore.existingFiles.locations.map((file) => file.name)
     const newNames = $locationStore.files.locations.map((file, index) =>
       appendOriginalExtension(uploadNames[index], file),
@@ -131,7 +133,6 @@
     try {
       await uploadPreviewIfNeeded({
         previewImage: $locationStore.previewImage,
-        metadata,
         contentId,
         uploadService,
         trpcClient,

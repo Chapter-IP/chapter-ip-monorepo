@@ -68,22 +68,26 @@ async function registerContentFile({
 async function uploadPreviewFile({
   contentId,
   file,
-  filename,
   trpcClient,
   onProgress,
+  filename,
 }: {
   contentId: string
   file: File
-  filename: string
+  filename?: string
   trpcClient: TRPCClient<AppRouter>
   onProgress?: (progress: number) => void
 }): Promise<string> {
-  const ext = file.name.split('.').pop() || ''
+  const lastDot = file.name.lastIndexOf('.')
+
+  const originalName = lastDot === -1 ? file.name : file.name.slice(0, lastDot)
+
+  const ext = lastDot === -1 ? '' : file.name.slice(lastDot + 1)
   const { url, key } = await trpcClient.contents.createContentFileUploadUrl.mutate({
     contentId,
     mimetype: file.type,
     bucket: 'preview',
-    filename,
+    filename: filename || originalName,
     extension: ext,
   })
   await uploadFileToBucket(file, url, onProgress)
@@ -191,8 +195,8 @@ export default class UploadService {
           await uploadPreviewFile({
             contentId,
             file: preview,
-            filename: name,
             trpcClient,
+            filename: name,
             onProgress: (progress) => reportProgress(previewLabel, progress),
           })
           completedUnits++
@@ -370,16 +374,24 @@ export default class UploadService {
   }: {
     contentId: string
     file: File
-    filename: string
+    filename?: string
     trpcClient: TRPCClient<AppRouter>
   }): Promise<void> {
-    const key = await uploadPreviewFile({ contentId, file, filename, trpcClient })
+    const lastDot = file.name.lastIndexOf('.')
+    const fileExt = lastDot === -1 ? '' : file.name.slice(lastDot + 1)
+    const originalBasename = lastDot === -1 ? file.name : file.name.slice(0, lastDot)
+    const basename = filename?.includes('.')
+      ? filename.slice(0, filename.lastIndexOf('.'))
+      : (filename ?? originalBasename)
+    const registeredName = fileExt ? `${basename}.${fileExt}` : basename
+
+    const key = await uploadPreviewFile({ contentId, file, trpcClient, filename: basename })
 
     await registerContentFile({
       contentId,
       key,
       bucket: 'preview',
-      filename,
+      filename: registeredName,
       mimetype: file.type,
       trpcClient,
     })

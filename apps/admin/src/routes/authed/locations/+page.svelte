@@ -18,8 +18,6 @@
   import { appendOriginalExtension, uploadPreviewIfNeeded } from './utils'
   import { onDestroy } from 'svelte'
 
-  const LOCATION_FILENAME = 'location'
-
   let currentStep = $state(1)
   const blockchainService = new BlockchainService(authStore.state.accessToken!)
   const transactionService = new TransactionService(blockchainService)
@@ -47,7 +45,7 @@
       appendOriginalExtension(uploadNames[index], file),
     )
     const previewImage = $locationStore.previewImage
-    const previewFileName = previewImage ? `${previewImage.name}` : undefined
+    const previewFileName = previewImage ? appendOriginalExtension('preview', previewImage) : undefined
     const metadata: Record<string, unknown> = {
       type: 'location' as const,
       name: $locationStore.name,
@@ -82,7 +80,6 @@
       try {
         await uploadPreviewIfNeeded({
           previewImage: $locationStore.previewImage,
-          metadata,
           contentId,
           uploadService,
           trpcClient,
@@ -124,7 +121,6 @@
       try {
         await uploadPreviewIfNeeded({
           previewImage: $locationStore.previewImage,
-          metadata,
           contentId,
           uploadService,
           trpcClient,

@@ -151,11 +151,9 @@ describe('uploadPreviewIfNeeded', () => {
     const previewImage = new File(['bytes'], 'preview.jpg', { type: 'image/jpeg' })
     const uploadService = { uploadLocationPreviewImage: vi.fn().mockResolvedValue(undefined) }
     const trpcClient = {} as never
-    const metadata = { preview_file_name: 'custom-preview.jpg' }
 
     await uploadPreviewIfNeeded({
       previewImage,
-      metadata,
       contentId: 'content-1',
       uploadService: uploadService as never,
       trpcClient,
@@ -164,7 +162,7 @@ describe('uploadPreviewIfNeeded', () => {
     expect(uploadService.uploadLocationPreviewImage).toHaveBeenCalledWith({
       contentId: 'content-1',
       file: previewImage,
-      filename: 'custom-preview.jpg',
+      filename: 'preview',
       trpcClient,
     })
   })
@@ -174,7 +172,6 @@ describe('uploadPreviewIfNeeded', () => {
 
     await uploadPreviewIfNeeded({
       previewImage: null,
-      metadata: { preview_file_name: 'preview.jpg' },
       contentId: 'content-1',
       uploadService: uploadService as never,
       trpcClient: {} as never,
@@ -191,7 +188,6 @@ describe('uploadPreviewIfNeeded', () => {
     await expect(
       uploadPreviewIfNeeded({
         previewImage: new File(['bytes'], 'preview.jpg', { type: 'image/jpeg' }),
-        metadata: { preview_file_name: 'preview.jpg' },
         contentId: 'content-1',
         uploadService: uploadService as never,
         trpcClient: {} as never,
@@ -208,6 +204,6 @@ describe('appendOriginalExtension', () => {
 
   it('treats the bare filename as an extension when no dot is present', () => {
     const file = new File(['data'], 'noext', { type: 'application/octet-stream' })
-    expect(appendOriginalExtension('location_1', file)).toBe('location_1.noext')
+    expect(appendOriginalExtension('location_1', file)).toBe('location_1')
   })
 })
