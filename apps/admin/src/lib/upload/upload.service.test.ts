@@ -341,6 +341,50 @@ describe('UploadService', () => {
     expect(mocks.createImagePreview).not.toHaveBeenCalled()
   })
 
+  it('uploads preview files when updateContentFiles is called with includePreviews: true', async () => {
+    const newFile = new File(['original'], 'headshot.png', { type: 'image/png' })
+    const preview = new File(['preview'], 'headshot.png', { type: 'image/jpeg' })
+    const { client, createContentFileUploadUrl, registerContentFile } = createTrpcClient()
+    mocks.createImagePreview.mockResolvedValue(preview)
+    const service = new UploadService({ mintWithPrices: vi.fn() } as never)
+
+    await expect(
+      service.updateContentFiles({
+        contentId: 'content-id',
+        currentFiles: [{ id: 'kept-file-id', key: 'kept-key' }],
+        keptFileIds: new Set(['kept-file-id']),
+        uploads: [{ file: newFile, name: 'headshot_2' }],
+        trpcClient: client as never,
+        includePreviews: true,
+      }),
+    ).resolves.toEqual({ keys: ['kept-key', 'original-key'] })
+
+    expect(createContentFileUploadUrl).toHaveBeenNthCalledWith(1, {
+      contentId: 'content-id',
+      mimetype: 'image/png',
+      bucket: 'content',
+      filename: 'headshot_2',
+      extension: 'png',
+    })
+    expect(createContentFileUploadUrl).toHaveBeenNthCalledWith(2, {
+      contentId: 'content-id',
+      mimetype: 'image/jpeg',
+      filename: 'headshot_2',
+      extension: 'png',
+      bucket: 'preview',
+    })
+    expect(mocks.uploadFileToBucket).toHaveBeenNthCalledWith(2, preview, 'preview-url', expect.any(Function))
+    expect(mocks.createImagePreview).toHaveBeenCalledWith(newFile, { withWatermark: true })
+    expect(registerContentFile).toHaveBeenCalledWith({
+      contentId: 'content-id',
+      key: 'original-key',
+      bucket: 'content',
+      filename: 'headshot_2.png',
+      mimetype: 'image/png',
+      label: 'headshot_2.png',
+    })
+  })
+
   it('mints content with the current access token and requested prices', async () => {
     const transactionService = {
       mintWithPrices: vi.fn().mockResolvedValue('token-id'),
