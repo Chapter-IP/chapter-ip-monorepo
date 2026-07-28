@@ -9,9 +9,11 @@
     isOpen: boolean
     title: string
     submitText?: string
+    secondaryText?: string
     description?: string
     onClose?: () => void
     onSubmit?: () => void | Promise<void>
+    onSecondary?: () => void | Promise<void>
     withBackButton?: boolean
   }
 
@@ -20,7 +22,9 @@
     description,
     onClose,
     submitText,
+    secondaryText,
     onSubmit,
+    onSecondary,
     withBackButton = true,
     close,
     isOpen,
@@ -37,6 +41,12 @@
     await tick()
     onClose?.()
   }
+
+  async function handleSecondary() {
+    close()
+    await tick()
+    await onSecondary?.()
+  }
 </script>
 
 {#if isOpen}
@@ -48,6 +58,12 @@
       {/if}
 
       <div class="flex space-x-4 mt-8 w-full justify-center">
+        {#if secondaryText}
+          <button
+            class="btn bg-[#6734ff] text-white px-12 py-6 rounded-md text-base w-[350px]"
+            onclick={handleSecondary}>{secondaryText}</button
+          >
+        {/if}
         <button class="btn bg-[#6734ff] text-white px-12 py-6 rounded-md text-base w-[350px]" onclick={handleSubmit}
           >{submitText}</button
         >

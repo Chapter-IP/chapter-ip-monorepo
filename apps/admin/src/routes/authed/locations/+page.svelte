@@ -155,8 +155,14 @@
         description:
           "Your location has been added to Chapter IP. By completing this step, you've transformed your location into a secure, licensable digital asset that can be discovered, verified, and managed for future opportunities.",
         submitText: 'Go to Dashboard',
+        secondaryText: 'Go to Marketplace',
         onSubmit: async () => {
           await goto('/authed/files')
+          locationStore.reset()
+        },
+        onSecondary: () => {
+          window.open(import.meta.env.VITE_MARKETPLACE_URL || 'https://marketplace-staging.chapterip.com/', '_blank')
+          goto('/authed/files')
           locationStore.reset()
         },
         onClose: async () => {
