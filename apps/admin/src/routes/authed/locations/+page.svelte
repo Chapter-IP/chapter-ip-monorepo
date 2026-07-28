@@ -10,7 +10,7 @@
   import { createUploadSessionController, startUploadingPhase } from '$lib/upload/upload-session'
   import TransactionService from '$lib/upload/transaction.service'
   import BlockchainService from '$lib/upload/blockchain.service'
-  import UploadProgressPanel from '$lib/components/UploadProgressPanel.svelte'
+  import UploadProgressModal from '$lib/components/UploadProgressModal.svelte'
   import { notify, ToastType } from '@repo/ui-components'
   import { modals, type ModalProps } from 'svelte-modals'
   import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
@@ -66,7 +66,7 @@
       const trpcClient = uploadService.createTrpcClient()
       const { uploads, metadata, tags } = buildLocationPayload()
 
-      startUploadingPhase(uploadSession.setProgress, uploads.length)
+      startUploadingPhase(uploadSession.setProgress, uploads)
 
       const { contentId } = await uploadService.saveDraftContent({
         trpcClient,
@@ -107,7 +107,7 @@
       const trpcClient = uploadService.createTrpcClient()
       const { uploads, metadata, tags } = buildLocationPayload()
 
-      startUploadingPhase(uploadSession.setProgress, uploads.length)
+      startUploadingPhase(uploadSession.setProgress, uploads)
 
       const { contentId, keys } = await uploadService.saveDraftContent({
         trpcClient,
@@ -145,6 +145,8 @@
         description: $locationStore.description,
         trpcClient,
       })
+
+      uploadSession.end()
 
       modals.open<ModalProps & TConfirmModalProps>(ConfirmModal, {
         title: 'Congratulations!',
@@ -184,10 +186,8 @@
   {:else}
     <ConfirmLocationStep bind:currentStep onFormSubmit={onSubmitClick} onSaveDraft={onSaveDraftClick} />
   {/if}
-
-  {#if $locationStore.ui.uploadProgress}
-    <div class="mt-6">
-      <UploadProgressPanel progress={$locationStore.ui.uploadProgress} />
-    </div>
-  {/if}
 </div>
+
+{#if $locationStore.ui.uploadProgress}
+  <UploadProgressModal progress={$locationStore.ui.uploadProgress} />
+{/if}

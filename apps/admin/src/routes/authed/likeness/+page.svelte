@@ -10,7 +10,7 @@
   import { createUploadSessionController, startUploadingPhase } from '$lib/upload/upload-session'
   import TransactionService from '$lib/upload/transaction.service'
   import BlockchainService from '$lib/upload/blockchain.service'
-  import UploadProgressPanel from '$lib/components/UploadProgressPanel.svelte'
+  import UploadProgressModal from '$lib/components/UploadProgressModal.svelte'
   import { notify, ToastType } from '@repo/ui-components'
   import { modals, type ModalProps } from 'svelte-modals'
   import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
@@ -83,7 +83,7 @@
       const trpcClient = uploadService.createTrpcClient()
       const { uploads, metadata } = buildLikenessPayload()
 
-      startUploadingPhase(uploadSession.setProgress, uploads.length)
+      startUploadingPhase(uploadSession.setProgress, uploads)
 
       await uploadService.saveDraftContent({
         trpcClient,
@@ -109,7 +109,7 @@
       const trpcClient = uploadService.createTrpcClient()
       const { uploads, metadata } = buildLikenessPayload()
 
-      startUploadingPhase(uploadSession.setProgress, uploads.length)
+      startUploadingPhase(uploadSession.setProgress, uploads)
 
       const { contentId, keys } = await uploadService.saveDraftContent({
         trpcClient,
@@ -139,6 +139,8 @@
         description: $likenessStore.profile.bio,
         trpcClient,
       })
+
+      uploadSession.end()
 
       modals.open<ModalProps & TConfirmModalProps>(ConfirmModal, {
         title: 'Congratulations!',
@@ -178,10 +180,8 @@
   {:else}
     <ConfirmLikenessStep bind:currentStep onFormSubmit={onSubmitClick} onSaveDraft={onSaveDraftClick} />
   {/if}
-
-  {#if $likenessStore.ui.uploadProgress}
-    <div class="mt-6">
-      <UploadProgressPanel progress={$likenessStore.ui.uploadProgress} />
-    </div>
-  {/if}
 </div>
+
+{#if $likenessStore.ui.uploadProgress}
+  <UploadProgressModal progress={$likenessStore.ui.uploadProgress} />
+{/if}
