@@ -37,6 +37,12 @@ function createConfigStore() {
     return new ethers.Contract(address, abi, runner)
   }
 
+  function getMarketplaceUrl() {
+    const env = data?.env
+    if (env === 'prod') return 'https://marketplace.chapterip.com/'
+    return 'https://marketplace-staging.chapterip.com/'
+  }
+
   return {
     get state() {
       return data
@@ -48,6 +54,7 @@ function createConfigStore() {
 
     getContract,
     getContractAddress,
+    getMarketplaceUrl,
   }
 }
 
