@@ -15,6 +15,7 @@
   import { modals, type ModalProps } from 'svelte-modals'
   import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
   import { createLocationFileNames } from '$lib/constants/locationFileBuckets'
+  import { openMarketplaceAndGoToDashboard } from '$lib/helpers/marketplace'
   import { appendOriginalExtension, uploadPreviewIfNeeded } from './utils'
   import { onDestroy } from 'svelte'
 
@@ -151,10 +152,12 @@
         description:
           "Your location has been added to Chapter IP. By completing this step, you've transformed your location into a secure, licensable digital asset that can be discovered, verified, and managed for future opportunities.",
         submitText: 'Go to Dashboard',
+        secondaryText: 'Go to Marketplace',
         onSubmit: async () => {
           await goto('/authed/files')
           locationStore.reset()
         },
+        onSecondary: () => openMarketplaceAndGoToDashboard(goto, locationStore.reset),
         onClose: async () => {
           await goto('/authed/files')
           locationStore.reset()

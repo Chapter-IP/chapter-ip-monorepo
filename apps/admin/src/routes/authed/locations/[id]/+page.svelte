@@ -17,6 +17,7 @@
   import { notify, ToastType, ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
   import { modals, type ModalProps } from 'svelte-modals'
   import { onDestroy, onMount } from 'svelte'
+  import { openMarketplaceAndGoToDashboard } from '$lib/helpers/marketplace'
   import { STATUS, type StatusValue } from '../constants/constants'
 
   let { data } = $props()
@@ -264,9 +265,11 @@
       description:
         "Your location has been added to Chapter IP. By completing this step, you've transformed your location into a secure, licensable digital asset that can be discovered, verified, and managed for future opportunities.",
       submitText: 'Go to Dashboard',
+      secondaryText: 'Go to Marketplace',
       onSubmit: async () => {
         await goToFiles()
       },
+      onSecondary: () => openMarketplaceAndGoToDashboard(goto, locationStore.reset),
       onClose: async () => {
         await goToFiles()
       },

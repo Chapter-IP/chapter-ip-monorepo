@@ -15,6 +15,7 @@
   import { modals, type ModalProps } from 'svelte-modals'
   import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
   import { onDestroy } from 'svelte'
+  import { openMarketplaceAndGoToDashboard } from '$lib/helpers/marketplace'
   import {
     createLikenessFileNames,
     LIKENESS_FILE_BUCKETS,
@@ -145,10 +146,12 @@
         description:
           "Your likeness has been added to Chapter IP. By completing this step, you've transformed your likeness into a secure, licensable digital asset that can be discovered, verified, and managed for future opportunities.",
         submitText: 'Go to Dashboard',
+        secondaryText: 'Go to Marketplace',
         onSubmit: async () => {
           await goto(`/authed/files`)
           likenessStore.reset()
         },
+        onSecondary: () => openMarketplaceAndGoToDashboard(goto, likenessStore.reset),
         onClose: async () => {
           await goto(`/authed/files`)
           likenessStore.reset()
