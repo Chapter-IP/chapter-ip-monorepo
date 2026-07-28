@@ -8,6 +8,7 @@ import {
   applyProgressEventToFileMap,
   clampPercent,
   computePendingUploadUnits,
+  displayOverallPercent,
   overallPercent,
 } from './upload-progress-ui'
 import type { NamedUpload } from './upload.service'
@@ -63,6 +64,20 @@ describe('overallPercent', () => {
   it('converts fractional progress to a percentage', () => {
     expect(overallPercent(0.5)).toBe(50)
     expect(overallPercent(1)).toBe(100)
+  })
+})
+
+describe('displayOverallPercent', () => {
+  it('allows 100% only during the uploading phase', () => {
+    expect(displayOverallPercent(1, 'uploading')).toBe(100)
+    expect(displayOverallPercent(1, 'minting')).toBe(99)
+    expect(displayOverallPercent(1, 'finalizing')).toBe(99)
+    expect(displayOverallPercent(1, 'saving-metadata')).toBe(99)
+  })
+
+  it('passes through partial progress for all phases', () => {
+    expect(displayOverallPercent(0.5, 'minting')).toBe(50)
+    expect(displayOverallPercent(0.5, 'uploading')).toBe(50)
   })
 })
 

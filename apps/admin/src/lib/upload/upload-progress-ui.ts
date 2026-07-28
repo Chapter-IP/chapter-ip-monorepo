@@ -29,6 +29,11 @@ export function overallPercent(overallProgress: number): number {
   return clampPercent(overallProgress * 100)
 }
 
+export function displayOverallPercent(overallProgress: number, phase: UploadProgressEvent['phase']): number {
+  const percent = overallPercent(overallProgress)
+  return phase === 'uploading' ? percent : Math.min(percent, 99)
+}
+
 function seedFromPendingUnits(pendingFiles: PendingUploadUnit[]): {
   fileMap: FileProgressMap
   orderedIds: string[]
