@@ -5,7 +5,7 @@
     type MultipleFileKey,
   } from '$lib/constants/likenessFileBuckets'
   import { afterNavigate, beforeNavigate, goto } from '$app/navigation'
-  import { getHeightTotalInches, getNormalizedWeight, likenessStore } from '../stores/likeness-store'
+  import { getHeightTotalInches, getNormalizedWeight, isPreviewBucket, likenessStore } from '../stores/likeness-store'
   import UploadStepHeader from '../components/UploadStepHeader.svelte'
   import UploadLikenessStep from '../components/UploadLikenessStep.svelte'
   import UploadLicensingStep from '../components/UploadLicensingStep.svelte'
@@ -27,6 +27,7 @@
   type ExistingContentFile = {
     id: string
     key: string
+    bucket?: string
   }
 
   let currentStep = $state(1)
@@ -92,7 +93,8 @@
   const getKeptFileIds = () =>
     new Set(LIKENESS_FILE_BUCKETS.flatMap((bucket) => $likenessStore.existingFiles[bucket].map((file) => file.id)))
 
-  const getCurrentFiles = () => (data.files ?? []) as ExistingContentFile[]
+  const getCurrentFiles = () =>
+    ((data.files ?? []) as ExistingContentFile[]).filter((file) => !file.bucket || !isPreviewBucket(file.bucket))
 
   const buildLikenessPayload = () => {
     const uploadsByBucket = buildUploadsByBucket()
@@ -145,6 +147,7 @@
       keptFileIds,
       uploads,
       trpcClient,
+      includePreviews: true,
       onUploadProgress: uploadSession.setProgress,
     })
 

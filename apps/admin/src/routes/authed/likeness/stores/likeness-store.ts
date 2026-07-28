@@ -21,11 +21,22 @@ const emptyExistingFiles = (): ExistingFilesByBucket => ({
   videoReels: [],
 })
 
+const stripExtension = (name: string) => {
+  const lastDot = name.lastIndexOf('.')
+  return lastDot === -1 ? name : name.slice(0, lastDot)
+}
+
+const namesMatch = (a: string, b: string) => a === b || stripExtension(a) === stripExtension(b)
+
+export const isPreviewBucket = (bucket?: string) => Boolean(bucket?.includes('preview'))
+
 function resolveBucket(
   filename: string,
   uploadsByBucket: LikenessMetadata['uploadsByBucket'] = {},
 ): MultipleFileKey | null {
-  const bucket = LIKENESS_FILE_BUCKETS.find((bucket) => uploadsByBucket[bucket]?.some((name) => name === filename))
+  const bucket = LIKENESS_FILE_BUCKETS.find((bucket) =>
+    uploadsByBucket[bucket]?.some((name) => namesMatch(name, filename)),
+  )
   if (bucket) return bucket
 
   return null
@@ -64,6 +75,8 @@ export async function loadExistingFiles(
   const { files } = await trpcClient.contents.getContentAllFilesLink.query({ contentId: content.id })
 
   for (const file of files ?? []) {
+    if (isPreviewBucket(file.bucket)) continue
+
     const filename = file.label
     const bucket = resolveBucket(filename, uploadsByBucket)
     if (!bucket) continue
