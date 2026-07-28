@@ -457,7 +457,7 @@ describe('UploadService', () => {
       await service.uploadLocationPreviewImage({
         contentId: 'content-id',
         file,
-        filename: 'location',
+        filename: 'preview',
         trpcClient: client as never,
       })
 
@@ -465,7 +465,7 @@ describe('UploadService', () => {
         contentId: 'content-id',
         mimetype: 'image/png',
         bucket: 'preview',
-        filename: 'location',
+        filename: 'preview',
         extension: 'png',
       })
       expect(mocks.uploadFileToBucket).toHaveBeenCalledWith(file, 'original-url', undefined)
@@ -473,9 +473,9 @@ describe('UploadService', () => {
         contentId: 'content-id',
         key: 'original-key',
         bucket: 'preview',
-        filename: 'location',
+        filename: 'preview.png',
         mimetype: 'image/png',
-        label: 'location',
+        label: 'preview.png',
       })
     })
 
@@ -489,7 +489,7 @@ describe('UploadService', () => {
         service.uploadLocationPreviewImage({
           contentId: 'content-id',
           file,
-          filename: 'location',
+          filename: 'preview',
           trpcClient: client as never,
         }),
       ).rejects.toThrow('network')
@@ -503,7 +503,7 @@ describe('UploadService', () => {
       await service.uploadLocationPreviewImage({
         contentId: 'content-id',
         file,
-        filename: 'location.gif',
+        filename: 'preview.gif',
         trpcClient: client as never,
       })
 
@@ -511,16 +511,16 @@ describe('UploadService', () => {
         contentId: 'content-id',
         mimetype: 'image/gif',
         bucket: 'preview',
-        filename: 'location.gif',
+        filename: 'preview',
         extension: 'gif',
       })
       expect(registerContentFile).toHaveBeenCalledWith({
         contentId: 'content-id',
         key: 'original-key',
         bucket: 'preview',
-        filename: 'location.gif',
+        filename: 'preview.gif',
         mimetype: 'image/gif',
-        label: 'location.gif',
+        label: 'preview.gif',
       })
     })
 
@@ -532,7 +532,7 @@ describe('UploadService', () => {
       await service.uploadLocationPreviewImage({
         contentId: 'content-id',
         file,
-        filename: 'noext',
+        filename: 'preview',
         trpcClient: client as never,
       })
 
@@ -540,9 +540,38 @@ describe('UploadService', () => {
         contentId: 'content-id',
         key: 'original-key',
         bucket: 'preview',
-        filename: 'noext',
+        filename: 'preview.webp',
         mimetype: 'image/webp',
-        label: 'noext',
+        label: 'preview.webp',
+      })
+    })
+
+    it('registers basename only when the file has no extension', async () => {
+      const file = new File(['data'], 'photo', { type: 'image/png' })
+      const { client, createContentFileUploadUrl, registerContentFile } = createTrpcClient()
+      const service = new UploadService({ mintWithPrices: vi.fn() } as never)
+
+      await service.uploadLocationPreviewImage({
+        contentId: 'content-id',
+        file,
+        filename: 'preview',
+        trpcClient: client as never,
+      })
+
+      expect(createContentFileUploadUrl).toHaveBeenCalledWith({
+        contentId: 'content-id',
+        mimetype: 'image/png',
+        bucket: 'preview',
+        filename: 'preview',
+        extension: '',
+      })
+      expect(registerContentFile).toHaveBeenCalledWith({
+        contentId: 'content-id',
+        key: 'original-key',
+        bucket: 'preview',
+        filename: 'preview',
+        mimetype: 'image/png',
+        label: 'preview',
       })
     })
   })
