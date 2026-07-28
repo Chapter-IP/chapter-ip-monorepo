@@ -1,4 +1,5 @@
-import type { UploadProgressEvent } from './upload.service'
+import type { NamedUpload, UploadProgressEvent } from './upload.service'
+import { computePendingUploadUnits } from './upload-progress-ui'
 
 export type UploadSessionProgressSetter = (event: UploadProgressEvent) => void
 
@@ -41,8 +42,13 @@ export function createUploadSessionController(store: UploadSessionStore) {
   return { begin, invalidate }
 }
 
-export function startUploadingPhase(setProgress: UploadSessionProgressSetter, uploadsLength: number) {
-  if (uploadsLength > 0) {
-    setProgress({ phase: 'uploading', overallProgress: 0 })
-  }
+export function startUploadingPhase(
+  setProgress: UploadSessionProgressSetter,
+  uploads: NamedUpload[],
+  includePreviews = true,
+) {
+  if (uploads.length === 0) return
+
+  const pendingFiles = computePendingUploadUnits(uploads, includePreviews)
+  setProgress({ phase: 'uploading', overallProgress: 0, pendingFiles })
 }

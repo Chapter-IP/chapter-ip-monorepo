@@ -1,4 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
+
+vi.mock('./image-preview.service', () => ({
+  isPreviewImage: (file: File) => file.type.startsWith('image/'),
+}))
+
 import { createUploadSessionController, startUploadingPhase } from './upload-session'
 import type { UploadProgressEvent } from './upload.service'
 
@@ -85,13 +90,36 @@ describe('createUploadSessionController', () => {
 })
 
 describe('startUploadingPhase', () => {
-  it('sets uploading progress only when uploads length is greater than zero', () => {
+  it('sets uploading progress with pending file names when uploads are present', () => {
     const setProgress = vi.fn<(event: UploadProgressEvent) => void>()
+    const imageFile = new File(['image'], 'photo.jpg', { type: 'image/jpeg' })
+    const uploads = [{ file: imageFile, name: 'likeness-1' }]
 
-    startUploadingPhase(setProgress, 0)
+    startUploadingPhase(setProgress, [])
     expect(setProgress).not.toHaveBeenCalled()
 
-    startUploadingPhase(setProgress, 2)
-    expect(setProgress).toHaveBeenCalledWith({ phase: 'uploading', overallProgress: 0 })
+    startUploadingPhase(setProgress, uploads)
+    expect(setProgress).toHaveBeenCalledWith({
+      phase: 'uploading',
+      overallProgress: 0,
+      pendingFiles: [
+        { id: 'likeness-1', label: 'photo.jpg' },
+        { id: 'likeness-1 (preview)', label: 'photo.jpg (preview)' },
+      ],
+    })
+  })
+
+  it('omits preview units when includePreviews is false', () => {
+    const setProgress = vi.fn<(event: UploadProgressEvent) => void>()
+    const imageFile = new File(['image'], 'photo.jpg', { type: 'image/jpeg' })
+    const uploads = [{ file: imageFile, name: 'likeness-1' }]
+
+    startUploadingPhase(setProgress, uploads, false)
+
+    expect(setProgress).toHaveBeenCalledWith({
+      phase: 'uploading',
+      overallProgress: 0,
+      pendingFiles: [{ id: 'likeness-1', label: 'photo.jpg' }],
+    })
   })
 })
