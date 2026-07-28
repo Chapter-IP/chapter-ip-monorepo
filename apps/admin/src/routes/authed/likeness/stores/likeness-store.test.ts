@@ -68,8 +68,18 @@ test('loads existing likeness file URLs through the all files link endpoint', as
 test('resolves files when uploads metadata stores names with extensions', async () => {
   const query = vi.fn(async () => ({
     files: [
-      { id: 'file-headshot', label: 'headshot_1.jpg', url: 'https://r2.example/headshot.jpg' },
-      { id: 'file-voice', label: 'voice_sample_1.mp3', url: 'https://r2.example/voice.mp3' },
+      {
+        id: 'file-headshot',
+        label: 'headshot_1.jpg',
+        url: 'https://r2.example/headshot.jpg',
+        bucket: 'chapter-ip-content-test',
+      },
+      {
+        id: 'file-voice',
+        label: 'voice_sample_1.mp3',
+        url: 'https://r2.example/voice.mp3',
+        bucket: 'chapter-ip-content-test',
+      },
     ],
   }))
   const trpcClient = {
@@ -91,6 +101,85 @@ test('resolves files when uploads metadata stores names with extensions', async 
     headshots: [{ id: 'file-headshot', name: 'headshot_1.jpg', url: 'https://r2.example/headshot.jpg' }],
     bodyShots: [],
     voiceSamples: [{ id: 'file-voice', name: 'voice_sample_1.mp3', url: 'https://r2.example/voice.mp3' }],
+    videoReels: [],
+  })
+})
+
+test('resolves files when uploads metadata stores names without extensions', async () => {
+  const query = vi.fn(async () => ({
+    files: [
+      {
+        id: 'file-headshot',
+        label: 'headshot_1.jpg',
+        url: 'https://r2.example/headshot.jpg',
+        bucket: 'chapter-ip-content-test',
+      },
+      {
+        id: 'file-voice',
+        label: 'voice_sample_1.mp3',
+        url: 'https://r2.example/voice.mp3',
+        bucket: 'chapter-ip-content-test',
+      },
+    ],
+  }))
+  const trpcClient = {
+    contents: {
+      getContentAllFilesLink: { query },
+    },
+  } as unknown as LoadExistingFilesClient
+  const content: LoadExistingFilesContent = {
+    id: 'content-1',
+    metadata: {
+      uploadsByBucket: {
+        headshots: ['headshot_1'],
+        voiceSamples: ['voice_sample_1'],
+      },
+    },
+  }
+
+  await expect(loadExistingFiles(content, trpcClient)).resolves.toEqual({
+    headshots: [{ id: 'file-headshot', name: 'headshot_1.jpg', url: 'https://r2.example/headshot.jpg' }],
+    bodyShots: [],
+    voiceSamples: [{ id: 'file-voice', name: 'voice_sample_1.mp3', url: 'https://r2.example/voice.mp3' }],
+    videoReels: [],
+  })
+})
+
+test('skips preview-bucket files when loading existing likeness files', async () => {
+  const query = vi.fn(async () => ({
+    files: [
+      {
+        id: 'file-headshot',
+        label: 'headshot_1',
+        url: 'https://r2.example/headshot',
+        bucket: 'chapter-ip-content-test',
+      },
+      {
+        id: 'file-preview',
+        label: 'headshot_1_preview',
+        url: 'https://r2.example/preview',
+        bucket: 'chapter-ip-preview-test',
+      },
+    ],
+  }))
+  const trpcClient = {
+    contents: {
+      getContentAllFilesLink: { query },
+    },
+  } as unknown as LoadExistingFilesClient
+  const content: LoadExistingFilesContent = {
+    id: 'content-1',
+    metadata: {
+      uploadsByBucket: {
+        headshots: ['headshot_1'],
+      },
+    },
+  }
+
+  await expect(loadExistingFiles(content, trpcClient)).resolves.toEqual({
+    headshots: [{ id: 'file-headshot', name: 'headshot_1', url: 'https://r2.example/headshot' }],
+    bodyShots: [],
+    voiceSamples: [],
     videoReels: [],
   })
 })

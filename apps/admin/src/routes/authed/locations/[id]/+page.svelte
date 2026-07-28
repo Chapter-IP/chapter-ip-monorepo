@@ -26,13 +26,18 @@
     key: string
   }
 
+  let initialPreviewFileIds = $state<string[]>([])
+
   let currentStep = $state(1)
   const blockchainService = new BlockchainService(authStore.state.accessToken!)
   const transactionService = new TransactionService(blockchainService)
   const uploadService = new UploadService(transactionService)
   const uploadSessions = createUploadSessionController(locationStore)
 
-  onMount(() => locationStore.hydrateFromContent(data, data.existingFiles, data.existingPreviewUrl))
+  onMount(() => {
+    initialPreviewFileIds = data.existingPreviewFileIds ?? []
+    locationStore.hydrateFromContent(data, data.existingFiles, data.existingPreviewUrl)
+  })
   onDestroy(() => {
     uploadSessions.invalidate()
     locationStore.reset()
@@ -47,7 +52,9 @@
     const previewImage = $locationStore.previewImage
     const previewFileName = previewImage
       ? appendOriginalExtension('preview', previewImage)
-      : (data.metadata?.preview_file_name as string | undefined)
+      : $locationStore.existingPreviewUrl
+        ? (data.metadata?.preview_file_name as string | undefined)
+        : undefined
     const existingNames = $locationStore.existingFiles.locations.map((file) => file.name)
     const newNames = $locationStore.files.locations.map((file, index) =>
       appendOriginalExtension(uploadNames[index], file),
@@ -81,6 +88,22 @@
 
   const getCurrentFiles = () =>
     (data.allExistingFiles?.locations ?? data.existingFiles?.locations ?? data.files ?? []) as ExistingContentFile[]
+
+  const removeOldPreviewFiles = async (trpcClient: ReturnType<typeof uploadService.createTrpcClient>) => {
+    const shouldRemove =
+      $locationStore.previewImage !== null ||
+      ($locationStore.existingPreviewUrl === null && initialPreviewFileIds.length > 0)
+
+    if (!shouldRemove) return
+
+    for (const fileId of initialPreviewFileIds) {
+      try {
+        await trpcClient.contents.removeContentFile.mutate({ fileId })
+      } catch (error) {
+        console.error(`Failed to remove preview file ${fileId}:`, error)
+      }
+    }
+  }
 
   const buildLocationPayload = () => {
     const uploadNames = buildUploadNames()
@@ -130,6 +153,9 @@
       onUploadProgress: uploadSession.setProgress,
     })
 
+    await removeOldPreviewFiles(trpcClient)
+
+    let previewUploadFailed = false
     try {
       await uploadPreviewIfNeeded({
         previewImage: $locationStore.previewImage,
@@ -138,20 +164,29 @@
         trpcClient,
       })
     } catch (previewError) {
+      previewUploadFailed = true
       console.error('Error uploading preview image:', previewError)
       notify('Preview upload failed.', ToastType.FAIL)
     }
 
+    const metadataToSave =
+      previewUploadFailed && $locationStore.previewImage
+        ? {
+            ...metadata,
+            preview_file_name: data.metadata?.preview_file_name as string | undefined,
+          }
+        : metadata
+
     await uploadService.updateContentMetadata({
       contentId,
       trpcClient,
-      metadata,
+      metadata: metadataToSave,
       tags,
       tokenId,
       status,
     })
 
-    return { contentId, keys, metadata, trpcClient, tags }
+    return { contentId, keys, metadata: metadataToSave, trpcClient, tags }
   }
 
   const goToFiles = async () => {

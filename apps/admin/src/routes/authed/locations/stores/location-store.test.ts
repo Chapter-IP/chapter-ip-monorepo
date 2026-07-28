@@ -21,7 +21,12 @@ describe('loadExistingFiles', () => {
 
     const result = await loadExistingFiles(content, trpcClient)
 
-    expect(result).toEqual({ files: { locations: [] }, allFiles: { locations: [] }, previewUrl: null })
+    expect(result).toEqual({
+      files: { locations: [] },
+      allFiles: { locations: [] },
+      previewUrl: null,
+      previewFileIds: [],
+    })
     expect(query).not.toHaveBeenCalled()
   })
 
@@ -31,14 +36,19 @@ describe('loadExistingFiles', () => {
 
     const result = await loadExistingFiles(content, trpcClient)
 
-    expect(result).toEqual({ files: { locations: [] }, allFiles: { locations: [] }, previewUrl: null })
+    expect(result).toEqual({
+      files: { locations: [] },
+      allFiles: { locations: [] },
+      previewUrl: null,
+      previewFileIds: [],
+    })
   })
 
   it('includes all non-preview files in allFiles when no files_name filter is set', async () => {
     const query = vi.fn(async () => ({
       files: [
-        { id: 'f1', label: 'photo_1', url: 'https://r2.example/f1', key: 'k1', bucket: 'content' },
-        { id: 'f2', label: 'photo_2', url: 'https://r2.example/f2', key: 'k2', bucket: 'content' },
+        { id: 'f1', label: 'photo_1', url: 'https://r2.example/f1', key: 'k1', bucket: 'chapter-ip-content-test' },
+        { id: 'f2', label: 'photo_2', url: 'https://r2.example/f2', key: 'k2', bucket: 'chapter-ip-content-test' },
       ],
     }))
     const trpcClient = createTrpcClient(query)
@@ -52,9 +62,9 @@ describe('loadExistingFiles', () => {
   it('filters files by files_name allow-list', async () => {
     const query = vi.fn(async () => ({
       files: [
-        { id: 'f1', label: 'photo_1', url: 'https://r2.example/f1', key: 'k1', bucket: 'content' },
-        { id: 'f2', label: 'photo_2', url: 'https://r2.example/f2', key: 'k2', bucket: 'content' },
-        { id: 'f3', label: 'photo_3', url: 'https://r2.example/f3', key: 'k3', bucket: 'content' },
+        { id: 'f1', label: 'photo_1', url: 'https://r2.example/f1', key: 'k1', bucket: 'chapter-ip-content-test' },
+        { id: 'f2', label: 'photo_2', url: 'https://r2.example/f2', key: 'k2', bucket: 'chapter-ip-content-test' },
+        { id: 'f3', label: 'photo_3', url: 'https://r2.example/f3', key: 'k3', bucket: 'chapter-ip-content-test' },
       ],
     }))
     const trpcClient = createTrpcClient(query)
@@ -71,7 +81,9 @@ describe('loadExistingFiles', () => {
 
   it('returns empty files but full allFiles when no files match the allow-list', async () => {
     const query = vi.fn(async () => ({
-      files: [{ id: 'f1', label: 'photo_1', url: 'https://r2.example/f1', key: 'k1', bucket: 'content' }],
+      files: [
+        { id: 'f1', label: 'photo_1', url: 'https://r2.example/f1', key: 'k1', bucket: 'chapter-ip-content-test' },
+      ],
     }))
     const trpcClient = createTrpcClient(query)
     const content: LoadExistingFilesContent = {
@@ -88,8 +100,15 @@ describe('loadExistingFiles', () => {
   it('extracts previewUrl from files with preview bucket', async () => {
     const query = vi.fn(async () => ({
       files: [
-        { id: 'preview-1', label: 'preview', url: 'https://r2.example/preview.jpg', key: 'pk', bucket: 'preview' },
-        { id: 'f1', label: 'photo_1', url: 'https://r2.example/f1', key: 'k1', bucket: 'content' },
+        {
+          id: 'preview-1',
+          label: 'preview.jpg',
+          filename: 'preview.jpg',
+          url: 'https://r2.example/preview.jpg',
+          key: 'pk',
+          bucket: 'chapter-ip-preview-test',
+        },
+        { id: 'f1', label: 'photo_1', url: 'https://r2.example/f1', key: 'k1', bucket: 'chapter-ip-content-test' },
       ],
     }))
     const trpcClient = createTrpcClient(query)
@@ -97,25 +116,126 @@ describe('loadExistingFiles', () => {
     const result = await loadExistingFiles({ id: 'content-1' }, trpcClient)
 
     expect(result.previewUrl).toBe('https://r2.example/preview.jpg')
+    expect(result.previewFileIds).toEqual(['preview-1'])
     expect(result.files.locations).toHaveLength(1)
     expect(result.allFiles.locations).toHaveLength(1)
   })
 
   it('extracts previewUrl from preview bucket', async () => {
     const query = vi.fn(async () => ({
-      files: [{ id: 'p1', label: 'thumb', url: 'https://r2.example/thumb.webp', key: 'pk', bucket: 'preview' }],
+      files: [
+        {
+          id: 'p1',
+          label: 'thumb',
+          filename: 'thumb.webp',
+          url: 'https://r2.example/thumb.webp',
+          key: 'pk',
+          bucket: 'chapter-ip-preview-test',
+        },
+      ],
     }))
     const trpcClient = createTrpcClient(query)
 
     const result = await loadExistingFiles({ id: 'content-1' }, trpcClient)
 
     expect(result.previewUrl).toBe('https://r2.example/thumb.webp')
+    expect(result.previewFileIds).toEqual(['p1'])
     expect(result.allFiles.locations).toHaveLength(0)
+  })
+
+  it('prefers preview file matching metadata preview_file_name', async () => {
+    const query = vi.fn(async () => ({
+      files: [
+        {
+          id: 'preview-old',
+          label: 'preview_old.jpg',
+          filename: 'preview_old.jpg',
+          url: 'https://r2.example/old.jpg',
+          key: 'pk1',
+          bucket: 'chapter-ip-preview-test',
+        },
+        {
+          id: 'preview-new',
+          label: 'preview.jpg',
+          filename: 'preview.jpg',
+          url: 'https://r2.example/new.jpg',
+          key: 'pk2',
+          bucket: 'chapter-ip-preview-test',
+        },
+      ],
+    }))
+    const trpcClient = createTrpcClient(query)
+    const content: LoadExistingFilesContent = {
+      id: 'content-1',
+      metadata: { preview_file_name: 'preview.jpg' },
+    }
+
+    const result = await loadExistingFiles(content, trpcClient)
+
+    expect(result.previewUrl).toBe('https://r2.example/new.jpg')
+    expect(result.previewFileIds).toEqual(['preview-old', 'preview-new'])
+  })
+
+  it('soft-matches preview_file_name without extension', async () => {
+    const query = vi.fn(async () => ({
+      files: [
+        {
+          id: 'preview-other',
+          label: 'old-thumb.png',
+          filename: 'old-thumb.png',
+          url: 'https://r2.example/other.png',
+          key: 'pk1',
+          bucket: 'chapter-ip-preview-test',
+        },
+        {
+          id: 'preview-main',
+          label: 'preview.jpg',
+          filename: 'preview.jpg',
+          url: 'https://r2.example/preview.jpg',
+          key: 'pk2',
+          bucket: 'chapter-ip-preview-test',
+        },
+      ],
+    }))
+    const trpcClient = createTrpcClient(query)
+    const content: LoadExistingFilesContent = {
+      id: 'content-1',
+      metadata: { preview_file_name: 'preview' },
+    }
+
+    const result = await loadExistingFiles(content, trpcClient)
+
+    expect(result.previewUrl).toBe('https://r2.example/preview.jpg')
+  })
+
+  it('soft-matches files_name allow-list without extension', async () => {
+    const query = vi.fn(async () => ({
+      files: [
+        {
+          id: 'f1',
+          label: 'photo_1.jpg',
+          url: 'https://r2.example/f1',
+          key: 'k1',
+          bucket: 'chapter-ip-content-test',
+        },
+      ],
+    }))
+    const trpcClient = createTrpcClient(query)
+    const content: LoadExistingFilesContent = {
+      id: 'content-1',
+      metadata: { files_name: ['photo_1'] },
+    }
+
+    const result = await loadExistingFiles(content, trpcClient)
+
+    expect(result.files.locations.map((f) => f.name)).toEqual(['photo_1.jpg'])
   })
 
   it('returns null previewUrl when no preview bucket is present', async () => {
     const query = vi.fn(async () => ({
-      files: [{ id: 'f1', label: 'photo_1', url: 'https://r2.example/f1', key: 'k1', bucket: 'content' }],
+      files: [
+        { id: 'f1', label: 'photo_1', url: 'https://r2.example/f1', key: 'k1', bucket: 'chapter-ip-content-test' },
+      ],
     }))
     const trpcClient = createTrpcClient(query)
 
@@ -126,7 +246,9 @@ describe('loadExistingFiles', () => {
 
   it('returns independent object copies in files and allFiles', async () => {
     const query = vi.fn(async () => ({
-      files: [{ id: 'f1', label: 'photo_1', url: 'https://r2.example/f1', key: 'k1', bucket: 'content' }],
+      files: [
+        { id: 'f1', label: 'photo_1', url: 'https://r2.example/f1', key: 'k1', bucket: 'chapter-ip-content-test' },
+      ],
     }))
     const trpcClient = createTrpcClient(query)
 
