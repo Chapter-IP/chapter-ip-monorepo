@@ -26,6 +26,7 @@ export type UploadProgressEvent = {
   progress?: number
   overallProgress: number
   phase: UploadPhase
+  pendingFiles?: { id: string; label: string }[]
 }
 
 export type OnUploadProgress = (event: UploadProgressEvent) => void
@@ -175,9 +176,9 @@ export default class UploadService {
         extension: ext,
       })
       keys.push(key)
-      await uploadFileToBucket(file, url, (progress) => reportProgress(file.name, progress))
+      await uploadFileToBucket(file, url, (progress) => reportProgress(name, progress))
       completedUnits++
-      reportFileComplete(file.name)
+      reportFileComplete(name)
 
       await registerContentFile({
         contentId,
@@ -189,22 +190,21 @@ export default class UploadService {
       })
 
       if (includePreviews && isPreviewImage(file)) {
-        const previewLabel = `${file.name} (preview)`
+        const previewId = `${name} (preview)`
         try {
           const preview = await createImagePreview(file, { withWatermark })
           await uploadPreviewFile({
             contentId,
             file: preview,
             trpcClient,
-            filename: name,
-            onProgress: (progress) => reportProgress(previewLabel, progress),
+            onProgress: (progress) => reportProgress(previewId, progress),
           })
           completedUnits++
-          reportFileComplete(previewLabel)
+          reportFileComplete(previewId)
         } catch (error) {
           console.error(`Failed to upload preview for ${file.name}`, error)
           completedUnits++
-          reportFileComplete(previewLabel)
+          reportFileComplete(previewId)
         }
       }
     }

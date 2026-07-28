@@ -16,7 +16,7 @@
   import { createUploadSessionController, startUploadingPhase, type UploadSession } from '$lib/upload/upload-session'
   import TransactionService from '$lib/upload/transaction.service'
   import BlockchainService from '$lib/upload/blockchain.service'
-  import UploadProgressPanel from '$lib/components/UploadProgressPanel.svelte'
+  import UploadProgressModal from '$lib/components/UploadProgressModal.svelte'
   import { notify, ToastType, ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
   import { modals, type ModalProps } from 'svelte-modals'
   import { onDestroy, onMount } from 'svelte'
@@ -140,7 +140,7 @@
     const contentId = data.id
     const { keptFileIds, metadata, uploads } = buildLikenessPayload()
 
-    startUploadingPhase(uploadSession.setProgress, uploads.length)
+    startUploadingPhase(uploadSession.setProgress, uploads, false)
 
     const { keys } = await uploadService.updateContentFiles({
       contentId,
@@ -256,6 +256,7 @@
         const tokenId = data.tokenId ?? (await activateContent(uploadSession, savedContent))
 
         await saveTokenMetadata(uploadSession, { ...savedContent, tokenId })
+        uploadSession.end()
         openSuccessModal()
       },
       'Error updating listing:',
@@ -278,10 +279,8 @@
       onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined}
     />
   {/if}
-
-  {#if $likenessStore.ui.uploadProgress}
-    <div class="mt-6">
-      <UploadProgressPanel progress={$likenessStore.ui.uploadProgress} />
-    </div>
-  {/if}
 </div>
+
+{#if $likenessStore.ui.uploadProgress}
+  <UploadProgressModal progress={$likenessStore.ui.uploadProgress} />
+{/if}
