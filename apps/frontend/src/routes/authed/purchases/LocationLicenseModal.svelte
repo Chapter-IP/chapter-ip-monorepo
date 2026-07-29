@@ -1,5 +1,6 @@
 <script lang="ts">
   import CompatiblePlatforms from '$lib/content/CompatiblePlatforms.svelte'
+  import FileImg from '$lib/assets/file_img.svg'
   import type { LocationDetails } from '@repo/content-types/location'
 
   let {
@@ -77,6 +78,22 @@
           <p class="mt-2">Not specified.</p>
         {/if}
       </section>
+
+      {#if location.files.length > 0}
+        <section aria-label="Files">
+          <h3 class="text-base leading-5 font-semibold text-dark">Files</h3>
+          <div class="mt-3 flex flex-wrap gap-2">
+            {#each location.files as file (file)}
+              <div
+                class="rounded bg-[#eae6e2] flex justify-center items-center text-[12px] text-[#71707a] py-2 px-3 gap-2"
+              >
+                <img src={FileImg} alt="fileImg" class="h-4" />
+                <span class="truncate max-w-40">{file}</span>
+              </div>
+            {/each}
+          </div>
+        </section>
+      {/if}
 
       {#if location.tags.length > 0}
         <section aria-label="Tags">

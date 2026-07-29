@@ -1,4 +1,5 @@
 <script lang="ts">
+  import FileImg from '$lib/assets/file_img.svg'
   import type { LikenessDetails } from '@repo/content-types/likeness'
 
   let {
@@ -49,8 +50,24 @@
     </div>
 
     <div class="mt-6 grid gap-6 text-sm leading-6 text-[#45424d]">
+      {#if likeness.files.length > 0}
+        <section aria-label="Files">
+          <h3 class="text-base leading-5 font-semibold text-dark">Files</h3>
+          <div class="mt-3 flex flex-wrap gap-2">
+            {#each likeness.files as file (file)}
+              <div
+                class="rounded bg-[#eae6e2] flex justify-center items-center text-[12px] text-[#71707a] py-2 px-3 gap-2"
+              >
+                <img src={FileImg} alt="fileImg" class="h-4" />
+                <span class="truncate max-w-40">{file}</span>
+              </div>
+            {/each}
+          </div>
+        </section>
+      {/if}
+
       <section aria-label="Biography">
-        <h3 class="text-base leading-5 font-semibold text-[#1a1a2e]">Bio</h3>
+        <h3 class="text-base leading-5 font-semibold text-dark">Bio</h3>
         <p class="mt-2 whitespace-pre-line">{likeness.bio || 'Not specified.'}</p>
       </section>
 

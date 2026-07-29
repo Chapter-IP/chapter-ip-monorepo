@@ -440,7 +440,7 @@
             {#each existingFiles as file, i (`existing-${file.id}`)}
               <div class="relative">
                 <div
-                  class="h-20 w-20 rounded bg-[#eae6e2] flex flex-col items-center justify-center text-[10px] text-[#71707a] leading-tight text-center p-1"
+                  class="h-20 w-20 rounded bg-[#eae6e2] flex flex-col items-center justify-center text-[10px] text-[#71707a] leading-tight text-center py-1 px-2"
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="mb-1 shrink-0">
                     <path
@@ -471,7 +471,7 @@
             {#each selectedFiles as file, i (file.name + i)}
               <div class="relative">
                 <div
-                  class="h-20 w-20 rounded bg-[#eae6e2] flex flex-col items-center justify-center text-[10px] text-[#71707a] leading-tight text-center p-1"
+                  class="h-20 w-20 rounded bg-[#eae6e2] flex flex-col items-center justify-center text-[10px] text-[#71707a] leading-tight text-center py-1 px-2"
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="mb-1 shrink-0">
                     <path

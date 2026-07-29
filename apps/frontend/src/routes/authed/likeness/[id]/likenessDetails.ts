@@ -142,6 +142,8 @@ export function normalizeLikeness(content: LikenessContentInput, contractAddress
   const media = getMedia(content, name, contractAddress)
   const images = getImages(content, name, contractAddress)
 
+  const likenessFiles: string[] = Object.values(content.metadata?.uploadsByBucket ?? {}).flat()
+
   return {
     id: content.id,
     contentTokenId: trimString(content.tokenId),
@@ -163,5 +165,6 @@ export function normalizeLikeness(content: LikenessContentInput, contractAddress
     approveFinalUse: licensing?.approveFinalUse === 'yes',
     images,
     media,
+    files: likenessFiles,
   }
 }

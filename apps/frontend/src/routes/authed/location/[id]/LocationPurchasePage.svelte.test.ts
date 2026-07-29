@@ -32,6 +32,7 @@ const locationDetails: LocationPurchase = {
     src: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
     alt: 'Citi Field',
   },
+  files: ['location_1.mov', 'location_2.mp4'],
 }
 
 beforeEach(() => {
