@@ -5,6 +5,7 @@
   import type { LocationDetails } from './types'
   import type { LocationItem } from '../location'
   import NextPage from '$lib/assets/next.svg'
+  import FileImg from '$lib/assets/file_img.svg'
 
   let {
     locationDetails,
@@ -19,7 +20,6 @@
   const addressFields = (() => {
     const address = locationDetails.address
     if (!address) return []
-
     return [
       { label: 'Street', value: address.street },
       { label: 'Apt / Suite', value: address.apt },
@@ -104,6 +104,22 @@
             </li>
           {/each}
         </ul>
+      {/if}
+
+      {#if locationDetails.files.length > 0}
+        <section aria-label="Location files" class="mt-5">
+          <h2 class="font-sans text-base leading-5.25 font-semibold text-[#202225]">Files</h2>
+          <div class="mt-3 flex flex-wrap gap-2">
+            {#each locationDetails.files as file (file)}
+              <div
+                class="rounded bg-[#eae6e2] flex justify-center items-center text-[12px] text-[#71707a] py-2 px-3 gap-2"
+              >
+                <img src={FileImg} alt="fileImg" class="h-4" />
+                <span class="truncate max-w-32">{file}</span>
+              </div>
+            {/each}
+          </div>
+        </section>
       {/if}
 
       <CompatiblePlatforms

@@ -13,11 +13,12 @@ export function normalizeLocation(
 ): LocationDetails | null {
   const metadata = content.metadata
   if (metadata?.type !== 'location') return null
-
   const name = trimString(metadata.name) || 'Unnamed location'
   const fileName = trimString(metadata.preview_file_name)
   const legacyTags = (metadata as Record<string, unknown>).tags
   const rawTags = content.tags ?? (Array.isArray(legacyTags) ? (legacyTags as string[]) : [])
+
+  const locationFiles: string[] = metadata.files_name ?? []
 
   return {
     id: content.id,
@@ -36,5 +37,6 @@ export function normalizeLocation(
       src: fileName ? getPreviewUrl(contractAddress, content.id, fileName) : DEFAULT_IMAGE_URL,
       alt: name,
     },
+    files: locationFiles,
   }
 }

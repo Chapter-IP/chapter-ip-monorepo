@@ -65,6 +65,7 @@ export type LocationDetails = {
   authorName: string
   licenses: LocationLicense[]
   image: LocationImage
+  files: string[]
 }
 
 export type LocationPurchase = LocationDetails

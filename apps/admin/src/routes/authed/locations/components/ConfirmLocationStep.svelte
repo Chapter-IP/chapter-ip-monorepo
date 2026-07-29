@@ -145,7 +145,7 @@
 
       <!-- Address -->
       {#if $locationStore.address.street || $locationStore.address.apt || $locationStore.address.city || $locationStore.address.state || $locationStore.address.zip}
-        <div class="flex-1 space-y-3 pt-4 md:pt-0">
+        <div class="flex-1 space-y-3 pt-4 yf md:pt-0">
           <h3 class="text-base font-semibold text-dark font-heading">Address</h3>
           <div class="space-y-2 text-sm text-[#71707a]">
             {#if $locationStore.address.street}
