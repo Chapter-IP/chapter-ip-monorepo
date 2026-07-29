@@ -5,6 +5,8 @@ node_modules
 .pnp
 .pnp.js
 .pnpm-store/
+.smithers/
+smithers*
 
 # Local env files
 .env

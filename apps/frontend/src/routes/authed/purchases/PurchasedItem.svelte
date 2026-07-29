@@ -33,10 +33,11 @@
     phase: 'preparing',
     completedFiles: 0,
     totalFiles: 0,
-    currentFileLabel: '',
+    files: [],
   })
   let isModalOpen = $state(false)
   let isFallbackModalOpen = $state(false)
+  let isSuccessModalOpen = $state(false)
   let fallbackFiles: DownloadableContentFile[] = $state([])
   let errorMessage = $state('')
 
@@ -107,8 +108,34 @@
       phase: 'preparing',
       completedFiles: 0,
       totalFiles: 0,
-      currentFileLabel: '',
+      files: [],
     }
+  }
+
+  function trackDownloadBody(
+    body: ReadableStream<Uint8Array>,
+    totalBytes: number | null,
+    onPercent: (percent: number) => void,
+  ): ReadableStream<Uint8Array> {
+    const reader = body.getReader()
+    let loaded = 0
+    onPercent(0)
+
+    return new ReadableStream({
+      async pull(controller) {
+        const { done, value } = await reader.read()
+        if (done) {
+          onPercent(100)
+          controller.close()
+          return
+        }
+        if (totalBytes && totalBytes > 0) {
+          loaded += value.byteLength
+          onPercent(Math.min(100, Math.round((loaded / totalBytes) * 100)))
+        }
+        controller.enqueue(value)
+      },
+    })
   }
 
   async function* fileStreamGenerator(
@@ -116,38 +143,54 @@
     tracker: { failed: number },
     onProgress: (update: Partial<DownloadProgressState>) => void,
   ) {
-    onProgress({ phase: 'downloading', completedFiles: 0, totalFiles: files.length, currentFileLabel: '' })
+    const fileProgress = files.map((file) => ({ label: file.label, percent: 0 }))
+    onProgress({
+      phase: 'downloading',
+      completedFiles: 0,
+      totalFiles: files.length,
+      files: fileProgress,
+    })
 
     let completedFiles = 0
-    for (const file of files) {
-      onProgress({ currentFileLabel: file.label })
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
       try {
         const response = await fetch(file.url)
         if (!response.ok) throw new Error(`HTTP ${response.status}`)
         if (!response.body) throw new Error('No response body')
 
+        const contentLength = response.headers.get('Content-Length')
+        const totalBytes = contentLength ? Number.parseInt(contentLength, 10) : 0
+        const hasLength = Number.isFinite(totalBytes) && totalBytes > 0
+        const reportFilePercent = (percent: number) => {
+          fileProgress[i] = { ...fileProgress[i], percent }
+          onProgress({ files: [...fileProgress] })
+        }
+        const body = trackDownloadBody(response.body, hasLength ? totalBytes : null, reportFilePercent)
+
         const safeLabel = file.label.replace(/[/\\]/g, '_')
         if (safeLabel.includes('.')) {
           yield {
             name: `${safeLabel}`,
-            input: response.body,
+            input: body,
           }
         } else {
           yield {
             name: `${safeLabel}.${mime.getExtension(file.mimetype) ?? 'bin'}`,
-            input: response.body,
+            input: body,
           }
         }
       } catch (error) {
         tracker.failed++
         console.error(`Skipping ${file.label}:`, error)
       } finally {
+        fileProgress[i] = { ...fileProgress[i], percent: 100 }
         completedFiles++
-        onProgress({ completedFiles, currentFileLabel: '' })
+        onProgress({ completedFiles, files: [...fileProgress] })
       }
     }
 
-    onProgress({ phase: 'zipping', completedFiles: files.length, currentFileLabel: '' })
+    onProgress({ phase: 'zipping', completedFiles: files.length })
   }
 
   async function downloadAllNativeStreaming(files: DownloadableContentFile[]): Promise<{
@@ -198,6 +241,7 @@
     errorMessage = ''
     isDownloadBusy = true
     let files: DownloadableContentFile[] = []
+    let downloadSucceeded = false
     try {
       if (!trpcClient) throw new Error('Missing TRPC client')
 
@@ -220,6 +264,9 @@
       if (failed > 0) {
         fallbackFiles = files
         isFallbackModalOpen = true
+      } else {
+        downloadSucceeded = true
+        isSuccessModalOpen = true
       }
     } catch (error) {
       console.error('Error downloading content files:', error)
@@ -231,8 +278,10 @@
         errorMessage = 'Download is unavailable right now.'
       }
     } finally {
-      isDownloading = false
-      isDownloadBusy = false
+      if (!downloadSucceeded) {
+        isDownloading = false
+        isDownloadBusy = false
+      }
     }
   }
 
@@ -245,9 +294,16 @@
     fallbackFiles = []
   }
 
+  function closeSuccessModal() {
+    isSuccessModalOpen = false
+    isDownloading = false
+    isDownloadBusy = false
+  }
+
   function handleKeydown(event: KeyboardEvent) {
     if (isModalOpen && event.key === 'Escape') closeModal()
     if (isFallbackModalOpen && event.key === 'Escape') closeFallbackModal()
+    if (isSuccessModalOpen && event.key === 'Escape') closeSuccessModal()
   }
 </script>
 
@@ -314,4 +370,49 @@
 
 {#if isDownloading}
   <DownloadProgressModal progress={downloadProgress} />
+{/if}
+
+{#if isSuccessModalOpen}
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4"
+    role="presentation"
+    onclick={(event) => {
+      if (event.target === event.currentTarget) closeSuccessModal()
+    }}
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Download complete"
+      tabindex="-1"
+      class="w-full max-w-lg bg-[#f5f1ec] p-5 shadow-2xl sm:p-8 select-none cursor-default"
+    >
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs leading-4 font-semibold tracking-[0.14em] text-primary uppercase">Download complete</p>
+          <h2 class="mt-1 font-heading text-2xl leading-8 font-semibold text-[#1a1a2e]">
+            {item.downloadName}
+          </h2>
+          <p class="mt-3 text-sm leading-5 text-[#6d6a73]">
+            Your files have been downloaded and saved as a ZIP archive.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btn btn-ghost min-h-10 rounded-none px-3 text-xl leading-none text-[#1a1a2e]"
+          aria-label="Close download confirmation"
+          onclick={closeSuccessModal}
+        >
+          X
+        </button>
+      </div>
+      <button
+        type="button"
+        class="btn mt-6 min-h-11 w-full rounded-none border-primary bg-primary px-5 text-sm font-semibold text-white hover:border-[#5427dc] hover:bg-[#5427dc]"
+        onclick={closeSuccessModal}
+      >
+        Done
+      </button>
+    </div>
+  </div>
 {/if}
