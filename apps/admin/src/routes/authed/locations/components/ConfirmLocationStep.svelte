@@ -98,43 +98,89 @@
       </div>
     {/if}
 
-    <!-- Main Image -->
-    <div class="mb-8">
-      {#if mainPhoto}
-        <div class="relative inline-block">
-          <img
-            src={mainPhoto.src}
-            alt={mainPhoto.name}
-            class="w-full max-w-md rounded-lg object-cover"
-            style="max-height: 216px;"
-          />
-        </div>
-      {:else}
-        <div
-          class="w-full max-w-md h-48 bg-[#eae6e2] rounded-lg flex items-center justify-center text-sm text-[#747474]"
-        >
-          No image uploaded
+    <!-- Main Image + Address -->
+    <div class="flex flex-col md:flex-row md:gap-16 gap:8 mb-8">
+      <div class="shrink-0">
+        {#if mainPhoto}
+          <div class="relative inline-block">
+            <img
+              src={mainPhoto.src}
+              alt={mainPhoto.name}
+              class="w-full max-w-md rounded-lg object-cover"
+              style="max-height: 216px;"
+            />
+          </div>
+        {:else}
+          <div
+            class="w-full max-w-md h-48 bg-[#eae6e2] rounded-lg flex items-center justify-center text-sm text-[#747474]"
+          >
+            No image uploaded
+          </div>
+        {/if}
+
+        <!-- Uploaded Location Files -->
+        {#if $locationStore.existingFiles.locations.length > 0 || $locationStore.files.locations.length > 0}
+          <div class="mt-4">
+            <div class="flex flex-wrap gap-2">
+              {#each $locationStore.existingFiles.locations as file (file.id)}
+                <div
+                  class="rounded bg-[#eae6e2] flex justify-center items-center text-[12px] text-[#71707a] py-2 px-3 gap-2"
+                >
+                  <img src={FileImg} alt="fileImg" class="h-4" />
+                  <span class="truncate w-full max-w-24">{file.name}</span>
+                </div>
+              {/each}
+              {#each $locationStore.files.locations as file (file.name)}
+                <div
+                  class="rounded bg-[#eae6e2] flex justify-center items-center text-[12px] text-[#71707a] py-2 px-3 gap-2"
+                >
+                  <img src={FileImg} alt="fileImg" class="h-4" />
+                  <span class="truncate w-full max-w-24">{file.name}</span>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
+      </div>
+
+      <!-- Address -->
+      {#if $locationStore.address.street || $locationStore.address.apt || $locationStore.address.city || $locationStore.address.state || $locationStore.address.zip}
+        <div class="flex-1 space-y-3 pt-4 md:pt-0">
+          <h3 class="text-base font-semibold text-dark font-heading">Address</h3>
+          <div class="space-y-2 text-sm text-[#71707a]">
+            {#if $locationStore.address.street}
+              <div class="flex gap-2">
+                <span class="font-medium text-dark shrink-0">Street:</span>
+                <span>{$locationStore.address.street}</span>
+              </div>
+            {/if}
+            {#if $locationStore.address.apt}
+              <div class="flex gap-2">
+                <span class="font-medium text-dark shrink-0">Apt:</span>
+                <span>{$locationStore.address.apt}</span>
+              </div>
+            {/if}
+            {#if $locationStore.address.city}
+              <div class="flex gap-2">
+                <span class="font-medium text-dark shrink-0">City:</span>
+                <span>{$locationStore.address.city}</span>
+              </div>
+            {/if}
+            {#if $locationStore.address.state}
+              <div class="flex gap-2">
+                <span class="font-medium text-dark shrink-0">State:</span>
+                <span>{$locationStore.address.state}</span>
+              </div>
+            {/if}
+            {#if $locationStore.address.zip}
+              <div class="flex gap-2">
+                <span class="font-medium text-dark shrink-0">Zip:</span>
+                <span>{$locationStore.address.zip}</span>
+              </div>
+            {/if}
+          </div>
         </div>
       {/if}
-    </div>
-
-    <!-- Uploaded Location Files -->
-    <div class="mb-8">
-      <h2 class="text-lg font-semibold text-dark font-heading mb-4">Location files</h2>
-      <div class="flex flex-wrap gap-2">
-        {#each $locationStore.existingFiles.locations as file (file.id)}
-          <div class="rounded bg-[#eae6e2] flex justify-center items-center text-[12px] text-[#71707a] py-2 px-3 gap-2">
-            <img src={FileImg} alt="fileImg" class="h-4" />
-            <span class="truncate w-full">{file.name}</span>
-          </div>
-        {/each}
-        {#each $locationStore.files.locations as file (file.name)}
-          <div class="rounded bg-[#eae6e2] flex justify-center items-center text-[12px] text-[#71707a] py-2 px-3 gap-2">
-            <img src={FileImg} alt="fileImg" class="h-4" />
-            <span class="truncate w-full">{file.name}</span>
-          </div>
-        {/each}
-      </div>
     </div>
 
     <!-- Licensing Types -->
