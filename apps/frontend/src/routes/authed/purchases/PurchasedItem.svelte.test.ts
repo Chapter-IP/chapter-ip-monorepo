@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { render } from 'vitest-browser-svelte'
 import { tick } from 'svelte'
+import { showSaveFilePicker } from 'native-file-system-adapter'
 import PurchasedItem from './PurchasedItem.svelte'
 import type { PurchasedItemView, PurchasedContentToken } from './types'
 
@@ -13,9 +14,16 @@ vi.mock('native-file-system-adapter', () => ({
 }))
 
 vi.mock('client-zip', () => ({
-  downloadZip: vi.fn(() => ({
+  downloadZip: vi.fn((stream: AsyncIterable<unknown>) => ({
     body: {
-      pipeTo: vi.fn(async () => {}),
+      pipeTo: vi.fn(async () => {
+        for await (const _chunk of stream) {
+          // Drive the async generator so per-file progress updates run.
+        }
+        while (!allowDownloadComplete) {
+          await new Promise((resolve) => setTimeout(resolve, 25))
+        }
+      }),
     },
   })),
 }))
@@ -62,6 +70,7 @@ const likenessItem: Extract<PurchasedItemView, { type: 'likeness' }> = {
       },
     ],
     media: [],
+    files: [],
   },
 }
 
@@ -94,6 +103,7 @@ const locationItem: Extract<PurchasedItemView, { type: 'location' }> = {
       src: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
       alt: 'Citi Field',
     },
+    files: [],
   },
 }
 
@@ -120,19 +130,41 @@ const purchase: PurchasedContentToken = {
 }
 
 let queryInputs: FilesLinkInput[]
+let allowDownloadComplete = true
+let holdInFlightFetch = false
+let releaseInFlightFetch: (() => void) | null = null
+
+function createFetchResponse() {
+  return {
+    ok: true,
+    headers: {
+      get: (name: string) => (name === 'Content-Length' ? '100' : null),
+    },
+    body: new ReadableStream({
+      start(controller) {
+        controller.enqueue(new Uint8Array(50))
+        controller.enqueue(new Uint8Array(50))
+        controller.close()
+      },
+    }),
+  }
+}
 
 beforeEach(() => {
   queryInputs = []
+  allowDownloadComplete = true
+  holdInFlightFetch = false
+  releaseInFlightFetch = null
   vi.stubGlobal(
     'fetch',
-    vi.fn(async () => ({
-      ok: true,
-      body: new ReadableStream({
-        start(controller) {
-          controller.close()
-        },
-      }),
-    })),
+    vi.fn(async () => {
+      if (holdInFlightFetch) {
+        await new Promise<void>((resolve) => {
+          releaseInFlightFetch = resolve
+        })
+      }
+      return createFetchResponse()
+    }),
   )
 })
 
@@ -155,6 +187,8 @@ function getTrpcClient() {
                 url: 'https://r2.example/headshot',
                 filename: 'headshot.jpg',
                 mimetype: 'image/jpeg',
+                bucket: 'content-bucket',
+                key: 'headshot.jpg',
               },
               {
                 id: 'file-2',
@@ -162,6 +196,8 @@ function getTrpcClient() {
                 url: 'https://r2.example/voice',
                 filename: 'voice.mp3',
                 mimetype: 'audio/mpeg',
+                bucket: 'content-bucket',
+                key: 'voice.mp3',
               },
             ],
           }
@@ -228,6 +264,98 @@ test('downloads content files and starts grace for one-time licenses locally', a
   await screen.getByRole('button', { name: 'Download' }).click()
 
   expect(queryInputs).toEqual([{ contentId: 'content-1', licenseTokenId: '44' }])
+  await expect.element(screen.getByRole('dialog', { name: 'Download complete' })).toBeVisible()
+  await expect.element(screen.getByText('Your files have been downloaded and saved as a ZIP archive.')).toBeVisible()
   await expect.element(screen.getByText(/Access ends in/)).toBeVisible()
+  await screen.getByRole('button', { name: 'Done' }).click()
+  await tick()
   await expect.element(screen.getByRole('button', { name: 'Download' })).toBeEnabled()
+})
+
+test('shows per-file download progress with percent labels', async () => {
+  allowDownloadComplete = false
+  holdInFlightFetch = true
+  const screen = await render(PurchasedItem, {
+    purchase,
+    item: likenessItem,
+    trpcClient: getTrpcClient(),
+  })
+
+  await screen.getByRole('button', { name: 'Download' }).click()
+
+  await expect.element(screen.getByText('Downloading files…')).toBeVisible()
+  await expect.element(screen.getByText('Headshot')).toBeVisible()
+  expect([...document.querySelectorAll('span.tabular-nums')].some((element) => element.textContent === '0%')).toBe(true)
+
+  releaseInFlightFetch?.()
+  holdInFlightFetch = false
+  allowDownloadComplete = true
+  await expect.element(screen.getByRole('dialog', { name: 'Download complete' })).toBeVisible()
+})
+
+test('does not show success modal when save picker is cancelled', async () => {
+  vi.mocked(showSaveFilePicker).mockRejectedValueOnce(new Error('User cancelled'))
+
+  const screen = await render(PurchasedItem, {
+    purchase,
+    item: likenessItem,
+    trpcClient: getTrpcClient(),
+  })
+
+  await screen.getByRole('button', { name: 'Download' }).click()
+  await tick()
+
+  expect(document.querySelector('[aria-label="Download complete"]')).toBeNull()
+  await expect.element(screen.getByRole('button', { name: 'Download' })).toBeEnabled()
+})
+
+test('opens fallback modal instead of success when all fetches fail', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => ({
+      ok: false,
+      status: 500,
+      headers: { get: () => null },
+      body: null,
+    })),
+  )
+
+  const screen = await render(PurchasedItem, {
+    purchase,
+    item: likenessItem,
+    trpcClient: getTrpcClient(),
+  })
+
+  await screen.getByRole('button', { name: 'Download' }).click()
+  await expect.element(screen.getByRole('dialog', { name: 'Download files' })).toBeVisible()
+  expect(document.querySelector('[aria-label="Download complete"]')).toBeNull()
+  await expect.element(screen.getByRole('button', { name: 'Download', exact: true })).toBeEnabled()
+})
+
+test('opens fallback modal instead of success when some fetches fail', async () => {
+  let fetchCount = 0
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => {
+      fetchCount++
+      if (fetchCount === 1) return createFetchResponse()
+      return {
+        ok: false,
+        status: 500,
+        headers: { get: () => null },
+        body: null,
+      }
+    }),
+  )
+
+  const screen = await render(PurchasedItem, {
+    purchase,
+    item: likenessItem,
+    trpcClient: getTrpcClient(),
+  })
+
+  await screen.getByRole('button', { name: 'Download' }).click()
+  await expect.element(screen.getByRole('dialog', { name: 'Download files' })).toBeVisible()
+  expect(document.querySelector('[aria-label="Download complete"]')).toBeNull()
+  await expect.element(screen.getByRole('button', { name: 'Download', exact: true })).toBeEnabled()
 })

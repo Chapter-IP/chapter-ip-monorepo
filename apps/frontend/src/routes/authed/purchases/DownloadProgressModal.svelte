@@ -3,11 +3,16 @@
 
   export type DownloadProgressPhase = 'preparing' | 'downloading' | 'zipping'
 
+  export type DownloadFileProgress = {
+    label: string
+    percent: number
+  }
+
   export type DownloadProgressState = {
     phase: DownloadProgressPhase
     completedFiles: number
     totalFiles: number
-    currentFileLabel: string
+    files: DownloadFileProgress[]
   }
 
   let { progress }: { progress: DownloadProgressState } = $props()
@@ -26,19 +31,29 @@
   })
 
   const subtitle = $derived(phaseLabels[progress.phase])
-  const showFileProgress = $derived(progress.phase === 'downloading' && progress.totalFiles > 0)
-  const currentFileNumber = $derived(
-    Math.min(Math.max(progress.completedFiles + (progress.currentFileLabel ? 1 : 0), 1), progress.totalFiles),
+  const showFileProgress = $derived(
+    progress.phase === 'downloading' && progress.totalFiles > 0 && progress.files.length > 0,
   )
 </script>
 
 <ProgressModal {percent} {subtitle} descriptionKind="download">
   {#if showFileProgress}
-    <p class="mt-4 text-sm font-medium text-[#72717b]" aria-live="polite">
-      File {currentFileNumber} of {progress.totalFiles}
-      {#if progress.currentFileLabel}
-        <span class="block truncate">{progress.currentFileLabel}</span>
-      {/if}
-    </p>
+    <div class="mt-6 max-h-[280px] space-y-4 overflow-y-auto pr-1" aria-live="polite">
+      {#each progress.files as file, index (index)}
+        {@const filePercent = Math.min(100, Math.max(0, Math.round(file.percent)))}
+        <div>
+          <div class="h-2 w-full overflow-hidden rounded-full bg-[#ddd4cc]">
+            <div
+              class="h-full rounded-full bg-primary transition-[width] duration-150"
+              style:width="{filePercent}%"
+            ></div>
+          </div>
+          <div class="mt-1 flex items-center justify-between gap-2 text-sm font-medium text-[#72717b]">
+            <p class="truncate">{file.label}</p>
+            <span class="shrink-0 tabular-nums">{filePercent}%</span>
+          </div>
+        </div>
+      {/each}
+    </div>
   {/if}
 </ProgressModal>
