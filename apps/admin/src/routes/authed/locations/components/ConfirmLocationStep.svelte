@@ -3,6 +3,7 @@
   import { LICENSE_TYPES } from '../constants/constants'
   import { modals, type ModalProps } from 'svelte-modals'
   import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
+  import FileImg from '$lib/assets/file_img.svg'
 
   let {
     currentStep = $bindable(),
@@ -115,6 +116,25 @@
           No image uploaded
         </div>
       {/if}
+    </div>
+
+    <!-- Uploaded Location Files -->
+    <div class="mb-8">
+      <h2 class="text-lg font-semibold text-dark font-heading mb-4">Location files</h2>
+      <div class="flex flex-wrap gap-2">
+        {#each $locationStore.existingFiles.locations as file (file.id)}
+          <div class="rounded bg-[#eae6e2] flex justify-center items-center text-[12px] text-[#71707a] py-2 px-3 gap-2">
+            <img src={FileImg} alt="fileImg" class="h-4" />
+            <span class="truncate w-full">{file.name}</span>
+          </div>
+        {/each}
+        {#each $locationStore.files.locations as file (file.name)}
+          <div class="rounded bg-[#eae6e2] flex justify-center items-center text-[12px] text-[#71707a] py-2 px-3 gap-2">
+            <img src={FileImg} alt="fileImg" class="h-4" />
+            <span class="truncate w-full">{file.name}</span>
+          </div>
+        {/each}
+      </div>
     </div>
 
     <!-- Licensing Types -->
