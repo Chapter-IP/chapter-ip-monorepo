@@ -185,6 +185,7 @@ export type LikenessDetails = {
   approveFinalUse: boolean
   images: LikenessImage[]
   media: LikenessMedia[]
+  files: string[]
 }
 
 export type LikenessPurchase = LikenessDetails
