@@ -1,13 +1,18 @@
 <script lang="ts">
-  import { ProgressModal } from '@repo/ui-components'
+  import { ProgressFileList, ProgressModal } from '@repo/ui-components'
 
   export type DownloadProgressPhase = 'preparing' | 'downloading' | 'zipping'
+
+  export type DownloadFileProgress = {
+    label: string
+    percent: number
+  }
 
   export type DownloadProgressState = {
     phase: DownloadProgressPhase
     completedFiles: number
     totalFiles: number
-    currentFileLabel: string
+    files: DownloadFileProgress[]
   }
 
   let { progress }: { progress: DownloadProgressState } = $props()
@@ -26,19 +31,21 @@
   })
 
   const subtitle = $derived(phaseLabels[progress.phase])
-  const showFileProgress = $derived(progress.phase === 'downloading' && progress.totalFiles > 0)
-  const currentFileNumber = $derived(
-    Math.min(Math.max(progress.completedFiles + (progress.currentFileLabel ? 1 : 0), 1), progress.totalFiles),
+  const showFileProgress = $derived(
+    progress.phase === 'downloading' && progress.totalFiles > 0 && progress.files.length > 0,
+  )
+
+  const fileItems = $derived(
+    progress.files.map((file, index) => ({
+      id: `${index}-${file.label}`,
+      label: file.label,
+      percent: file.percent,
+    })),
   )
 </script>
 
 <ProgressModal {percent} {subtitle} descriptionKind="download">
   {#if showFileProgress}
-    <p class="mt-4 text-sm font-medium text-[#72717b]" aria-live="polite">
-      File {currentFileNumber} of {progress.totalFiles}
-      {#if progress.currentFileLabel}
-        <span class="block truncate">{progress.currentFileLabel}</span>
-      {/if}
-    </p>
+    <ProgressFileList files={fileItems} />
   {/if}
 </ProgressModal>

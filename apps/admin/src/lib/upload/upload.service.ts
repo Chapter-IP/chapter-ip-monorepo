@@ -196,6 +196,7 @@ export default class UploadService {
           await uploadPreviewFile({
             contentId,
             file: preview,
+            filename: name,
             trpcClient,
             onProgress: (progress) => reportProgress(previewId, progress),
           })
