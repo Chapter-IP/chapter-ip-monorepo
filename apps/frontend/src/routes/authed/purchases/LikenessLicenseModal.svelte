@@ -68,17 +68,17 @@
 
       <section aria-label="Biography">
         <h3 class="text-base leading-5 font-semibold text-dark">Bio</h3>
-        <p class="mt-2 whitespace-pre-line">{likeness.bio || 'Not specified.'}</p>
+        <p class="mt-2 whitespace-pre-line break-all">{likeness.bio || 'Not specified.'}</p>
       </section>
 
       <section aria-label="Licenses">
-        <h3 class="text-base leading-5 font-semibold text-[#1a1a2e]">Licenses</h3>
+        <h3 class="text-base leading-5 font-semibold text-dark">Licenses</h3>
         {#if likeness.licenses.length > 0}
           <div class="mt-3 grid gap-3">
             {#each likeness.licenses as license (license.id)}
               <div class="border border-[#1a1a2e1a] bg-white p-4">
                 <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-                  <h4 class="font-semibold text-[#1a1a2e]">{license.name}</h4>
+                  <h4 class="font-semibold text-dark">{license.name}</h4>
                   <p class="font-semibold text-primary">
                     ${license.price}
                   </p>

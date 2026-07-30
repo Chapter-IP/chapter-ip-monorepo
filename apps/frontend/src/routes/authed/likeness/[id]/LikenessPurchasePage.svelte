@@ -37,7 +37,7 @@
 >
   <header class="max-w-237.5">
     <h1 class="font-heading text-2xl leading-7.25 font-semibold text-dark">{likenessDetails.name}</h1>
-    <p class="mt-2.75 whitespace-pre-line text-base leading-7 text-[#72717b] wrap-break-word">
+    <p class="mt-2.75 whitespace-pre-line text-base leading-7 text-[#72717b] break-all">
       {likenessDetails.bio || 'No biography provided.'}
     </p>
   </header>

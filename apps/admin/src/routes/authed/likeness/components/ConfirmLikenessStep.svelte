@@ -132,7 +132,7 @@
         {#if mainPhoto}
           <div class="flex-1 max-w-100">
             <div class="rounded-xl overflow-hidden mb-2.5">
-              <img src={mainPhoto.src} alt={mainPhoto.name} class="w-full object-cover" style="height: 340px;" />
+              <img src={mainPhoto.src} alt={mainPhoto.name} class="w-full object-contain" style="height: 340px;" />
             </div>
 
             {#if thumbsToShow.length > 0}
@@ -142,7 +142,7 @@
               >
                 {#each thumbsToShow as file, i (file.name + i)}
                   <div class="rounded-lg overflow-hidden aspect-square">
-                    <img src={file.src} alt={file.name} class="w-full h-full max-h-1/2 object-cover" />
+                    <img src={file.src} alt={file.name} class="w-full h-full max-h-22.5 object-contain" />
                   </div>
                 {/each}
 
@@ -164,7 +164,7 @@
           <!-- Bio -->
           <div>
             <h2 class="text-base font-semibold text-[#202225] mb-1.5">Bio</h2>
-            <p class="text-base text-[#72717b] leading-relaxed wrap-break-word">
+            <p class="whitespace-pre-line break-all text-base text-[#72717b] leading-relaxed">
               {$likenessStore.profile.bio || 'N/A'}
             </p>
           </div>

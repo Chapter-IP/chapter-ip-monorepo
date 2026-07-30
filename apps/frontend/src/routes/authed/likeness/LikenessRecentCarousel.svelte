@@ -79,7 +79,9 @@
           <div class="min-w-0 py-1">
             <h2 class="truncate text-sm font-semibold text-left text-[#202225]">{item.name || 'Unnamed likeness'}</h2>
             {#if item.bio}
-              <p class="mt-1 line-clamp-2 text-xs font-medium text-[#707070]">{item.bio}</p>
+              <p class="mt-1 line-clamp-2 whitespace-pre-line break-all text-xs font-medium text-[#707070]">
+                {item.bio}
+              </p>
             {/if}
           </div>
         </a>
