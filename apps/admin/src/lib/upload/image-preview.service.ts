@@ -25,6 +25,23 @@ const returnOriginalAsPreview = (file: File): File => {
   })
 }
 
+const centeredFullWidthWatermark = (alpha = 0.35, paddingPercent = 0.05) => {
+  return (target: HTMLCanvasElement, watermarkCanvas: HTMLCanvasElement) => {
+    const ctx = target.getContext('2d')!
+    const padding = target.width * paddingPercent
+    const availableWidth = target.width - padding * 2
+    const scale = availableWidth / watermarkCanvas.width
+    const scaledWidth = availableWidth
+    const scaledHeight = watermarkCanvas.height * scale
+    const x = padding
+    const y = (target.height - scaledHeight) / 2
+    ctx.globalAlpha = alpha
+    ctx.drawImage(watermarkCanvas, x, y, scaledWidth, scaledHeight)
+    ctx.globalAlpha = 1
+    return target
+  }
+}
+
 export const createImagePreview = async (file: File, options: { withWatermark?: boolean } = {}): Promise<File> => {
   if (!isCompressibleImage(file)) {
     return returnOriginalAsPreview(file)
@@ -50,7 +67,7 @@ export const createImagePreview = async (file: File, options: { withWatermark?: 
     const blob = await watermark([compressedFile, watermarkUrl], {
       type: outputMimetype,
       encoderOptions: 0.5,
-    }).blob(watermark.image.center(0.35))
+    }).blob(centeredFullWidthWatermark(0.35, 0.05))
 
     return new File([blob], file.name, {
       type: outputMimetype,
