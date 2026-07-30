@@ -3,6 +3,7 @@
   import Cross from '$lib/assets/Cross.svelte'
   import { likenessStore } from '../stores/likeness-store'
   import { LICENSE_TYPES, PERMITTED_USES } from '../constants/constants'
+  import { ETHNICITY_OPTIONS } from '@repo/content-types/likeness'
   import { modals, type ModalProps } from 'svelte-modals'
   import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
 
@@ -57,6 +58,11 @@
     LICENSE_TYPES.filter((license) => $likenessStore.licensing.licenseTypes[license.id]),
   )
   const enabledPermittedUses = $derived(PERMITTED_USES.filter((use) => $likenessStore.licensing.permittedUses[use.id]))
+
+  const ethnicityLabel = $derived(
+    ETHNICITY_OPTIONS.find((o) => o.value === $likenessStore.profile.attributes.ethnicity)?.label ??
+      $likenessStore.profile.attributes.ethnicity,
+  )
 
   const lbsToKg = () => +(($likenessStore.profile.attributes.weight ?? 0) * 0.453592).toFixed(1)
 
@@ -170,7 +176,7 @@
               <tbody>
                 <tr>
                   <td class="py-1 font-semibold w-1/5">Ethnicity:</td>
-                  <td class="py-1">{$likenessStore.profile.attributes.ethnicity || 'N/A'}</td>
+                  <td class="py-1">{ethnicityLabel || 'N/A'}</td>
                 </tr>
                 <tr>
                   <td class="py-1 font-semibold">Height:</td>
