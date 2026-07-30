@@ -75,7 +75,12 @@ export class EvmListenerService implements OnModuleInit, OnModuleDestroy {
 
       this.contracts = contractsToListen.map(({ address, abi }) => {
         const contract = new Contract(address, abi, provider)
-        void contract.on('*', (...args: unknown[]) => void this.handleEvent(args))
+        contract
+          .on('*', (...args: unknown[]) => void this.handleEvent(args))
+          .catch((error: unknown) => {
+            this.logger.error(`Subscription to ${address} via ${url} failed: ${this.formatError(error)}`)
+            this.handleSubscriptionFailure(provider, `unsupported subscription on ${url}`)
+          })
         return contract
       })
 
@@ -134,6 +139,15 @@ export class EvmListenerService implements OnModuleInit, OnModuleDestroy {
       return
     }
 
+    void this.recover(reason)
+  }
+
+  private handleSubscriptionFailure(provider: WebSocketProvider, reason: string) {
+    if (this.isStopped || this.reconnectTimer || this.provider !== provider) {
+      return
+    }
+
+    this.logger.warn(`Falling back to next provider due to: ${reason}`)
     void this.recover(reason)
   }
 
