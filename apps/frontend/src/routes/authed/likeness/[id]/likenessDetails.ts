@@ -1,6 +1,6 @@
 import { formatLabel, getLicenses, trimString } from '$lib/content/licensing'
 import { getPreviewUrl } from '../likeness'
-import { LICENSE_TYPE_OPTIONS, PERMITTED_USE_OPTIONS } from '@repo/content-types/likeness'
+import { LICENSE_TYPE_OPTIONS, PERMITTED_USE_OPTIONS, ETHNICITY_OPTIONS } from '@repo/content-types/likeness'
 import type {
   LikenessAffiliation,
   LikenessContent,
@@ -151,7 +151,10 @@ export function normalizeLikeness(content: LikenessContentInput, contractAddress
     stageName: trimString(profile?.stageName),
     bio: trimString(profile?.bio),
     attributes: [
-      { label: 'Ethnicity', value: trimString(attributes?.ethnicity) },
+      {
+        label: 'Ethnicity',
+        value: ETHNICITY_OPTIONS.find((o) => o.value === attributes?.ethnicity)?.label ?? attributes?.ethnicity,
+      },
       { label: 'Height', value: formatHeight(attributes) },
       { label: 'Weight', value: formatWeight(attributes?.weight) },
       { label: 'Eye color', value: trimString(attributes?.eyeColor) },

@@ -23,8 +23,7 @@
     <select
       id="ethnicity"
       bind:value={$likenessStore.profile.attributes.ethnicity}
-      class="select w-full max-w-67.5 h-11.75 bg-white rounded-sm border border-[#ddd4cc] p-3.75
-       focus:border-primary focus:outline-none text-sm font-medium text-left text-[#71707a]"
+      class="select w-full max-w-[320px] h-11.75 bg-white rounded-sm border border-[#ddd4cc] p-3.75 focus:outline-none text-sm font-medium text-left text-[#71707a]"
     >
       <option value="" disabled>Select one</option>
 
@@ -93,8 +92,7 @@
       <select
         id="eyeColor"
         bind:value={$likenessStore.profile.attributes.eyeColor}
-        class="select w-full max-w-67.5 h-11.75 bg-white rounded-sm border border-[#ddd4cc] p-3.75
-       focus:border-primary focus:outline-none text-sm font-medium text-left text-[#71707a]"
+        class="select w-full max-w-[320px] h-11.75 bg-white rounded-sm border border-[#ddd4cc] p-3.75 focus:outline-none text-sm font-medium text-left text-[#71707a]"
       >
         <option value="" disabled>Select one</option>
         {#each EYE_COLOR_OPTIONS as opt (opt.value)}
@@ -107,8 +105,7 @@
       <select
         id="hairColor"
         bind:value={$likenessStore.profile.attributes.hairColor}
-        class="select w-full max-w-67.5 h-11.75 bg-white rounded-sm border border-[#ddd4cc] p-3.75
-       focus:border-primary focus:outline-none text-sm font-medium text-left text-[#71707a]"
+        class="select w-full max-w-[320px] h-11.75 bg-white rounded-sm border border-[#ddd4cc] p-3.75 focus:outline-none text-sm font-medium text-left text-[#71707a]"
       >
         <option value="" disabled>Select one</option>
         {#each HAIR_COLOR_OPTIONS as opt (opt.value)}

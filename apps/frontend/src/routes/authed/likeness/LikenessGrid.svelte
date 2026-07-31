@@ -22,7 +22,9 @@
         </div>
         <h3 class="mt-3 truncate text-base font-semibold text-dark">{item.name || 'Unnamed likeness'}</h3>
         {#if item.bio}
-          <p class="mt-1 line-clamp-2 text-sm font-medium leading-4.5 text-[#747474]">{item.bio}</p>
+          <p class="mt-1 line-clamp-2 whitespace-pre-line break-all text-sm font-medium leading-4.5 text-[#747474]">
+            {item.bio}
+          </p>
         {/if}
       </a>
     {/each}

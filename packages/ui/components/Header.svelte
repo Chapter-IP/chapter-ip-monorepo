@@ -10,6 +10,7 @@
     logoHref = '/',
     showCreateButton = false,
     pathname = '/',
+    stackOnMobile = false,
   } = $props<{
     authStore: any
     children?: () => any
@@ -17,6 +18,7 @@
     logoHref?: string
     showCreateButton?: boolean
     pathname?: string
+    stackOnMobile?: boolean
     notifications?: any[]
   }>()
   const { state: authState } = $derived(authStore)
@@ -54,7 +56,9 @@
 <header
   bind:this={headerRef}
   style="box-shadow: 0 3px 6px rgba(26,26,46,0.05)"
-  class="mx-auto w-full flex items-center justify-between md:px-10 px-4 h-[60px] border-b border-[#eef2f6] bg-[#f8f5f1] sticky top-0 z-50 text-black"
+  class="mx-auto w-full flex items-center justify-between md:px-10 px-4 {stackOnMobile
+    ? 'lg:h-[60px]'
+    : 'h-[60px]'} border-b border-[#eef2f6] bg-[#f8f5f1] sticky top-0 z-50 text-black"
 >
   <div class="w-full flex items-center gap-8">
     <a href={logoHref} class="flex-shrink-0">

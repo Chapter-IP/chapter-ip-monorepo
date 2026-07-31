@@ -3,6 +3,7 @@
   import Cross from '$lib/assets/Cross.svelte'
   import { likenessStore } from '../stores/likeness-store'
   import { LICENSE_TYPES, PERMITTED_USES } from '../constants/constants'
+  import { ETHNICITY_OPTIONS } from '@repo/content-types/likeness'
   import { modals, type ModalProps } from 'svelte-modals'
   import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
 
@@ -16,47 +17,54 @@
     onSaveDraft?: () => Promise<void>
   } = $props()
 
-  type PreviewItem = { src: string; name: string }
+  type PreviewItem = { src: string; name: string; type: 'image' | 'audio' | 'video' }
 
   const allPreviews = $derived.by(() => {
     const items: PreviewItem[] = []
 
-    const addExisting = (files: typeof $likenessStore.existingFiles.headshots) => {
+    const addExisting = (files: typeof $likenessStore.existingFiles.headshots, type: PreviewItem['type']) => {
       for (const file of files) {
-        items.push({ src: file.url, name: file.name })
+        items.push({ src: file.url, name: file.name, type })
       }
     }
 
-    const addLocal = (files: File[]) => {
+    const addLocal = (files: File[], type: PreviewItem['type']) => {
       for (const file of files) {
-        items.push({ src: URL.createObjectURL(file), name: file.name })
+        items.push({ src: URL.createObjectURL(file), name: file.name, type })
       }
     }
 
-    addLocal($likenessStore.files.headshots)
-    addExisting($likenessStore.existingFiles.headshots)
+    addLocal($likenessStore.files.headshots, 'image')
+    addExisting($likenessStore.existingFiles.headshots, 'image')
 
-    addLocal($likenessStore.files.bodyShots)
-    addExisting($likenessStore.existingFiles.bodyShots)
+    addLocal($likenessStore.files.bodyShots, 'image')
+    addExisting($likenessStore.existingFiles.bodyShots, 'image')
 
-    addLocal($likenessStore.files.voiceSamples)
-    addExisting($likenessStore.existingFiles.voiceSamples)
+    addLocal($likenessStore.files.voiceSamples, 'audio')
+    addExisting($likenessStore.existingFiles.voiceSamples, 'audio')
 
-    addLocal($likenessStore.files.videoReels)
-    addExisting($likenessStore.existingFiles.videoReels)
+    addLocal($likenessStore.files.videoReels, 'video')
+    addExisting($likenessStore.existingFiles.videoReels, 'video')
 
     return items
   })
 
-  const mainPhoto = $derived(allPreviews[0] ?? null)
-  const rest = $derived(allPreviews.slice(1))
+  const imagePreviews = $derived(allPreviews.filter((p) => p.type === 'image'))
+  const audioPreviews = $derived(allPreviews.filter((p) => p.type === 'audio'))
+  const videoPreviews = $derived(allPreviews.filter((p) => p.type === 'video'))
 
-  const thumbsToShow = $derived(rest.slice(0, 3))
-  const remaining = $derived(rest.length > 3 ? rest.length - 3 : 0)
+  const mainPhoto = $derived(imagePreviews[0] ?? null)
+
+  const otherPreviews = $derived([...imagePreviews.slice(1), ...audioPreviews, ...videoPreviews])
   const enabledLicenseTypes = $derived(
     LICENSE_TYPES.filter((license) => $likenessStore.licensing.licenseTypes[license.id]),
   )
   const enabledPermittedUses = $derived(PERMITTED_USES.filter((use) => $likenessStore.licensing.permittedUses[use.id]))
+
+  const ethnicityLabel = $derived(
+    ETHNICITY_OPTIONS.find((o) => o.value === $likenessStore.profile.attributes.ethnicity)?.label ??
+      $likenessStore.profile.attributes.ethnicity,
+  )
 
   const lbsToKg = () => +(($likenessStore.profile.attributes.weight ?? 0) * 0.453592).toFixed(1)
 
@@ -121,35 +129,13 @@
       </div>
 
       <!-- Main content -->
-      <div class="flex gap-6 mx-auto flex-wrap">
-        <!-- Left: photo + thumbnails -->
+      <div class="flex gap-6 mx-auto flex-wrap items-start">
+        <!-- Left: main photo -->
         {#if mainPhoto}
           <div class="flex-1 max-w-100">
             <div class="rounded-xl overflow-hidden mb-2.5">
-              <img src={mainPhoto.src} alt={mainPhoto.name} class="w-full object-cover" style="height: 340px;" />
+              <img src={mainPhoto.src} alt={mainPhoto.name} class="w-full object-contain" style="height: 340px;" />
             </div>
-
-            {#if thumbsToShow.length > 0}
-              <div
-                class="grid gap-1.5"
-                style="grid-template-columns: repeat({thumbsToShow.length + (remaining > 0 ? 1 : 0)}, 1fr)"
-              >
-                {#each thumbsToShow as file, i (file.name + i)}
-                  <div class="rounded-lg overflow-hidden aspect-square">
-                    <img src={file.src} alt={file.name} class="w-full h-full max-h-1/2 object-cover" />
-                  </div>
-                {/each}
-
-                {#if remaining > 0}
-                  <div class="rounded-lg overflow-hidden aspect-square relative bg-[#c4beb6]">
-                    <img src={rest[3].src} alt={rest[3].name} class="w-full h-full object-cover opacity-60" />
-                    <span class="absolute inset-0 flex items-center justify-center text-[#1a1a1a] font-bold text-sm">
-                      +{remaining}
-                    </span>
-                  </div>
-                {/if}
-              </div>
-            {/if}
           </div>
         {/if}
 
@@ -158,7 +144,7 @@
           <!-- Bio -->
           <div>
             <h2 class="text-base font-semibold text-[#202225] mb-1.5">Bio</h2>
-            <p class="text-base text-[#72717b] leading-relaxed wrap-break-word">
+            <p class="whitespace-pre-line break-all text-base text-[#72717b] leading-relaxed">
               {$likenessStore.profile.bio || 'N/A'}
             </p>
           </div>
@@ -170,7 +156,7 @@
               <tbody>
                 <tr>
                   <td class="py-1 font-semibold w-1/5">Ethnicity:</td>
-                  <td class="py-1">{$likenessStore.profile.attributes.ethnicity || 'N/A'}</td>
+                  <td class="py-1">{ethnicityLabel || 'N/A'}</td>
                 </tr>
                 <tr>
                   <td class="py-1 font-semibold">Height:</td>
@@ -223,6 +209,39 @@
           {/if}
         </div>
       </div>
+
+      {#if otherPreviews.length > 0}
+        <div class="flex flex-wrap gap-2">
+          {#each otherPreviews as file (file.name)}
+            {#if file.type === 'image'}
+              <div class="w-24 aspect-square overflow-hidden rounded-lg bg-[#202225]">
+                <img src={file.src} alt={file.name} class="size-full object-contain" />
+              </div>
+            {:else}
+              <div
+                class="rounded-lg flex aspect-square w-24 flex-col items-center justify-center gap-2 bg-[#202225] px-3 text-center text-white"
+              >
+                <span class="flex size-8 items-center justify-center text-white/90" aria-hidden="true">
+                  {#if file.type === 'video'}
+                    <svg viewBox="0 0 24 24" class="size-7" fill="none" stroke="currentColor" stroke-width="1.8">
+                      <rect x="3.5" y="6.5" width="12" height="11" rx="1.5" />
+                      <path d="M15.5 10l5-3v10l-5-3" />
+                    </svg>
+                  {:else}
+                    <svg viewBox="0 0 24 24" class="size-7" fill="none" stroke="currentColor" stroke-width="1.8">
+                      <path d="M9 18V5l10-2v13" />
+                      <circle cx="6" cy="18" r="3" />
+                      <circle cx="16" cy="16" r="3" />
+                    </svg>
+                  {/if}
+                </span>
+                <span class="text-sm font-semibold">{file.type === 'video' ? 'Video' : 'Audio'}</span>
+                <span class="max-w-full truncate text-xs text-white/65">{file.name}</span>
+              </div>
+            {/if}
+          {/each}
+        </div>
+      {/if}
     </div>
 
     <div class="">
