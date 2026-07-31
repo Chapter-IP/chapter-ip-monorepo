@@ -30,7 +30,9 @@ export const load = async ({ parent }) => {
 
   const lifetimeLicenses = tokens.filter((p) => p.licenseType === '0')
   const onetimeLicenses = tokens.filter((p) => p.licenseType === '2')
-  const purchases = [...lifetimeLicenses, ...onetimeLicenses]
+  const purchases = [...lifetimeLicenses, ...onetimeLicenses].sort(
+    (a, b) => Number(b.licenseTokenId) - Number(a.licenseTokenId),
+  )
   const locationSubs = [...new Set(purchases.map((purchase) => purchase.sub).filter(Boolean) as string[])]
   const authorNamesBySub = await getAuthorNamesBySub(trpcClient!, locationSubs)
   const contractAddress = configStore.getContractAddress(ContractName.CONTENT_NFT)
