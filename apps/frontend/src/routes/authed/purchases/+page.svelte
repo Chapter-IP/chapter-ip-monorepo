@@ -24,7 +24,7 @@
         <p>No supported purchases yet.</p>
       </div>
     {:else}
-      <section aria-label="Purchased items" class="divide-y divide-[#1a1a2e1a] border-y">
+      <section aria-label="Purchased items" class="divide-y divide-[#1a1a2e1a] border-y border-[#1a1a2e1a]">
         {#each data.purchaseRows as row (`${row.purchase.licenseTokenId}-${row.purchase.id}`)}
           <PurchasedItem purchase={row.purchase} item={row.item} trpcClient={data.trpcClient} />
         {/each}
