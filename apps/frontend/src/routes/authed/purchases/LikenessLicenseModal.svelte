@@ -96,22 +96,22 @@
 
       <section aria-label="Permitted uses and territories" class="grid gap-5 sm:grid-cols-2">
         <div>
-          <h3 class="text-base leading-5 font-semibold text-[#1a1a2e]">Permitted Uses</h3>
+          <h3 class="text-base leading-5 font-semibold text-dark">Permitted Uses</h3>
           <p class="mt-2">{likeness.permittedUses.length ? likeness.permittedUses.join(', ') : 'Not specified.'}</p>
         </div>
         <div>
-          <h3 class="text-base leading-5 font-semibold text-[#1a1a2e]">Territories</h3>
+          <h3 class="text-base leading-5 font-semibold text-dark">Territories</h3>
           <p class="mt-2">{likeness.territories.length ? likeness.territories.join(', ') : 'Not specified.'}</p>
         </div>
       </section>
 
       <section aria-label="Attributes and affiliations" class="grid gap-5 sm:grid-cols-2">
         <div>
-          <h3 class="text-base leading-5 font-semibold text-[#1a1a2e]">Attributes</h3>
+          <h3 class="text-base leading-5 font-semibold text-dark">Attributes</h3>
           {#if likeness.attributes.length > 0}
             <dl class="mt-2 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-1">
               {#each likeness.attributes as attribute (attribute.label)}
-                <dt class="font-semibold text-[#1a1a2e]">{attribute.label}</dt>
+                <dt class="font-semibold text-dark">{attribute.label}</dt>
                 <dd>{attribute.value}</dd>
               {/each}
             </dl>
@@ -120,11 +120,11 @@
           {/if}
         </div>
         <div>
-          <h3 class="text-base leading-5 font-semibold text-[#1a1a2e]">Affiliations</h3>
+          <h3 class="text-base leading-5 font-semibold text-dark">Affiliations</h3>
           {#if likeness.affiliations.length > 0}
             <dl class="mt-2 grid grid-cols-[112px_minmax(0,1fr)] gap-x-3 gap-y-1">
               {#each likeness.affiliations as affiliation (`${affiliation.union}-${affiliation.memberId}`)}
-                <dt class="font-semibold text-[#1a1a2e]">{affiliation.union || 'Member'}</dt>
+                <dt class="font-semibold text-dark">{affiliation.union || 'Member'}</dt>
                 <dd>{affiliation.memberId || 'N/A'}</dd>
               {/each}
             </dl>
@@ -135,14 +135,14 @@
       </section>
 
       <section aria-label="Approval terms">
-        <h3 class="text-base leading-5 font-semibold text-[#1a1a2e]">Approval Terms</h3>
+        <h3 class="text-base leading-5 font-semibold text-dark">Approval Terms</h3>
         <dl class="mt-2 grid gap-2 sm:grid-cols-2">
           <div>
-            <dt class="font-semibold text-[#1a1a2e]">Retouching</dt>
+            <dt class="font-semibold text-dark">Retouching</dt>
             <dd>{likeness.allowRetouching ? 'Allowed' : 'Not allowed'}</dd>
           </div>
           <div>
-            <dt class="font-semibold text-[#1a1a2e]">Final approval</dt>
+            <dt class="font-semibold text-dark">Final approval</dt>
             <dd>{likeness.approveFinalUse ? 'Required' : 'Not required'}</dd>
           </div>
         </dl>
