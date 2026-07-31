@@ -42,10 +42,10 @@
 </svelte:head>
 <Toast />
 <div class="min-h-screen overflow-clip flex flex-col">
-  <Header {authStore} {logoHref} pathname={page.url.pathname} {menuItems}>
-    <div class="flex w-full flex-col gap-3 lg:flex-row lg:items-center lg:gap-6">
+  <Header {authStore} {logoHref} pathname={page.url.pathname} {menuItems} stackOnMobile>
+    <div class="flex w-full flex-col gap-3 lg:flex-row lg:items-center lg:gap-2">
       <nav aria-label="Content dashboards" class="shrink-0">
-        <ul class="flex flex-wrap items-start gap-x-2 text-[15px] font-medium leading-7.25 text-[#767682]">
+        <ul class="flex flex-wrap items-start gap-x-2 text-[15px] font-medium leading-7.25 text-[#767682] pt-2 lg:pt-0">
           {#each navItems as item, index (item.label)}
             <li class="flex items-center gap-x-2">
               {#if item.href && !item.disabled}

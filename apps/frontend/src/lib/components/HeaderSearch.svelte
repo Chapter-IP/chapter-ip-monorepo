@@ -77,11 +77,11 @@
   }
 </script>
 
-<div bind:this={root} class="relative w-full max-w-90 min-w-55" onfocusout={handleFocusOut}>
+<div bind:this={root} class="relative w-full max-w-90 min-w-55 pb-2 lg:pb-0" onfocusout={handleFocusOut}>
   <form
     role="search"
     aria-label="Site search"
-    class="flex h-9.25 items-center gap-3 rounded-sm border border-[#e4e0db] bg-white px-4 text-dark shadow-[0_1px_4px_rgba(26,26,46,0.08)] focus-within:border-[#cfc8c0]"
+    class="flex h-9.25 items-center gap-3 rounded-sm border border-[#e4e0db] bg-white px-4 text-dark shadow-[0_1px_4px_rgba(26,26,46,0.08)]"
     onsubmit={(event) => {
       event.preventDefault()
       searchDefaultTarget()
