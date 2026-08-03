@@ -283,6 +283,11 @@
         const savedContent = await saveCurrentContent(uploadSession)
         const tokenId = data.tokenId ?? (await activateContent(uploadSession, savedContent))
 
+        if (data.tokenId) {
+          uploadSession.setProgress({ phase: 'updating-prices', overallProgress: 1 })
+          await uploadService.updateContentPrices({ tokenId, prices: getLicensePrices() })
+        }
+
         await saveTokenMetadata(uploadSession, { ...savedContent, tokenId })
         uploadSession.end()
         openSuccessModal()

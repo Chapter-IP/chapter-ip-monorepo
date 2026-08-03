@@ -396,6 +396,23 @@ describe('UploadService', () => {
     expect(transactionService.mintWithPrices).toHaveBeenCalledWith('access-token', { oneTimePrice: 5 })
   })
 
+  it('updates on-chain content prices for the given token', async () => {
+    const transactionService = {
+      updateContentPrices: vi.fn().mockResolvedValue(undefined),
+    }
+    const service = new UploadService(transactionService as never)
+
+    await service.updateContentPrices({
+      tokenId: 'token-id',
+      prices: { oneTimePrice: 5, lifetimePrice: 10 },
+    })
+
+    expect(transactionService.updateContentPrices).toHaveBeenCalledWith('access-token', 'token-id', {
+      oneTimePrice: 5,
+      lifetimePrice: 10,
+    })
+  })
+
   it('finalizes content as active with metadata and token id', async () => {
     const { client } = createTrpcClient()
     const service = new UploadService({ mintWithPrices: vi.fn() } as never)

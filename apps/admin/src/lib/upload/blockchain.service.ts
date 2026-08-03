@@ -1,10 +1,37 @@
 import { ethers, initProvider, getSigner } from '@repo/fe-evm-provider'
 import { configStore, ContractName } from '$lib/stores/config.svelte'
 
+const LICENSE_TYPES_BY_PRICE = {
+  oneTime: 2,
+  lifetime: 0,
+} as const
+
+export type SetPricesInput = {
+  oneTimePrice: number
+  lifetimePrice?: number
+}
+
 export default class BlockchainService {
   constructor(accessToken: string) {
     initProvider(accessToken)
   }
+
+  async createSetPricesTransaction(tokenId: string, { oneTimePrice, lifetimePrice = 0 }: SetPricesInput) {
+    const signer = await getSigner()
+    const contentContract = configStore.getContract(ContractName.CONTENT_NFT, signer)
+    const prices = [
+      ...(oneTimePrice > 0 ? [{ licenseType: LICENSE_TYPES_BY_PRICE.oneTime, price: oneTimePrice }] : []),
+      ...(lifetimePrice > 0 ? [{ licenseType: LICENSE_TYPES_BY_PRICE.lifetime, price: lifetimePrice }] : []),
+    ]
+
+    return await Promise.all(
+      prices.flatMap(({ licenseType, price }) => [
+        contentContract.setLicensePriceFiat.populateTransaction(tokenId, licenseType, price * 100),
+        contentContract.setLicensePriceToken.populateTransaction(tokenId, licenseType, price * 10 ** 6),
+      ]),
+    )
+  }
+
   async createMintTransaction(
     userAddress: string,
     { oneTimePrice, lifetimePrice = 0 }: { oneTimePrice: number; lifetimePrice?: number },

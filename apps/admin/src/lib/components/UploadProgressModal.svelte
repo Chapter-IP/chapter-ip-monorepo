@@ -15,6 +15,7 @@
     minting: 'Minting on blockchain…',
     finalizing: 'Finalizing content…',
     'saving-metadata': 'Saving metadata…',
+    'updating-prices': 'Updating prices on blockchain…',
   }
 
   let fileMap = $state<FileProgressMap>({})

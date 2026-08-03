@@ -17,7 +17,7 @@ export type MintContentPrices = {
   lifetimePrice?: number
 }
 
-export type UploadPhase = 'uploading' | 'minting' | 'finalizing' | 'saving-metadata'
+export type UploadPhase = 'uploading' | 'minting' | 'finalizing' | 'saving-metadata' | 'updating-prices'
 
 export type UploadProgressEvent = {
   fileIndex?: number
@@ -287,6 +287,10 @@ export default class UploadService {
       oneTimePrice,
       lifetimePrice,
     })
+  }
+
+  async updateContentPrices({ tokenId, prices }: { tokenId: string; prices: MintContentPrices }): Promise<void> {
+    await this.transactionService.updateContentPrices(authStore.state.accessToken!, tokenId, prices)
   }
 
   async finalizeContent({

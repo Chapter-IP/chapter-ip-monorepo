@@ -1,11 +1,59 @@
 import { forwardTransaction } from '@repo/fe-services'
 import { authStore } from '$lib'
 import { ethers } from '@repo/fe-evm-provider'
-import BlockchainService from './blockchain.service'
+import BlockchainService, { type SetPricesInput } from './blockchain.service'
 import { configStore, ContractName } from '$lib/stores/config.svelte'
+
+const TX_TIMEOUT = 90_000
 
 export default class TransactionService {
   constructor(private readonly blockchainService: BlockchainService) {}
+
+  async updateContentPrices(accessToken: string, tokenId: string, prices: SetPricesInput): Promise<void> {
+    const populatedTxs = await this.blockchainService.createSetPricesTransaction(tokenId, prices)
+
+    if (populatedTxs.length === 0) {
+      return
+    }
+
+    const fwtOpts = {
+      token: authStore.state.accessToken!,
+      client_id: import.meta.env.VITE_CLIENT_ID,
+      evm_wss: import.meta.env.VITE_CREDENZA_EVM_WSS,
+    }
+
+    const signer = await (await import('@repo/fe-evm-provider')).getSigner()
+    const provider = signer.provider
+
+    if (!provider) {
+      throw new Error('Provider is not initialized')
+    }
+
+    for (const tx of populatedTxs) {
+      const hash = await this.forwardPriceTransaction(tx, fwtOpts)
+      const receipt = await provider.waitForTransaction(hash, 1, TX_TIMEOUT)
+
+      if (!receipt || receipt.status === 0) {
+        throw new Error('Transaction failed')
+      }
+    }
+  }
+
+  private async forwardPriceTransaction(
+    tx: ethers.ContractTransaction,
+    fwtOpts: { token: string; client_id: string; evm_wss: string },
+  ): Promise<string> {
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error('Forward transaction timed out')), TX_TIMEOUT)
+    })
+
+    try {
+      return await Promise.race([forwardTransaction(tx, fwtOpts), timeout])
+    } finally {
+      clearTimeout(timer)
+    }
+  }
 
   async mintWithPrices(accessToken: string, prices: { oneTimePrice: number; lifetimePrice?: number }): Promise<string> {
     const userAddress = await this.blockchainService.getUserAddress()
