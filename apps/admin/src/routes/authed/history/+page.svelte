@@ -7,6 +7,7 @@
   import { useCursorPagination } from '$lib/hooks/useCursorPagination.svelte'
   import { notify, ToastType } from '@repo/ui-components'
   import { snowtraceUrl } from '@repo/fe-services'
+  import { LICENSE_TYPE_VALUES } from '@repo/content-types/content'
   import { TABLE_PAGE_SIZE } from '$lib/constants'
   import type { TPurchaseHistoryItem } from './constants'
 
@@ -73,14 +74,18 @@
                 >
                   <td class="px-4 py-1.5">{formatDate(tx.createdAt)}</td>
                   <td class="px-4 py-1.5"
-                    >{tx.licenseType === 0 || tx.licenseType === 2 ? 'Purchase' : 'Transaction fee'}</td
+                    >{tx.licenseType === LICENSE_TYPE_VALUES.lifetime || tx.licenseType === LICENSE_TYPE_VALUES.oneTime
+                      ? 'Purchase'
+                      : 'Transaction fee'}</td
                   >
                   <td class="px-4 py-1.5">
                     {#if itemName}
                       <div>{itemName}</div>
-                      <div class="text-xs">{tx.licenseType === 0 ? 'One-time license' : 'Full-time license'}</div>
+                      <div class="text-xs">
+                        {tx.licenseType === LICENSE_TYPE_VALUES.oneTime ? 'One-time license' : 'Full-time license'}
+                      </div>
                     {:else}
-                      {tx.licenseType === 0 ? 'One-time license' : 'Full-time license'}
+                      {tx.licenseType === LICENSE_TYPE_VALUES.oneTime ? 'One-time license' : 'Full-time license'}
                     {/if}
                   </td>
                   <td class="w-56 px-4 py-1.5 font-mono text-xs" title={tx.txHash || undefined}>
