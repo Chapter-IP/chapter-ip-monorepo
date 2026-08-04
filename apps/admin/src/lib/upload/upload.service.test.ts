@@ -131,10 +131,10 @@ describe('UploadService', () => {
     const { client, createContentFileUploadUrl, registerContentFile } = createTrpcClient()
     mocks.createImagePreview.mockResolvedValue(preview)
 
-    const transactionService = {
+    const blockchainService = {
       mintWithPrices: vi.fn().mockResolvedValue('token-id'),
     }
-    const service = new UploadService(transactionService as never)
+    const service = new UploadService(blockchainService as never)
 
     await expect(
       service.uploadContentFiles({
@@ -175,10 +175,10 @@ describe('UploadService', () => {
     const { client, createContentFileUploadUrl } = createTrpcClient()
     mocks.createImagePreview.mockResolvedValue(preview)
 
-    const transactionService = {
+    const blockchainService = {
       mintWithPrices: vi.fn().mockResolvedValue('token-id'),
     }
-    const service = new UploadService(transactionService as never)
+    const service = new UploadService(blockchainService as never)
 
     await service.uploadContentFiles({
       contentId: 'content-id',
@@ -209,10 +209,10 @@ describe('UploadService', () => {
     mocks.createImagePreview.mockRejectedValue(previewError)
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
 
-    const transactionService = {
+    const blockchainService = {
       mintWithPrices: vi.fn().mockResolvedValue('token-id'),
     }
-    const service = new UploadService(transactionService as never)
+    const service = new UploadService(blockchainService as never)
 
     await expect(
       service.uploadContentFiles({
@@ -253,10 +253,10 @@ describe('UploadService', () => {
   it('saves a draft without minting a token', async () => {
     const original = new File(['original'], 'voice.mp3', { type: 'audio/mpeg' })
     const { client } = createTrpcClient()
-    const transactionService = {
+    const blockchainService = {
       mintWithPrices: vi.fn(),
     }
-    const service = new UploadService(transactionService as never)
+    const service = new UploadService(blockchainService as never)
 
     await expect(
       service.saveDraftContent({
@@ -266,7 +266,7 @@ describe('UploadService', () => {
       }),
     ).resolves.toEqual({ contentId: 'content-id', keys: ['original-key'] })
 
-    expect(transactionService.mintWithPrices).not.toHaveBeenCalled()
+    expect(blockchainService.mintWithPrices).not.toHaveBeenCalled()
     expect(mocks.createImagePreview).not.toHaveBeenCalled()
     expect(client.contents.registerContent.mutate).toHaveBeenCalledWith({
       metadata: { type: 'likeness' },
@@ -385,29 +385,29 @@ describe('UploadService', () => {
     })
   })
 
-  it('mints content with the current access token and requested prices', async () => {
-    const transactionService = {
+  it('mints content with the requested prices', async () => {
+    const blockchainService = {
       mintWithPrices: vi.fn().mockResolvedValue('token-id'),
     }
-    const service = new UploadService(transactionService as never)
+    const service = new UploadService(blockchainService as never)
 
     await expect(service.mintContent({ oneTimePrice: 5 })).resolves.toBe('token-id')
 
-    expect(transactionService.mintWithPrices).toHaveBeenCalledWith('access-token', { oneTimePrice: 5 })
+    expect(blockchainService.mintWithPrices).toHaveBeenCalledWith({ oneTimePrice: 5 })
   })
 
   it('updates on-chain content prices for the given token', async () => {
-    const transactionService = {
+    const blockchainService = {
       updateContentPrices: vi.fn().mockResolvedValue(undefined),
     }
-    const service = new UploadService(transactionService as never)
+    const service = new UploadService(blockchainService as never)
 
     await service.updateContentPrices({
       tokenId: 'token-id',
       prices: { oneTimePrice: 5, lifetimePrice: 10 },
     })
 
-    expect(transactionService.updateContentPrices).toHaveBeenCalledWith('access-token', 'token-id', {
+    expect(blockchainService.updateContentPrices).toHaveBeenCalledWith('token-id', {
       oneTimePrice: 5,
       lifetimePrice: 10,
     })

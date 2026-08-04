@@ -8,7 +8,6 @@
   import { authStore } from '$lib'
   import UploadService from '$lib/upload/upload.service'
   import { createUploadSessionController, startUploadingPhase } from '$lib/upload/upload-session'
-  import TransactionService from '$lib/upload/transaction.service'
   import BlockchainService from '$lib/upload/blockchain.service'
   import UploadProgressModal from '$lib/components/UploadProgressModal.svelte'
   import { notify, ToastType } from '@repo/ui-components'
@@ -21,8 +20,7 @@
 
   let currentStep = $state(1)
   const blockchainService = new BlockchainService(authStore.state.accessToken!)
-  const transactionService = new TransactionService(blockchainService)
-  const uploadService = new UploadService(transactionService)
+  const uploadService = new UploadService(blockchainService)
   const uploadSessions = createUploadSessionController(locationStore)
 
   beforeNavigate(() => locationStore.setLoading(true))

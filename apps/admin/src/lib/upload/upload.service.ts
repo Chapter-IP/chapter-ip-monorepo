@@ -1,6 +1,6 @@
 import { createClient, type TRPCClient, type AppRouter } from '@repo/trpc/client'
 import { authStore } from '$lib'
-import TransactionService from './transaction.service'
+import BlockchainService from './blockchain.service'
 import uploadFileToBucket from './file-upload.service'
 import { createImagePreview, isPreviewImage } from './image-preview.service'
 import { STATUS, type StatusValue } from '../../routes/authed/likeness/constants/constants'
@@ -96,7 +96,7 @@ async function uploadPreviewFile({
 }
 
 export default class UploadService {
-  constructor(private readonly transactionService: TransactionService) {}
+  constructor(private readonly blockchainService: BlockchainService) {}
 
   private countUploadUnits(uploads: NamedUpload[], includePreviews: boolean): number {
     let count = uploads.length
@@ -283,14 +283,14 @@ export default class UploadService {
   }
 
   async mintContent({ oneTimePrice, lifetimePrice }: MintContentPrices): Promise<string> {
-    return await this.transactionService.mintWithPrices(authStore.state.accessToken!, {
+    return await this.blockchainService.mintWithPrices({
       oneTimePrice,
       lifetimePrice,
     })
   }
 
   async updateContentPrices({ tokenId, prices }: { tokenId: string; prices: MintContentPrices }): Promise<void> {
-    await this.transactionService.updateContentPrices(authStore.state.accessToken!, tokenId, prices)
+    await this.blockchainService.updateContentPrices(tokenId, prices)
   }
 
   async finalizeContent({
