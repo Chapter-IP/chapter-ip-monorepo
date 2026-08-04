@@ -46,7 +46,7 @@ export default class BlockchainService {
     const provider = await this.getProvider()
 
     for (const tx of populatedTxs) {
-      const hash = await this.forwardTransaction(tx)
+      const hash = await this.forwardWithTimeout(tx)
       const receipt = await provider.waitForTransaction(hash, 1, TX_TIMEOUT)
 
       if (!receipt || receipt.status === 0) {
@@ -59,7 +59,7 @@ export default class BlockchainService {
     const userAddress = await this.getUserAddress()
     const mintPopulatedTx = await this.createMintTransaction(userAddress, prices)
 
-    const txHash = await this.forwardTransaction(mintPopulatedTx)
+    const txHash = await this.forwardWithTimeout(mintPopulatedTx)
     const tokenId = await this.extractTokenIdFromTransaction(txHash)
 
     return String(tokenId)
@@ -171,7 +171,7 @@ export default class BlockchainService {
     return await signer.getAddress()
   }
 
-  private async forwardTransaction(tx: ethers.ContractTransaction): Promise<string> {
+  private async forwardWithTimeout(tx: ethers.ContractTransaction): Promise<string> {
     let timer: ReturnType<typeof setTimeout> | undefined
     const timeout = new Promise<never>((_, reject) => {
       timer = setTimeout(() => reject(new Error('Forward transaction timed out')), TX_TIMEOUT)
