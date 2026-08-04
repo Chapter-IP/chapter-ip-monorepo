@@ -82,10 +82,10 @@
                     {#if itemName}
                       <div>{itemName}</div>
                       <div class="text-xs">
-                        {tx.licenseType === LICENSE_TYPE_VALUES.lifetime ? 'One-time license' : 'Full-time license'}
+                        {tx.licenseType === LICENSE_TYPE_VALUES.oneTime ? 'One-time license' : 'Full-time license'}
                       </div>
                     {:else}
-                      {tx.licenseType === LICENSE_TYPE_VALUES.lifetime ? 'One-time license' : 'Full-time license'}
+                      {tx.licenseType === LICENSE_TYPE_VALUES.oneTime ? 'One-time license' : 'Full-time license'}
                     {/if}
                   </td>
                   <td class="w-56 px-4 py-1.5 font-mono text-xs" title={tx.txHash || undefined}>
