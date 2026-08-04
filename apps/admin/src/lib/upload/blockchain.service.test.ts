@@ -39,6 +39,8 @@ const createProvider = () => ({
 })
 
 const createContentContract = () => ({
+  getLicensePriceFiat: vi.fn(),
+  getLicensePriceToken: vi.fn(),
   setLicensePriceFiat: {
     populateTransaction: vi.fn().mockResolvedValue({ data: '0x' }),
   },
@@ -46,6 +48,16 @@ const createContentContract = () => ({
     populateTransaction: vi.fn().mockResolvedValue({ data: '0x' }),
   },
 })
+
+const mockOnChainPrices = (prices: Record<number, { fiat: number; token: number }>) => {
+  const contract = mocks.getContract()
+  contract.getLicensePriceFiat.mockImplementation((_tokenId: string, licenseType: number) =>
+    Promise.resolve(prices[licenseType].fiat),
+  )
+  contract.getLicensePriceToken.mockImplementation((_tokenId: string, licenseType: number) =>
+    Promise.resolve(prices[licenseType].token),
+  )
+}
 
 describe('BlockchainService.updateContentPrices', () => {
   beforeEach(() => {
@@ -74,9 +86,57 @@ describe('BlockchainService.updateContentPrices', () => {
 
     expect(mocks.forwardTransaction).not.toHaveBeenCalled()
     expect(mocks.getContract().setLicensePriceFiat.populateTransaction).not.toHaveBeenCalled()
+    expect(mocks.getContract().getLicensePriceFiat).not.toHaveBeenCalled()
+  })
+
+  it('skips forwarding when the on-chain prices already match', async () => {
+    mockOnChainPrices({
+      [2]: { fiat: 500, token: 5_000_000 },
+      [0]: { fiat: 1000, token: 10_000_000 },
+    })
+
+    const service = new BlockchainService('access-token')
+
+    await service.updateContentPrices('token-id', { oneTimePrice: 5, lifetimePrice: 10 })
+
+    expect(mocks.forwardTransaction).not.toHaveBeenCalled()
+    expect(mocks.getContract().setLicensePriceFiat.populateTransaction).not.toHaveBeenCalled()
+    expect(mocks.getContract().setLicensePriceToken.populateTransaction).not.toHaveBeenCalled()
+  })
+
+  it('updates only the license types whose price changed', async () => {
+    mockOnChainPrices({
+      [2]: { fiat: 500, token: 5_000_000 },
+      [0]: { fiat: 0, token: 0 },
+    })
+
+    const service = new BlockchainService('access-token')
+
+    await service.updateContentPrices('token-id', { oneTimePrice: 5, lifetimePrice: 10 })
+
+    expect(mocks.getContract().setLicensePriceFiat.populateTransaction).toHaveBeenCalledTimes(1)
+    expect(mocks.getContract().setLicensePriceToken.populateTransaction).toHaveBeenCalledTimes(1)
+    expect(mocks.getContract().setLicensePriceFiat.populateTransaction).toHaveBeenCalledWith('token-id', 0, 1000)
+    expect(mocks.getContract().setLicensePriceToken.populateTransaction).toHaveBeenCalledWith('token-id', 0, 10_000_000)
+    expect(mocks.forwardTransaction).toHaveBeenCalledTimes(2)
+  })
+
+  it('writes the price when reading the on-chain price fails', async () => {
+    const contract = mocks.getContract()
+    contract.getLicensePriceFiat.mockRejectedValue(new Error('read failed'))
+    contract.getLicensePriceToken.mockRejectedValue(new Error('read failed'))
+
+    const service = new BlockchainService('access-token')
+
+    await service.updateContentPrices('token-id', { oneTimePrice: 5 })
+
+    expect(mocks.getContract().setLicensePriceFiat.populateTransaction).toHaveBeenCalledWith('token-id', 2, 500)
+    expect(mocks.getContract().setLicensePriceToken.populateTransaction).toHaveBeenCalledWith('token-id', 2, 5_000_000)
+    expect(mocks.forwardTransaction).toHaveBeenCalledTimes(2)
   })
 
   it('throws when a receipt status is zero', async () => {
+    mockOnChainPrices({ [2]: { fiat: 0, token: 0 } })
     const provider = { waitForTransaction: vi.fn().mockResolvedValue({ status: 0 }) }
     mocks.getSigner.mockResolvedValue({ provider })
 
@@ -86,6 +146,7 @@ describe('BlockchainService.updateContentPrices', () => {
   })
 
   it('throws when the provider is missing', async () => {
+    mockOnChainPrices({ [2]: { fiat: 0, token: 0 } })
     mocks.getSigner.mockResolvedValue({})
 
     const service = new BlockchainService('access-token')
@@ -97,6 +158,7 @@ describe('BlockchainService.updateContentPrices', () => {
 
   it('rejects when forwarding a transaction times out', async () => {
     vi.useFakeTimers()
+    mockOnChainPrices({ [2]: { fiat: 0, token: 0 } })
     mocks.forwardTransaction.mockReturnValue(new Promise(() => {}))
 
     const service = new BlockchainService('access-token')

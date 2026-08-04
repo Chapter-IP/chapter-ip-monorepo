@@ -13,18 +13,38 @@ export type SetPricesInput = {
   lifetimePrice?: number
 }
 
+type LicenseTarget = {
+  licenseType: number
+  price: number
+}
+
+type CurrentLicensePrices = {
+  fiat?: number
+  token?: number
+}
+
 export default class BlockchainService {
   constructor(private readonly accessToken: string) {
     initProvider(accessToken)
   }
 
   async updateContentPrices(tokenId: string, prices: SetPricesInput): Promise<void> {
-    const populatedTxs = await this.createSetPricesTransaction(tokenId, prices)
+    const targets = this.getPriceTargets(prices)
 
-    if (populatedTxs.length === 0) {
+    if (targets.length === 0) {
       return
     }
 
+    const currentPrices = await this.getOnChainPrices(tokenId, targets)
+    const changedTargets = targets.filter(
+      (target) => !this.isPriceUnchanged(target, currentPrices.get(target.licenseType)),
+    )
+
+    if (changedTargets.length === 0) {
+      return
+    }
+
+    const populatedTxs = await this.createSetPricesTransactions(tokenId, changedTargets)
     const provider = await this.getProvider()
 
     for (const tx of populatedTxs) {
@@ -63,17 +83,57 @@ export default class BlockchainService {
     return provider
   }
 
-  private async createSetPricesTransaction(tokenId: string, { oneTimePrice, lifetimePrice = 0 }: SetPricesInput) {
-    const contentContract = await this.getContentContract()
-    const prices = [
+  private getPriceTargets({ oneTimePrice, lifetimePrice = 0 }: SetPricesInput): LicenseTarget[] {
+    return [
       ...(oneTimePrice > 0 ? [{ licenseType: LICENSE_TYPE_VALUES.oneTime, price: oneTimePrice }] : []),
       ...(lifetimePrice > 0 ? [{ licenseType: LICENSE_TYPE_VALUES.lifetime, price: lifetimePrice }] : []),
     ]
+  }
+
+  private async getOnChainPrices(
+    tokenId: string,
+    targets: LicenseTarget[],
+  ): Promise<Map<number, CurrentLicensePrices>> {
+    const contentContract = await this.getContentContract()
+    const currentPrices = new Map<number, CurrentLicensePrices>()
+
+    for (const { licenseType } of targets) {
+      try {
+        const [fiat, token] = await Promise.all([
+          contentContract.getLicensePriceFiat(tokenId, licenseType),
+          contentContract.getLicensePriceToken(tokenId, licenseType),
+        ])
+        currentPrices.set(licenseType, { fiat: Number(fiat), token: Number(token) })
+      } catch {
+        currentPrices.set(licenseType, {})
+      }
+    }
+
+    return currentPrices
+  }
+
+  private isPriceUnchanged({ price }: LicenseTarget, current: CurrentLicensePrices | undefined) {
+    return (
+      current?.fiat === Math.round(price * FIAT_PRICE_MULTIPLIER) &&
+      current?.token === Math.round(price * TOKEN_PRICE_MULTIPLIER)
+    )
+  }
+
+  private async createSetPricesTransactions(tokenId: string, targets: LicenseTarget[]) {
+    const contentContract = await this.getContentContract()
 
     return await Promise.all(
-      prices.flatMap(({ licenseType, price }) => [
-        contentContract.setLicensePriceFiat.populateTransaction(tokenId, licenseType, price * FIAT_PRICE_MULTIPLIER),
-        contentContract.setLicensePriceToken.populateTransaction(tokenId, licenseType, price * TOKEN_PRICE_MULTIPLIER),
+      targets.flatMap(({ licenseType, price }) => [
+        contentContract.setLicensePriceFiat.populateTransaction(
+          tokenId,
+          licenseType,
+          Math.round(price * FIAT_PRICE_MULTIPLIER),
+        ),
+        contentContract.setLicensePriceToken.populateTransaction(
+          tokenId,
+          licenseType,
+          Math.round(price * TOKEN_PRICE_MULTIPLIER),
+        ),
       ]),
     )
   }
