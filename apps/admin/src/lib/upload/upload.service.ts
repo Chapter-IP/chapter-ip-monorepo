@@ -1,4 +1,5 @@
 import { createClient, type TRPCClient, type AppRouter } from '@repo/trpc/client'
+import { type ContentPrices } from '@repo/content-types/content'
 import { authStore } from '$lib'
 import BlockchainService from './blockchain.service'
 import uploadFileToBucket from './file-upload.service'
@@ -10,11 +11,6 @@ import { r2BaseConfig } from '@repo/fe-services'
 export type NamedUpload = {
   file: File
   name: string
-}
-
-export type MintContentPrices = {
-  oneTimePrice: number
-  lifetimePrice?: number
 }
 
 export type UploadPhase = 'uploading' | 'minting' | 'finalizing' | 'saving-metadata' | 'updating-prices'
@@ -282,14 +278,14 @@ export default class UploadService {
     return { contentId, keys }
   }
 
-  async mintContent({ oneTimePrice, lifetimePrice }: MintContentPrices): Promise<string> {
+  async mintContent({ oneTimePrice, lifetimePrice }: ContentPrices): Promise<string> {
     return await this.blockchainService.mintWithPrices({
       oneTimePrice,
       lifetimePrice,
     })
   }
 
-  async updateContentPrices({ tokenId, prices }: { tokenId: string; prices: MintContentPrices }): Promise<void> {
+  async updateContentPrices({ tokenId, prices }: { tokenId: string; prices: ContentPrices }): Promise<void> {
     await this.blockchainService.updateContentPrices(tokenId, prices)
   }
 

@@ -1,17 +1,15 @@
 import { ethers, initProvider, getSigner } from '@repo/fe-evm-provider'
 import { forwardTransaction } from '@repo/fe-services'
-import { LICENSE_TYPE_VALUES } from '@repo/content-types/content'
+import {
+  LICENSE_TYPE_VALUES,
+  FIAT_PRICE_MULTIPLIER,
+  TOKEN_PRICE_MULTIPLIER,
+  type ContentPrices,
+} from '@repo/content-types/content'
 import { authStore } from '$lib'
 import { configStore, ContractName } from '$lib/stores/config.svelte'
 
 const TX_TIMEOUT = 90_000
-const FIAT_PRICE_MULTIPLIER = 100
-const TOKEN_PRICE_MULTIPLIER = 10 ** 6
-
-export type SetPricesInput = {
-  oneTimePrice: number
-  lifetimePrice?: number
-}
 
 type LicenseTarget = {
   licenseType: number
@@ -28,7 +26,7 @@ export default class BlockchainService {
     initProvider(accessToken)
   }
 
-  async updateContentPrices(tokenId: string, prices: SetPricesInput): Promise<void> {
+  async updateContentPrices(tokenId: string, prices: ContentPrices): Promise<void> {
     const targets = this.getPriceTargets(prices)
 
     if (targets.length === 0) {
@@ -57,7 +55,7 @@ export default class BlockchainService {
     }
   }
 
-  async mintWithPrices(prices: SetPricesInput): Promise<string> {
+  async mintWithPrices(prices: ContentPrices): Promise<string> {
     const userAddress = await this.getUserAddress()
     const mintPopulatedTx = await this.createMintTransaction(userAddress, prices)
 
@@ -83,7 +81,7 @@ export default class BlockchainService {
     return provider
   }
 
-  private getPriceTargets({ oneTimePrice, lifetimePrice = 0 }: SetPricesInput): LicenseTarget[] {
+  private getPriceTargets({ oneTimePrice, lifetimePrice = 0 }: ContentPrices): LicenseTarget[] {
     return [
       ...(oneTimePrice > 0 ? [{ licenseType: LICENSE_TYPE_VALUES.oneTime, price: oneTimePrice }] : []),
       ...(lifetimePrice > 0 ? [{ licenseType: LICENSE_TYPE_VALUES.lifetime, price: lifetimePrice }] : []),
@@ -138,7 +136,7 @@ export default class BlockchainService {
     )
   }
 
-  private async createMintTransaction(userAddress: string, { oneTimePrice, lifetimePrice = 0 }: SetPricesInput) {
+  private async createMintTransaction(userAddress: string, { oneTimePrice, lifetimePrice = 0 }: ContentPrices) {
     const contentContract = await this.getContentContract()
     return await contentContract.mintWithPrices.populateTransaction(
       userAddress,

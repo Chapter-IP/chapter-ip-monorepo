@@ -1,11 +1,9 @@
 import { ethers, initProvider, getSigner } from '@repo/fe-evm-provider'
 import { forwardTransaction } from '@repo/fe-services'
+import { FIAT_PRICE_MULTIPLIER, TOKEN_PRICE_MULTIPLIER } from '@repo/content-types/content'
 import { authStore } from '$lib/auth'
 import { configStore, ContractName } from '$lib/stores/config.svelte'
 import { publisherStore } from '$lib/stores/publisher.svelte'
-
-const FIAT_PRICE_MULTIPLIER = 100
-const TOKEN_PRICE_MULTIPLIER = 10 ** 6
 
 export async function saveSubscriptionPrice(price: number): Promise<void> {
   if (price <= 0) {
