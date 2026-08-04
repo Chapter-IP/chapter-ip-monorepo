@@ -5,9 +5,10 @@ import { configStore, ContractName } from '$lib/stores/config.svelte'
 import { Passport } from '@credenza3/passport-evm'
 import { ethers, initProvider, getSigner } from '@repo/fe-evm-provider'
 import { forwardTransaction, snowtraceUrl } from '@repo/fe-services'
+import { LICENSE_TYPE_VALUES } from '@repo/content-types/content'
 import { get } from 'svelte/store'
 
-type PurchaseLicenseType = '0' | '2'
+type PurchaseLicenseType = `${typeof LICENSE_TYPE_VALUES.lifetime}` | `${typeof LICENSE_TYPE_VALUES.oneTime}`
 
 export type PurchasableContent = {
   contentTokenId?: string | number | null
@@ -56,8 +57,8 @@ type PurchaseContext = {
 export type PassportPayment = { kind: 'card'; voucher: TLicenseVoucher; sig: string } | { kind: 'direct'; hash: string }
 
 const LICENSE_TYPES: Partial<Record<string, PurchaseLicenseType>> = {
-  perpetual: '0',
-  'single-use': '2',
+  perpetual: `${LICENSE_TYPE_VALUES.lifetime}`,
+  'single-use': `${LICENSE_TYPE_VALUES.oneTime}`,
 }
 
 export function getPurchaseLicenseType(licenseId: string): PurchaseLicenseType | null {

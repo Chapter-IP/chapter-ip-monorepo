@@ -1,5 +1,6 @@
 import { configStore, ContractName } from '$lib/stores/config.svelte'
 import type { createClient } from '@repo/trpc/client'
+import { LICENSE_TYPE_VALUES } from '@repo/content-types/content'
 import { getTokensWithMetadata } from './helper'
 import { toPurchaseRows } from './rows'
 
@@ -28,8 +29,8 @@ export const load = async ({ parent }) => {
 
   const tokens = await getTokensWithMetadata(accessToken!, trpcClient!)
 
-  const lifetimeLicenses = tokens.filter((p) => p.licenseType === '0')
-  const onetimeLicenses = tokens.filter((p) => p.licenseType === '2')
+  const lifetimeLicenses = tokens.filter((p) => p.licenseType === `${LICENSE_TYPE_VALUES.lifetime}`)
+  const onetimeLicenses = tokens.filter((p) => p.licenseType === `${LICENSE_TYPE_VALUES.oneTime}`)
   const purchases = [...lifetimeLicenses, ...onetimeLicenses].sort(
     (a, b) => Number(b.licenseTokenId) - Number(a.licenseTokenId),
   )

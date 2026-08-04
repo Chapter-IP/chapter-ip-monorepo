@@ -15,3 +15,8 @@ export type Content<TMetadata = Record<string, unknown>> = {
   metadata?: TMetadata
   files?: ContentFile[]
 }
+
+export const LICENSE_TYPE_VALUES = {
+  oneTime: 2,
+  lifetime: 0,
+} as const

@@ -1,10 +1,6 @@
 import { ethers, initProvider, getSigner } from '@repo/fe-evm-provider'
+import { LICENSE_TYPE_VALUES } from '@repo/content-types/content'
 import { configStore, ContractName } from '$lib/stores/config.svelte'
-
-const LICENSE_TYPES_BY_PRICE = {
-  oneTime: 2,
-  lifetime: 0,
-} as const
 
 export type SetPricesInput = {
   oneTimePrice: number
@@ -20,8 +16,8 @@ export default class BlockchainService {
     const signer = await getSigner()
     const contentContract = configStore.getContract(ContractName.CONTENT_NFT, signer)
     const prices = [
-      ...(oneTimePrice > 0 ? [{ licenseType: LICENSE_TYPES_BY_PRICE.oneTime, price: oneTimePrice }] : []),
-      ...(lifetimePrice > 0 ? [{ licenseType: LICENSE_TYPES_BY_PRICE.lifetime, price: lifetimePrice }] : []),
+      ...(oneTimePrice > 0 ? [{ licenseType: LICENSE_TYPE_VALUES.oneTime, price: oneTimePrice }] : []),
+      ...(lifetimePrice > 0 ? [{ licenseType: LICENSE_TYPE_VALUES.lifetime, price: lifetimePrice }] : []),
     ]
 
     return await Promise.all(
