@@ -264,8 +264,12 @@ test('downloads content files and starts grace for one-time licenses locally', a
   await screen.getByRole('button', { name: 'Download' }).click()
 
   expect(queryInputs).toEqual([{ contentId: 'content-1', licenseTokenId: '44' }])
-  await expect.element(screen.getByRole('dialog', { name: 'Download complete' })).toBeVisible()
-  await expect.element(screen.getByText('Your files have been downloaded and saved as a ZIP archive.')).toBeVisible()
+  const successDialog = screen.getByRole('dialog', { name: 'Download complete' })
+  await expect.element(successDialog).toBeVisible()
+  await expect.element(successDialog.getByText('Avery Stone')).toBeVisible()
+  await expect
+    .element(successDialog.getByText('Your files have been downloaded and saved as a ZIP archive.'))
+    .toBeVisible()
   await expect.element(screen.getByText(/Access ends in/)).toBeVisible()
   await screen.getByRole('button', { name: 'Done' }).click()
   await tick()
