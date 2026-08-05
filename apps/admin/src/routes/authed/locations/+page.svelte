@@ -72,7 +72,7 @@
         uploads,
         metadata,
         tags,
-        withWatermark: false,
+        withWatermark: true,
         onUploadProgress: uploadSession.setProgress,
       })
 
@@ -113,7 +113,7 @@
         uploads,
         metadata,
         tags,
-        withWatermark: false,
+        withWatermark: true,
         onUploadProgress: uploadSession.setProgress,
       })
 

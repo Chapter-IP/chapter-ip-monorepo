@@ -391,7 +391,9 @@ export default class UploadService {
       : (filename ?? originalBasename)
     const registeredName = fileExt ? `${basename}.${fileExt}` : basename
 
-    const key = await uploadPreviewFile({ contentId, file, trpcClient, filename: basename })
+    const previewFile = await createImagePreview(file)
+
+    const key = await uploadPreviewFile({ contentId, file: previewFile, trpcClient, filename: basename })
 
     await registerContentFile({
       contentId,
