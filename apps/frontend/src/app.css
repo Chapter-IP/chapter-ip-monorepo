@@ -82,7 +82,3 @@ button,
 .btn {
   font-family: var(--font-heading);
 }
-
-button:not(:disabled) {
-  cursor: pointer;
-}
