@@ -385,21 +385,21 @@
       aria-modal="true"
       aria-label="Download complete"
       tabindex="-1"
-      class="w-full max-w-lg bg-[#f5f1ec] p-5 shadow-2xl sm:p-8 select-none cursor-default"
+      class="w-full max-w-lg bg-cream p-5 shadow-2xl sm:p-8 select-none cursor-default"
     >
       <div class="flex items-start justify-between gap-4">
         <div>
           <p class="text-xs leading-4 font-semibold tracking-[0.14em] text-primary uppercase">Download complete</p>
-          <h2 class="mt-1 font-heading text-2xl leading-8 font-semibold text-[#1a1a2e]">
+          <h2 class="mt-1 font-heading text-2xl leading-8 font-semibold text-dark">
             {item.downloadName}
           </h2>
-          <p class="mt-3 text-sm leading-5 text-[#6d6a73]">
+          <!-- <p class="mt-3 text-sm leading-5 text-[#6d6a73]">
             Your files have been downloaded and saved as a ZIP archive.
-          </p>
+          </p> -->
         </div>
         <button
           type="button"
-          class="btn btn-ghost min-h-10 rounded-none px-3 text-xl leading-none text-[#1a1a2e]"
+          class="btn btn-ghost min-h-10 rounded-none px-3 text-xl leading-none text-dark"
           aria-label="Close download confirmation"
           onclick={closeSuccessModal}
         >
