@@ -72,7 +72,7 @@
         uploads,
         metadata,
         tags,
-        withWatermark: true,
+        withWatermark: false,
         onUploadProgress: uploadSession.setProgress,
       })
 
@@ -113,21 +113,16 @@
         uploads,
         metadata,
         tags,
-        withWatermark: true,
+        withWatermark: false,
         onUploadProgress: uploadSession.setProgress,
       })
 
-      try {
-        await uploadPreviewIfNeeded({
-          previewImage: $locationStore.previewImage,
-          contentId,
-          uploadService,
-          trpcClient,
-        })
-      } catch (previewError) {
-        console.error('Error uploading preview image:', previewError)
-        notify('Preview upload failed.', ToastType.FAIL)
-      }
+      await uploadPreviewIfNeeded({
+        previewImage: $locationStore.previewImage,
+        contentId,
+        uploadService,
+        trpcClient,
+      })
 
       uploadSession.setProgress({ phase: 'minting', overallProgress: 1 })
       const tokenId = await uploadService.mintContent({

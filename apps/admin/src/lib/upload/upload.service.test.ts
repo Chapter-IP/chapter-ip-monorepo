@@ -561,6 +561,26 @@ describe('UploadService', () => {
       ).rejects.toThrow('network')
     })
 
+    it('propagates preview creation failures without uploading anything', async () => {
+      const file = new File(['data'], 'photo.png', { type: 'image/png' })
+      mocks.createImagePreview.mockRejectedValue(new Error('watermark failed'))
+      const { client, createContentFileUploadUrl, registerContentFile } = createTrpcClient()
+      const service = new UploadService({ mintWithPrices: vi.fn() } as never)
+
+      await expect(
+        service.uploadLocationPreviewImage({
+          contentId: 'content-id',
+          file,
+          filename: 'preview',
+          trpcClient: client as never,
+        }),
+      ).rejects.toThrow('watermark failed')
+
+      expect(createContentFileUploadUrl).not.toHaveBeenCalled()
+      expect(mocks.uploadFileToBucket).not.toHaveBeenCalled()
+      expect(registerContentFile).not.toHaveBeenCalled()
+    })
+
     it('handles filename with existing extension without duplicating it', async () => {
       const file = new File(['data'], 'photo.gif', { type: 'image/gif' })
       const watermarked = new File(['watermarked'], 'photo.gif', { type: 'image/gif' })
