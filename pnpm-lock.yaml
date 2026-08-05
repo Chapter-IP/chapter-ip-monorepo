@@ -400,6 +400,10 @@ importers:
         version: 2.9.0
 
   packages/content-types:
+    dependencies:
+      '@repo/trpc':
+        specifier: workspace:*
+        version: link:../trpc
     devDependencies:
       typescript:
         specifier: ^6.0.3

@@ -20,6 +20,9 @@
       "default": "./src/location.ts"
     }
   },
+  "dependencies": {
+    "@repo/trpc": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^6.0.3"
   }

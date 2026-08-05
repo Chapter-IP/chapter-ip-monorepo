@@ -1,5 +1,6 @@
 import { DEFAULT_IMAGE_URL } from '$lib/content/image'
 import { r2BaseConfig } from '@repo/fe-services'
+import { STATUS } from '@repo/content-types/content'
 import type { LocationContent } from '@repo/content-types/location'
 
 export { DEFAULT_IMAGE_URL }
@@ -103,7 +104,7 @@ export function buildLocationFindContentInput(
     metadata: buildLocationFilterInput(filters),
     sort: 'createdAt',
     order: 'desc',
-    status: 'ACTIVE',
+    status: STATUS.ACTIVE,
   }
 }
 

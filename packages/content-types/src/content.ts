@@ -1,3 +1,14 @@
+import type { AppRouter, TRPCClient } from '@repo/trpc/client'
+
+type UpdateContentMetadataInput = Parameters<TRPCClient<AppRouter>['contents']['updateContentMetadata']['mutate']>[0]
+export type StatusValue = NonNullable<UpdateContentMetadataInput['status']>
+
+export const STATUS = {
+  DRAFT: 'DRAFT' as StatusValue,
+  ACTIVE: 'ACTIVE' as StatusValue,
+  SALE_DISABLED: 'SALE_DISABLED' as StatusValue,
+} as const
+
 export type ContentFile = {
   id: string
   filename: string
