@@ -1,5 +1,6 @@
 import { DEFAULT_IMAGE_URL } from '$lib/content/image'
 import { r2BaseConfig } from '@repo/fe-services'
+import { STATUS } from '@repo/content-types/content'
 import {
   ETHNICITY_OPTIONS,
   EYE_COLOR_OPTIONS,
@@ -262,7 +263,7 @@ export function buildLikenessFindContentInput(
     metadata: buildLikenessFilterInput(filters),
     sort: 'createdAt',
     order: 'desc',
-    status: 'ACTIVE',
+    status: STATUS.ACTIVE,
   }
 }
 
