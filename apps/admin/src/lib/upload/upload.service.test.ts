@@ -510,8 +510,10 @@ describe('UploadService', () => {
   })
 
   describe('uploadLocationPreviewImage', () => {
-    it('uploads preview file and registers it with the preview bucket', async () => {
+    it('uploads a watermarked preview file and registers it with the preview bucket', async () => {
       const file = new File(['data'], 'photo.png', { type: 'image/png' })
+      const watermarked = new File(['watermarked'], 'photo.png', { type: 'image/png' })
+      mocks.createImagePreview.mockResolvedValue(watermarked)
       const { client, createContentFileUploadUrl, registerContentFile } = createTrpcClient()
       const service = new UploadService({ mintWithPrices: vi.fn() } as never)
 
@@ -522,6 +524,7 @@ describe('UploadService', () => {
         trpcClient: client as never,
       })
 
+      expect(mocks.createImagePreview).toHaveBeenCalledWith(file)
       expect(createContentFileUploadUrl).toHaveBeenCalledWith({
         contentId: 'content-id',
         mimetype: 'image/png',
@@ -529,7 +532,7 @@ describe('UploadService', () => {
         filename: 'preview',
         extension: 'png',
       })
-      expect(mocks.uploadFileToBucket).toHaveBeenCalledWith(file, 'original-url', undefined)
+      expect(mocks.uploadFileToBucket).toHaveBeenCalledWith(watermarked, 'original-url', undefined)
       expect(registerContentFile).toHaveBeenCalledWith({
         contentId: 'content-id',
         key: 'original-key',
@@ -542,6 +545,8 @@ describe('UploadService', () => {
 
     it('propagates upload errors', async () => {
       const file = new File(['data'], 'photo.png', { type: 'image/png' })
+      const watermarked = new File(['watermarked'], 'photo.png', { type: 'image/png' })
+      mocks.createImagePreview.mockResolvedValue(watermarked)
       const { client } = createTrpcClient()
       mocks.uploadFileToBucket.mockRejectedValueOnce(new Error('network'))
       const service = new UploadService({ mintWithPrices: vi.fn() } as never)
@@ -556,8 +561,30 @@ describe('UploadService', () => {
       ).rejects.toThrow('network')
     })
 
+    it('propagates preview creation failures without uploading anything', async () => {
+      const file = new File(['data'], 'photo.png', { type: 'image/png' })
+      mocks.createImagePreview.mockRejectedValue(new Error('watermark failed'))
+      const { client, createContentFileUploadUrl, registerContentFile } = createTrpcClient()
+      const service = new UploadService({ mintWithPrices: vi.fn() } as never)
+
+      await expect(
+        service.uploadLocationPreviewImage({
+          contentId: 'content-id',
+          file,
+          filename: 'preview',
+          trpcClient: client as never,
+        }),
+      ).rejects.toThrow('watermark failed')
+
+      expect(createContentFileUploadUrl).not.toHaveBeenCalled()
+      expect(mocks.uploadFileToBucket).not.toHaveBeenCalled()
+      expect(registerContentFile).not.toHaveBeenCalled()
+    })
+
     it('handles filename with existing extension without duplicating it', async () => {
       const file = new File(['data'], 'photo.gif', { type: 'image/gif' })
+      const watermarked = new File(['watermarked'], 'photo.gif', { type: 'image/gif' })
+      mocks.createImagePreview.mockResolvedValue(watermarked)
       const { client, createContentFileUploadUrl, registerContentFile } = createTrpcClient()
       const service = new UploadService({ mintWithPrices: vi.fn() } as never)
 
@@ -587,6 +614,8 @@ describe('UploadService', () => {
 
     it('handles filename without extension', async () => {
       const file = new File(['data'], 'photo.webp', { type: 'image/webp' })
+      const watermarked = new File(['watermarked'], 'photo.webp', { type: 'image/webp' })
+      mocks.createImagePreview.mockResolvedValue(watermarked)
       const { client, registerContentFile } = createTrpcClient()
       const service = new UploadService({ mintWithPrices: vi.fn() } as never)
 
@@ -609,6 +638,8 @@ describe('UploadService', () => {
 
     it('registers basename only when the file has no extension', async () => {
       const file = new File(['data'], 'photo', { type: 'image/png' })
+      const watermarked = new File(['watermarked'], 'photo', { type: 'image/png' })
+      mocks.createImagePreview.mockResolvedValue(watermarked)
       const { client, createContentFileUploadUrl, registerContentFile } = createTrpcClient()
       const service = new UploadService({ mintWithPrices: vi.fn() } as never)
 

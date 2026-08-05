@@ -5,6 +5,7 @@
 
   import DownloadFilesModal from './DownloadFilesModal.svelte'
   import DownloadProgressModal, { type DownloadProgressState } from './DownloadProgressModal.svelte'
+  import DownloadSuccessModal from './DownloadSuccessModal.svelte'
   import { BLOCK_GRACE_MS } from './helper'
   import LikenessLicenseModal from './LikenessLicenseModal.svelte'
   import LocationLicenseModal from './LocationLicenseModal.svelte'
@@ -373,46 +374,5 @@
 {/if}
 
 {#if isSuccessModalOpen}
-  <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4"
-    role="presentation"
-    onclick={(event) => {
-      if (event.target === event.currentTarget) closeSuccessModal()
-    }}
-  >
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Download complete"
-      tabindex="-1"
-      class="w-full max-w-lg bg-[#f5f1ec] p-5 shadow-2xl sm:p-8 select-none cursor-default"
-    >
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <p class="text-xs leading-4 font-semibold tracking-[0.14em] text-primary uppercase">Download complete</p>
-          <h2 class="mt-1 font-heading text-2xl leading-8 font-semibold text-[#1a1a2e]">
-            {item.downloadName}
-          </h2>
-          <p class="mt-3 text-sm leading-5 text-[#6d6a73]">
-            Your files have been downloaded and saved as a ZIP archive.
-          </p>
-        </div>
-        <button
-          type="button"
-          class="btn btn-ghost min-h-10 rounded-none px-3 text-xl leading-none text-[#1a1a2e]"
-          aria-label="Close download confirmation"
-          onclick={closeSuccessModal}
-        >
-          X
-        </button>
-      </div>
-      <button
-        type="button"
-        class="btn mt-6 min-h-11 w-full rounded-none border-primary bg-primary px-5 text-sm font-semibold text-white hover:border-[#5427dc] hover:bg-[#5427dc]"
-        onclick={closeSuccessModal}
-      >
-        Done
-      </button>
-    </div>
-  </div>
+  <DownloadSuccessModal title={item.downloadName} onClose={closeSuccessModal} />
 {/if}
