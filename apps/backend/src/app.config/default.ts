@@ -23,7 +23,7 @@ const config = {
     evmUrl: 'https://evm.staging.credenza3.com',
   },
   evm: {
-    rpcUrl: 'https://api.avax-test.network/ext/bc/C/rpc',
+    rpcUrl: ['https://api.avax-test.network/ext/bc/C/rpc'],
     wsUrls: ['wss://api.avax-test.network/ext/bc/C/ws', 'wss://avalanche-fuji-c-chain-rpc.publicnode.com'],
     contentNftContractAddress: '0xC748855724179Ab0c0Fb5d196f2926A152AAea5c',
     licenseNftContractAddress: '0xBF2268a14D7f2024EFcf1f4cb2F8ab9f8AE5b6d6',

@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { JsonRpcProvider } from 'ethers'
+import { FallbackProvider, JsonRpcProvider } from 'ethers'
+
+const RPC_STALL_TIMEOUT_MS = 1_000
 
 export type TLazyMintEip712Domain = {
   name: string
@@ -22,14 +24,22 @@ export type TSignLazyMintTokenResponse = {
 
 @Injectable()
 export class CommonEvmService {
-  private provider!: JsonRpcProvider
+  private readonly provider: FallbackProvider
 
   constructor(private readonly configService: ConfigService) {
-    const rpcUrl = this.configService.get<string>('evm.rpcUrl')
-    if (!rpcUrl) {
+    const rpcUrls = this.configService.get<string[]>('evm.rpcUrl')
+    if (!rpcUrls?.length) {
       throw new Error('Missing EVM_RPC_URL')
     }
-    this.provider = new JsonRpcProvider(rpcUrl)
+
+    const providers = rpcUrls.map((url, index) => ({
+      provider: new JsonRpcProvider(url),
+      priority: index + 1,
+      stallTimeout: RPC_STALL_TIMEOUT_MS,
+      weight: 1,
+    }))
+
+    this.provider = new FallbackProvider(providers, undefined, { quorum: 1 })
   }
 
   public getProvider() {
