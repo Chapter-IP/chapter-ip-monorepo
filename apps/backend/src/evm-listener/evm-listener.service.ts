@@ -11,7 +11,7 @@ import { CommonEvmService } from '../common/evm/evm.service'
 import { EvmEventService } from './evm-event.service'
 import { EvmSyncState } from './evm-sync-state.schema'
 
-const POLL_INTERVAL_MS = 4_000
+const POLL_INTERVAL_MS = 10_000
 const RETRY_BASE_DELAY_MS = 2_000
 const RETRY_MAX_DELAY_MS = 30_000
 const BLOCK_BATCH_SIZE = 2_000
@@ -109,7 +109,9 @@ export class EvmListenerService implements OnModuleInit, OnModuleDestroy {
 
     await this.saveCheckpoint(toBlock)
     this.lastProcessedBlock = toBlock
-    this.logger.debug(`Processed EVM blocks ${fromBlock}-${toBlock} (${logs.length} logs)`)
+    if (logs.length > 0) {
+      this.logger.debug(`Processed EVM blocks ${fromBlock}-${toBlock} (${logs.length} logs)`)
+    }
 
     return toBlock < safeLatestBlock ? 0 : POLL_INTERVAL_MS
   }
