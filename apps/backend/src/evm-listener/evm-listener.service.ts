@@ -1,18 +1,23 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { Contract, EventLog, EventFragment, Interface, InterfaceAbi, Log, WebSocketProvider } from 'ethers'
+import { InjectModel } from '@nestjs/mongoose'
+import { EventLog, EventFragment, Interface, InterfaceAbi, Log } from 'ethers'
+import { Model } from 'mongoose'
 import { abi as contentAbi } from '@credenza3/contracts/artifacts/ContentNftContract.json'
 import { abi as licenseAbi } from '@credenza3/contracts/artifacts/LicenseNftContract.json'
 
+import { CommonEvmService } from '../common/evm/evm.service'
+
 import { EvmEventService } from './evm-event.service'
+import { EvmSyncState } from './evm-sync-state.schema'
 
-const RECONNECT_BASE_DELAY_MS = 2_000
-const RECONNECT_MAX_DELAY_MS = 30_000
+const POLL_INTERVAL_MS = 4_000
+const RETRY_BASE_DELAY_MS = 2_000
+const RETRY_MAX_DELAY_MS = 30_000
+const BLOCK_BATCH_SIZE = 2_000
+const CONFIRMATION_BLOCKS = 2
+const SYNC_STATE_NAME = 'evm-event-listener'
 const MONGO_DUPLICATE_KEY_CODE = 11000
-
-interface SocketEmitter {
-  on(event: 'open' | 'close' | 'error', listener: (...args: unknown[]) => void): unknown
-}
 
 interface ListenerContractConfig {
   address: string
@@ -26,164 +31,120 @@ export class EvmListenerService implements OnModuleInit, OnModuleDestroy {
   private readonly contractInterfacesByAddress = new Map<string, Interface>()
   private readonly eventFragmentByTopic = new Map<string, EventFragment>()
 
-  private provider: WebSocketProvider | null = null
-  private contracts: Contract[] = []
-
-  private wsUrls: readonly string[] = []
-  private currentUrlIndex = 0
-
-  private reconnectTimer: NodeJS.Timeout | null = null
-  private reconnectAttempts = 0
+  private pollTimer: NodeJS.Timeout | null = null
+  private lastProcessedBlock: number | null = null
+  private retryAttempts = 0
   private isStopped = false
 
   constructor(
     private readonly configService: ConfigService,
     private readonly evmEventService: EvmEventService,
+    private readonly commonEvmService: CommonEvmService,
+    @InjectModel(EvmSyncState.name) private readonly syncStateModel: Model<EvmSyncState>,
   ) {}
 
   async onModuleInit() {
-    this.wsUrls = this.configService.get<string[]>('evm.wsUrls')!
-    if (!this.wsUrls.length) {
-      this.logger.warn('No EVM websocket URLs configured')
-      return
-    }
     this.initializeContractsAndEventTopics()
-    await this.connect()
+    await this.poll()
   }
 
-  async onModuleDestroy() {
+  onModuleDestroy() {
     this.isStopped = true
-    this.cancelReconnect()
-    await this.disconnect()
-    this.logger.log('Stopped EVM websocket listener')
+    this.cancelPoll()
+    this.logger.log('Stopped EVM event poller')
   }
 
-  private async connect() {
+  private async poll() {
     if (this.isStopped) {
       return
     }
 
-    const url = this.currentUrl()
-    const contractsToListen = this.listenerContractConfigs
-
-    this.logger.log(`Connecting to ${url}`)
+    let nextDelay = POLL_INTERVAL_MS
 
     try {
-      const provider = new WebSocketProvider(url)
-      this.provider = provider
-      this.attachSocketLifecycle(provider, url)
+      nextDelay = await this.pollNextBlockRange()
+      this.retryAttempts = 0
+    } catch (error) {
+      nextDelay = Math.min(RETRY_BASE_DELAY_MS * 2 ** this.retryAttempts, RETRY_MAX_DELAY_MS)
+      this.retryAttempts += 1
+      this.logger.error(`EVM polling failed; retrying in ${nextDelay}ms: ${this.formatError(error)}`)
+    } finally {
+      this.schedulePoll(nextDelay)
+    }
+  }
 
-      this.contracts = contractsToListen.map(({ address, abi }) => {
-        const contract = new Contract(address, abi, provider)
-        contract
-          .on('*', (...args: unknown[]) => void this.handleEvent(args))
-          .catch((error: unknown) => {
-            this.logger.error(`Subscription to ${address} via ${url} failed: ${this.formatError(error)}`)
-            this.handleSubscriptionFailure(provider, `unsupported subscription on ${url}`)
-          })
-        return contract
-      })
+  private async pollNextBlockRange(): Promise<number> {
+    const provider = this.commonEvmService.getProvider()
+    const latestBlock = await provider.getBlockNumber()
+    const safeLatestBlock = Math.max(0, latestBlock - CONFIRMATION_BLOCKS)
 
-      this.reconnectAttempts = 0
-      this.logger.log(
-        `Listening for events on [${contractsToListen.map(({ address }) => address).join(', ')}] via ${url}`,
+    if (this.lastProcessedBlock === null) {
+      const state = await this.syncStateModel.findOne({ name: SYNC_STATE_NAME }).lean().exec()
+      this.lastProcessedBlock = state?.lastProcessedBlock ?? safeLatestBlock
+
+      if (!state) {
+        await this.saveCheckpoint(this.lastProcessedBlock)
+        this.logger.log(`Initialized EVM polling checkpoint at block ${this.lastProcessedBlock}`)
+      } else {
+        this.logger.log(`Resumed EVM polling from block ${this.lastProcessedBlock + 1}`)
+      }
+    }
+
+    if (this.lastProcessedBlock >= safeLatestBlock) {
+      return POLL_INTERVAL_MS
+    }
+
+    const fromBlock = this.lastProcessedBlock + 1
+    const toBlock = Math.min(fromBlock + BLOCK_BATCH_SIZE - 1, safeLatestBlock)
+    const logs = await provider.getLogs({
+      address: this.listenerContractConfigs.map(({ address }) => address),
+      fromBlock,
+      toBlock,
+    })
+
+    logs.sort((left, right) => left.blockNumber - right.blockNumber || left.index - right.index)
+    for (const log of logs) {
+      await this.handleEvent(log)
+    }
+
+    await this.saveCheckpoint(toBlock)
+    this.lastProcessedBlock = toBlock
+    this.logger.debug(`Processed EVM blocks ${fromBlock}-${toBlock} (${logs.length} logs)`)
+
+    return toBlock < safeLatestBlock ? 0 : POLL_INTERVAL_MS
+  }
+
+  private async saveCheckpoint(blockNumber: number) {
+    await this.syncStateModel
+      .updateOne(
+        { name: SYNC_STATE_NAME },
+        { $max: { lastProcessedBlock: blockNumber }, $setOnInsert: { name: SYNC_STATE_NAME } },
+        { upsert: true },
       )
-    } catch (error) {
-      this.logger.error(`Connection to ${url} failed: ${this.formatError(error)}`)
-      await this.disconnect()
-      this.advanceUrl()
-      this.scheduleReconnect(`init failure on ${url}`)
-    }
+      .exec()
   }
 
-  private async disconnect() {
-    this.contracts.forEach((contract) => void contract.removeAllListeners().catch((e: unknown) => this.logger.error(e)))
-    this.contracts = []
-
-    const provider = this.provider
-    this.provider = null
-
-    if (!provider) {
+  private schedulePoll(delay: number) {
+    if (this.isStopped || this.pollTimer) {
       return
     }
 
-    try {
-      await provider.destroy()
-    } catch (error) {
-      this.logger.warn(`Provider destroy error: ${this.formatError(error)}`)
-    }
-  }
-
-  private attachSocketLifecycle(provider: WebSocketProvider, url: string) {
-    const socket = this.getSocketEmitter(provider)
-    if (!socket) {
-      this.logger.warn(`Cannot bind WS lifecycle handlers for ${url}`)
-      return
-    }
-
-    socket.on('open', () => this.logger.log(`WS open: ${url}`))
-
-    socket.on('error', (error: unknown) => {
-      this.logger.error(`WS error on ${url}: ${this.formatError(error)}`)
-      this.handleSocketDeath(`error on ${url}`)
-    })
-
-    socket.on('close', (code: unknown) => {
-      this.logger.warn(`WS closed on ${url} (code=${String(code)})`)
-      this.handleSocketDeath(`close on ${url}`)
-    })
-  }
-
-  private handleSocketDeath(reason: string) {
-    if (this.isStopped || this.reconnectTimer || !this.provider) {
-      return
-    }
-
-    void this.recover(reason)
-  }
-
-  private handleSubscriptionFailure(provider: WebSocketProvider, reason: string) {
-    if (this.isStopped || this.reconnectTimer || this.provider !== provider) {
-      return
-    }
-
-    this.logger.warn(`Falling back to next provider due to: ${reason}`)
-    void this.recover(reason)
-  }
-
-  private async recover(reason: string) {
-    await this.disconnect()
-    this.advanceUrl()
-    this.scheduleReconnect(reason)
-  }
-
-  private scheduleReconnect(reason: string) {
-    if (this.isStopped || this.reconnectTimer) {
-      return
-    }
-
-    const delay = Math.min(RECONNECT_BASE_DELAY_MS * 2 ** this.reconnectAttempts, RECONNECT_MAX_DELAY_MS)
-    this.reconnectAttempts += 1
-    this.logger.warn(`Reconnect scheduled in ${delay}ms (${reason})`)
-
-    this.reconnectTimer = setTimeout(() => {
-      this.reconnectTimer = null
-      void this.connect()
+    this.pollTimer = setTimeout(() => {
+      this.pollTimer = null
+      void this.poll()
     }, delay)
   }
 
-  private cancelReconnect() {
-    if (!this.reconnectTimer) {
-      return
+  private cancelPoll() {
+    if (this.pollTimer) {
+      clearTimeout(this.pollTimer)
+      this.pollTimer = null
     }
-    clearTimeout(this.reconnectTimer)
-    this.reconnectTimer = null
   }
 
-  private async handleEvent(args: unknown[]) {
-    const eventLog = this.findEventLog(args)
+  private async handleEvent(log: Log) {
+    const eventLog = this.parseRawLog(log)
     if (!eventLog) {
-      this.logger.warn('Received event without parsable EventLog')
       return
     }
 
@@ -213,15 +174,8 @@ export class EvmListenerService implements OnModuleInit, OnModuleDestroy {
       this.logger.error(
         `Failed to persist event tx=${eventLog.transactionHash} index=${eventLog.index}: ${this.formatError(error)}`,
       )
+      throw error
     }
-  }
-
-  private currentUrl() {
-    return this.wsUrls[this.currentUrlIndex % this.wsUrls.length]
-  }
-
-  private advanceUrl() {
-    this.currentUrlIndex = (this.currentUrlIndex + 1) % this.wsUrls.length
   }
 
   private requireEnv(name: string) {
@@ -260,74 +214,6 @@ export class EvmListenerService implements OnModuleInit, OnModuleDestroy {
         this.eventFragmentByTopic.set(eventFragment.topicHash, eventFragment)
       }
     }
-  }
-
-  private getSocketEmitter(provider: WebSocketProvider): SocketEmitter | null {
-    const ws = (provider as unknown as { websocket?: unknown }).websocket
-    if (!ws || typeof ws !== 'object') {
-      return null
-    }
-    const candidate = ws as { on?: unknown }
-    return typeof candidate.on === 'function' ? (ws as SocketEmitter) : null
-  }
-
-  private findEventLog(args: unknown[]): EventLog | null {
-    const candidates = [args[args.length - 1], ...args]
-    for (const candidate of candidates) {
-      if (!candidate || typeof candidate !== 'object') {
-        continue
-      }
-
-      const maybeLog = (candidate as Record<string, unknown>)['log']
-      if (this.isEventLog(maybeLog)) {
-        return maybeLog
-      }
-
-      const rawLog = this.extractLog(candidate)
-      if (!rawLog) {
-        continue
-      }
-
-      const parsed = this.parseRawLog(rawLog)
-      if (parsed) {
-        return parsed
-      }
-    }
-    return null
-  }
-
-  private isEventLog(value: unknown): value is EventLog {
-    return (
-      value !== null &&
-      typeof value === 'object' &&
-      'fragment' in value &&
-      'transactionHash' in value &&
-      'blockNumber' in value &&
-      'args' in value
-    )
-  }
-
-  private extractLog(value: unknown): Log | null {
-    if (!value || typeof value !== 'object') {
-      return null
-    }
-    if (this.isLog(value)) {
-      return value
-    }
-    const maybeLog = (value as Record<string, unknown>)['log']
-    return this.isLog(maybeLog) ? maybeLog : null
-  }
-
-  private isLog(value: unknown): value is Log {
-    return (
-      value !== null &&
-      typeof value === 'object' &&
-      'address' in value &&
-      'topics' in value &&
-      'data' in value &&
-      'transactionHash' in value &&
-      'blockNumber' in value
-    )
   }
 
   private parseRawLog(log: Log): EventLog | null {
