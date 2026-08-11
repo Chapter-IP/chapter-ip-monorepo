@@ -48,6 +48,12 @@
   --color-disabled: #6d6b76;
 }
 
+/* Toggle: round frame and knob corners (matches rounded-sm) */
+.toggle,
+.toggle::before {
+  border-radius: 0.25rem;
+}
+
 .input.validator:focus-within {
   outline: none !important;
   box-shadow: none !important;
