@@ -25,7 +25,8 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      pull-requests: read
+      pull-requests: write
+      issues: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -39,3 +40,4 @@ jobs:
         with:
           share: false
           model: opencode/big-pickle
+          use_github_token: true

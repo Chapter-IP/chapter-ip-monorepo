@@ -114,7 +114,7 @@
 
       <div class="border border-[#ddd] rounded-md overflow-visible">
         <div class="overflow-x-auto">
-          <table class="w-full text-sm font-medium text-[#1A1A2E]/60">
+          <table class="w-full text-sm font-medium text-dark/60">
             <thead>
               <tr class="text-left border-b border-[#ddd] bg-cream">
                 <th class="px-4 py-3.5 align-middle">
