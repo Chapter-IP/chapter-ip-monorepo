@@ -46,7 +46,7 @@
       onchange={handleToggle}
     />
   {/if}
-  <span class="inline-flex items-center gap-1 px-2.5 py-1.25 rounded-sm text-sm {cfg.classes} whitespace-nowrap">
+  <span class="inline-flex items-center gap-1 w-24 px-2.5 py-1.25 rounded-sm text-sm {cfg.classes} whitespace-nowrap">
     {#if cfg.img}
       <img src={cfg.img} alt="" class="size-2.5" />
     {/if}

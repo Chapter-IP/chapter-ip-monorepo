@@ -51,7 +51,7 @@
 /* Toggle: round frame and knob corners (matches rounded-sm) */
 .toggle,
 .toggle::before {
-  border-radius: 0.25rem;
+  border-radius: 0.1875rem;
 }
 
 .input.validator:focus-within {
