@@ -2,6 +2,7 @@
   import { likenessStore } from '../stores/likeness-store'
   import MediaUpload from './MediaUpload.svelte'
   import LikenessDetails from './LikenessDetails.svelte'
+  import { MEDIA_UPLOAD_GUIDELINES } from '../constants/constants'
 
   let {
     currentStep = $bindable(),
@@ -20,64 +21,87 @@
   )
 </script>
 
+{#snippet fieldLabel(text: string)}
+  <div class="flex justify-between">
+    <span class="mb-2 block text-sm text-[#71707a]">{text}</span>
+    <p class="text-sm text-[#f00]">* required</p>
+  </div>
+{/snippet}
+{#snippet divider()}
+  <div class="border-t border-[#ddd] mb-12.25 mx-auto max-w-6xl md:px-35"></div>
+{/snippet}
+
 <div class="space-y-12 mt-7.25 text-dark">
-  <div class="pb-6">
-    <h2 class="mb-2 text-[28px] font-medium text-left text-dark">Upload your likeness</h2>
-    <p class="mt-3 text-basetext-left text-[#72717b]">
-      Describe the asset clearly so the next licensing step has the right context.
-    </p>
+  <div class="space-y-8 max-w-137.5">
+    <div>
+      <h2 class="mb-2 text-[28px] font-medium text-left text-dark">Upload your likeness</h2>
+      <p class="mt-3 text-basetext-left text-[#72717b]">
+        Describe the asset clearly so the next licensing step has the right context.
+      </p>
+      <p class="text-sm text-[#72717b] mt-4.5"><spsn class="text-[#f00]">* required</spsn> indicates required field</p>
+    </div>
+    <div class="space-y-6">
+      <h3 class="text-base font-semibold text-left">General Information</h3>
+
+      <label class="block space-y-2.5">
+        {@render fieldLabel('Full Legal Name')}
+        <input
+          id="full-legal-name"
+          type="text"
+          bind:value={$likenessStore.profile.fullLegalName}
+          placeholder="Your legal name"
+          class="w-full h-11.75 bg-white rounded-sm border border-[#ddd4cc] p-3.75 focus:border-primary focus:outline-none
+         opacity-0.3 text-sm font-medium text-left text-[#71707a]"
+        />
+      </label>
+
+      <label class="block space-y-3">
+        <span class="mb-2 block text-sm text-[#71707a]">Stage Name</span>
+        <input
+          id="stage-name"
+          type="text"
+          bind:value={$likenessStore.profile.stageName}
+          placeholder="Your stage name"
+          class="w-full h-11.75 bg-white rounded-sm border border-[#ddd4cc] p-3.75 focus:border-primary focus:outline-none
+         opacity-0.3 text-sm font-medium text-left text-[#71707a]"
+        />
+      </label>
+
+      <label class="block space-y-3">
+        {@render fieldLabel('Bio')}
+        <textarea
+          id="bio"
+          bind:value={$likenessStore.profile.bio}
+          placeholder="Bio"
+          class="w-full h-25 bg-white rounded-sm border border-[#ddd4cc] p-3.75 focus:border-primary focus:outline-none
+         opacity-0.3 text-sm font-medium text-left text-[#71707a]"></textarea>
+      </label>
+    </div>
   </div>
 
-  <div class="space-y-6">
-    <h3 class="text-base font-semibold text-left">General Information</h3>
-    <label class="block space-y-3">
-      <span class="mb-2 block text-sm text-[#71707a]">Full Legal Name<span class="text-[#ff0000] pl-0.5">*</span></span>
-      <input
-        id="full-legal-name"
-        type="text"
-        bind:value={$likenessStore.profile.fullLegalName}
-        placeholder="Your legal name"
-        class="w-full max-w-137.5 h-11.75 bg-white rounded-sm border border-[#ddd4cc] p-3.75 focus:border-primary focus:outline-none
-         opacity-0.3 text-sm font-medium text-left text-[#71707a]"
-      />
-    </label>
+  {@render divider()}
 
-    <label class="block space-y-3">
-      <span class="mb-2 block text-sm text-[#71707a]">Stage Name</span>
-      <input
-        id="stage-name"
-        type="text"
-        bind:value={$likenessStore.profile.stageName}
-        placeholder="Your stage name"
-        class="w-full max-w-137.5 h-11.75 bg-white rounded-sm border border-[#ddd4cc] p-3.75 focus:border-primary focus:outline-none
-         opacity-0.3 text-sm font-medium text-left text-[#71707a]"
-      />
-    </label>
+  <LikenessDetails>{@render divider()}</LikenessDetails>
 
-    <label class="block space-y-3">
-      <span class="mb-2 block text-sm text-[#71707a]">Bio<span class="text-[#ff0000] pl-0.5">*</span></span>
-      <textarea
-        id="bio"
-        bind:value={$likenessStore.profile.bio}
-        placeholder="Bio"
-        class="w-full max-w-137.5 h-25 bg-white rounded-sm border border-[#ddd4cc] p-3.75 focus:border-primary focus:outline-none
-         opacity-0.3 text-sm font-medium text-left text-[#71707a]"
-      ></textarea>
-    </label>
+  {@render divider()}
+
+  <div class="max-w-137.5 mb-20.75">
+    <div class="space-y-8.75">
+      {#each MEDIA_UPLOAD_GUIDELINES as guideline (guideline.fileKey)}
+        <MediaUpload
+          label={guideline.label}
+          fileKey={guideline.fileKey}
+          mediaKind={guideline.mediaKind}
+          required={guideline.required}
+          descriptions={guideline.description}
+          header={guideline.header}
+          {...guideline.headerLink ? { headerLink: guideline.headerLink } : {}}
+        />
+      {/each}
+    </div>
   </div>
-  <div class="border-t border-[#ddd] mb-12.25 mx-10"></div>
-  <LikenessDetails />
-  <div class="border-t border-[#ddd] mb-12.25 mx-10"></div>
-  <div>
-    <h3 class="text-base font-semibold text-left">Upload assets</h3>
-    <p class="mt-3 text-base text-[#72717b]">Upload by dragging files onto the page or clicking to browse.</p>
-    <MediaUpload label="Headshots" required={true} fileKey="headshots" mediaKind="image" />
-  </div>
-  <div class="flex md:flex-row flex-col gap-3.25">
-    <MediaUpload label="Full body" fileKey="bodyShots" mediaKind="image" />
-    <MediaUpload label="Voice samples" fileKey="voiceSamples" mediaKind="audio" />
-    <MediaUpload label="Video reels" fileKey="videoReels" mediaKind="video" />
-  </div>
+
+  {@render divider()}
 
   <div class="flex justify-center">
     <label class="flex items-center gap-3 cursor-pointer">

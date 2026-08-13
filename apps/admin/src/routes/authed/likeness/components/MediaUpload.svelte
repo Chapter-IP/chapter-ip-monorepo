@@ -11,12 +11,18 @@
     fileKey = 'headshots',
     mediaKind = 'image',
     multiple = true,
+    descriptions = '',
+    header,
+    headerLink,
   } = $props<{
     label: string
     required?: boolean
     fileKey?: MediaFileKey
     mediaKind?: MediaKind
     multiple?: boolean
+    descriptions?: string
+    header?: string
+    headerLink?: { text: string; href: string }
   }>()
 
   const accept = $derived(mediaKind === 'image' ? 'image/*' : mediaKind === 'audio' ? 'audio/*' : 'video/*')
@@ -95,12 +101,26 @@
 </script>
 
 <div class="space-y-1.25 w-full">
-  <label class="text-sm text-[#707070]" for={`upload-${fileKey}`}>
-    {label}{#if required}<span class="text-[#ff0000] pl-0.5">*</span>{/if}
-  </label>
+  {#if header}
+    <h1 class="text-base font-semibold text-dark mb-5">{header}</h1>
+  {/if}
+  <div class="flex justify-between">
+    <label class="text-base font-semibold text-dark" for={`upload-${fileKey}`}>
+      {label}
+    </label>
+    {#if required}
+      <span class="text-sm text-[#ff0000]">* required</span>
+    {/if}
+  </div>
+  <p class="text-base text-[#707070] mt-2.25">{descriptions}</p>
+  {#if headerLink}
+    <a class="block text-base font-medium text-primary mt-6.25" href={headerLink.href}
+      >{headerLink.text}<span class="ml-1.25">↗</span></a
+    >
+  {/if}
 
   <div
-    class="border border-dashed min-h-62.5 rounded-lg border-[#1A1A2E33] p-4 bg-cream flex flex-col items-center justify-center gap-4"
+    class="border border-dashed min-h-62.5 rounded-lg border-[#1A1A2E33] p-4 bg-cream flex flex-col items-center justify-center gap-1.5 mt-6.25"
     id={`upload-${fileKey}`}
     role="button"
     tabindex="0"
@@ -154,12 +174,12 @@
         >
       </div>
     {:else}
-      <p class="text-base font-semibold text-dark">{emptyStateText}</p>
       <button
         type="button"
         onclick={openFilePicker}
         class="w-10.5 h-10.5 rounded-full bg-primary text-white flex items-center justify-center text-4xl">+</button
       >
+      <p class="text-base font-semibold text-dark">{emptyStateText}</p>
     {/if}
 
     <input type="file" class="hidden" bind:this={imageInput} onchange={handleFileInput} {accept} {multiple} />
