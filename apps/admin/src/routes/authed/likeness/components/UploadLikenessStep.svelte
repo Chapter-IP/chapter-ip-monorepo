@@ -38,7 +38,7 @@
       <p class="mt-3 text-basetext-left text-[#72717b]">
         Describe the asset clearly so the next licensing step has the right context.
       </p>
-      <p class="text-sm text-[#72717b] mt-4.5"><spsn class="text-[#f00]">* required</spsn> indicates required field</p>
+      <p class="text-sm text-[#72717b] mt-4.5"><span class="text-[#f00]">* required</span> indicates required field</p>
     </div>
     <div class="space-y-6">
       <h3 class="text-base font-semibold text-left">General Information</h3>

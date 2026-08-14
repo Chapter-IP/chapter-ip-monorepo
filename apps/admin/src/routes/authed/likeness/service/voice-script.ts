@@ -18,11 +18,11 @@ export const voiceScript: VoiceScriptData = {
     title: 'Before you start',
     bullets: [
       'Quiet, treated room. Record 10 seconds of room tone before the first line and after the last.',
-      'Mic 6–8 inches away, slightly off-axis, pop filter on. Peaks around " 12 dB, never clipping.',
+      'Mic 6–8 inches away, slightly off-axis, pop filter on. Peaks around 12 dB, never clipping.',
       'One take per section is fine; if you stumble, pause two seconds and repeat the whole sentence.',
       'Read at your natural conversational pace unless a direction says otherwise. Do not "announce."',
       'Directions appear in [ bracketed italics ]. Never read them aloud.',
-      'Pause ~2 seconds between numbered sections',
+      'Pause ~2 seconds between numbered sections.',
     ],
   },
   sections: [
@@ -41,7 +41,7 @@ export const voiceScript: VoiceScriptData = {
     },
     {
       title: 'Section 2 — Natural baseline read',
-      duration: '~2 minuets',
+      duration: '~2 minutes',
       instruction:
         '[ Your everyday storytelling voice. Relaxed, warm, unhurried. This is the foundation of the profile — resist the urge to perform. ]',
       blocks: [
@@ -57,7 +57,7 @@ export const voiceScript: VoiceScriptData = {
     },
     {
       title: 'Section 3 — Phonetic coverage',
-      duration: '~2.5 minuets',
+      duration: '~2.5 minutes',
       instruction:
         '[ Neutral, clear, evenly paced. Slightly slower than Section 2. Give every word its full shape without over-articulating. ]',
       numbered: true,
@@ -130,7 +130,7 @@ export const voiceScript: VoiceScriptData = {
     },
     {
       title: 'Section 4 — Emotional range',
-      duration: '~3 minuets',
+      duration: '~3 minutes',
       instruction:
         '[ Each emotion has its own lines, plus one anchor sentence — "I never expected it to happen this way." Say the anchor in that emotion every time. Take a breath and genuinely shift state between emotions; a two-second pause between each block.  ]',
       blocks: [
@@ -222,7 +222,7 @@ export const voiceScript: VoiceScriptData = {
     },
     {
       title: 'Section 5 — Common phrases & functional speech',
-      duration: '~1.5 minuets',
+      duration: '~1.5 minutes',
       instruction: '[ Natural conversational delivery, as if speaking to one person. ]',
       blocks: [
         {
@@ -263,7 +263,7 @@ export const voiceScript: VoiceScriptData = {
     },
     {
       title: 'Section 6 — Dynamics & prosody',
-      duration: '~1 minuets',
+      duration: '~1 minutes',
       instruction: '[ Same sentence, different deliveries. Reset between each. ]',
       closingInstruction:
         '[ Finally, three natural, non-verbal moments — one each, genuine: a short laugh, a long sigh, a thoughtful "hmm." ]',
@@ -324,7 +324,7 @@ export const voiceScript: VoiceScriptData = {
       'Diphthongs: ay, eye, oy, ow, oh, ear, air, oor — §3b',
       'Consonants: p b t d k g f v, both th sounds, s z sh zh ch j m n ng l r w y h — §3c',
       'Clusters: str, spl, spr, thr, shr, squ, -sks, -sts, -sps — §3d',
-      "Prosody: whisper!'projected, half!'double speed, rising/falling/trailing intonation — §6",
+      'Prosody: whisper → projected, half → double speed, rising/falling/trailing intonation — §6',
       'Emotions: 12 states with a constant anchor sentence for cross-emotion comparison — §4',
       'Functional speech: greetings, questions, digits 0–1M, ordinals, dates/times/currency/phone, full alphabet — §5',
       'Non-verbal: laugh, sigh, hmm — §6',
