@@ -22,7 +22,7 @@
     multiple?: boolean
     descriptions?: string
     header?: string
-    headerLink?: { text: string; href: string }
+    headerLink?: { text: string; onClick: () => void }
   }>()
 
   const accept = $derived(mediaKind === 'image' ? 'image/*' : mediaKind === 'audio' ? 'audio/*' : 'video/*')
@@ -114,8 +114,10 @@
   </div>
   <p class="text-base text-[#707070] mt-2.25">{descriptions}</p>
   {#if headerLink}
-    <a class="block text-base font-medium text-primary mt-6.25" href={headerLink.href}
-      >{headerLink.text}<span class="ml-1.25">↗</span></a
+    <button
+      type="button"
+      class="block text-base font-medium text-primary mt-6.25 cursor-pointer"
+      onclick={headerLink.onClick}>{headerLink.text}<span class="ml-1.25">↗</span></button
     >
   {/if}
 

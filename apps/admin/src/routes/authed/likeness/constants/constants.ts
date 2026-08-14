@@ -1,4 +1,5 @@
 import { LICENSE_TYPE_OPTIONS, PERMITTED_USE_OPTIONS } from '@repo/content-types/likeness'
+import { openVoiceScriptModal } from '../service/voice-script-modal'
 
 export { ETHNICITY_OPTIONS, EYE_COLOR_OPTIONS, HAIR_COLOR_OPTIONS, UNION_OPTIONS } from '@repo/content-types/likeness'
 export { STATUS, type StatusValue } from '@repo/content-types/content'
@@ -59,7 +60,7 @@ type MediaUploadGuideline = {
   mediaKind: 'image' | 'audio' | 'video'
   required: boolean
   header: string
-  headerLink?: { text: string; href: string }
+  headerLink?: { text: string; onClick: () => void }
 }
 
 export const MEDIA_UPLOAD_GUIDELINES: MediaUploadGuideline[] = [
@@ -89,7 +90,7 @@ export const MEDIA_UPLOAD_GUIDELINES: MediaUploadGuideline[] = [
     mediaKind: 'audio',
     required: false,
     header: 'Uploading Voice Samples',
-    headerLink: { text: 'Open ChapterIP voice script', href: '' },
+    headerLink: { text: 'Open ChapterIP voice script', onClick: openVoiceScriptModal },
   },
   {
     label: 'Video reels',

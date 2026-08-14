@@ -95,7 +95,7 @@
           required={guideline.required}
           descriptions={guideline.description}
           header={guideline.header}
-          {...guideline.headerLink ? { headerLink: guideline.headerLink } : {}}
+          headerLink={guideline.headerLink}
         />
       {/each}
     </div>
