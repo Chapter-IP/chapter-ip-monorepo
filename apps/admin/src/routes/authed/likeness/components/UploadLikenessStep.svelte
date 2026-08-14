@@ -35,7 +35,7 @@
   <div class="space-y-8 max-w-137.5">
     <div>
       <h2 class="mb-2 text-[28px] font-medium text-left text-dark">Upload your likeness</h2>
-      <p class="mt-3 text-basetext-left text-[#72717b]">
+      <p class="mt-3 text-base text-left text-[#72717b]">
         Describe the asset clearly so the next licensing step has the right context.
       </p>
       <p class="text-sm text-[#72717b] mt-4.5"><span class="text-[#f00]">* required</span> indicates required field</p>

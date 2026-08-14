@@ -102,7 +102,7 @@
 
 <div class="space-y-1.25 w-full">
   {#if header}
-    <h1 class="text-base font-semibold text-dark mb-5">{header}</h1>
+    <h3 class="text-base font-semibold text-dark mb-5">{header}</h3>
   {/if}
   <div class="flex justify-between">
     <label class="text-base font-semibold text-dark" for={`upload-${fileKey}`}>

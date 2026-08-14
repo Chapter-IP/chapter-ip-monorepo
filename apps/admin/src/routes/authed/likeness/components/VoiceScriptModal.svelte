@@ -18,7 +18,12 @@
 {/snippet}
 
 {#if isOpen}
-  <div role="dialog" class="z-20 flex justify-center items-start fixed top-20 bottom-5 left-0 right-0 mx-3">
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="voice-script-title"
+    class="z-20 flex justify-center items-start fixed top-20 bottom-5 left-0 right-0 mx-3"
+  >
     <div
       class="relative bg-cream rounded-xl border border-[#1a1a2e33] w-full max-w-225 h-full overflow-y-auto px-6 md:pl-13 md:pr-18 pt-14.5 pb-31.25"
     >
@@ -29,7 +34,7 @@
         onclick={() => close()}>✕</button
       >
 
-      <h2 class="text-[22px] font-semibold text-dark">{voiceScript.title}</h2>
+      <h2 id="voice-script-title" class="text-[22px] font-semibold text-dark">{voiceScript.title}</h2>
 
       <div class="mt-5.5 space-y-6">
         {#each voiceScript.intro as paragraph, i (i)}
@@ -93,14 +98,12 @@
                         <span class="shrink-0 w-6 text-right text-base font-medium text-[#747474]"
                           >{numberedLines[si][bi][li].number}.</span
                         >
-                        <p class="text-base text-[#747474] font-[Georgia] italic leading-6">
+                        <p class="text-base text-[#747474] font-georgia italic leading-6">
                           {@render scriptLine(line)}
                         </p>
                       </div>
                     {:else}
-                      <p
-                        class="text-base text-[#747474] font-[Georgia] italic {block.label ? 'leading-6' : 'leading-7'}"
-                      >
+                      <p class="text-base text-[#747474] font-georgia italic {block.label ? 'leading-6' : 'leading-7'}">
                         {@render scriptLine(line)}
                       </p>
                     {/if}

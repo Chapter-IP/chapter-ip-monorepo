@@ -37,6 +37,7 @@
 
   --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
   --font-heading: 'Sora', ui-sans-serif, system-ui, sans-serif;
+  --font-georgia: Georgia, 'Times New Roman', serif;
 }
 
 /* DaisyUI primary override */
