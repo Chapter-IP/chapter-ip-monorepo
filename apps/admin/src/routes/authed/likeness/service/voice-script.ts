@@ -1,4 +1,4 @@
-import type { VoiceScriptData, VoiceScriptPlaceholderSegment } from '../types/voice-script.types'
+import type { VoiceScriptData } from '../types/voice-script.types'
 
 export const voiceScript: VoiceScriptData = {
   title: 'ChapterIP Voice Profile — 10-Minute Recording Script',
@@ -331,60 +331,4 @@ export const voiceScript: VoiceScriptData = {
       'Provenance: spoken consent + identity statement at head and tail — §1, §7',
     ],
   },
-}
-
-export function getNumberedLines(data: VoiceScriptData) {
-  return data.sections.map((section) => {
-    let count = 0
-    return section.blocks.map((block) =>
-      block.lines.map((line) => {
-        count += 1
-        return { line, number: count }
-      }),
-    )
-  })
-}
-
-export function splitPlaceholders(line: string): VoiceScriptPlaceholderSegment[] {
-  return line
-    .split(/(\[[^\]]+\])/g)
-    .filter(Boolean)
-    .map((part) => ({
-      text: part,
-      dark: part.startsWith('[') && part.endsWith(']'),
-    }))
-}
-
-export function buildScriptText(): string {
-  const lines: string[] = []
-  lines.push(voiceScript.title)
-  lines.push('')
-  for (const paragraph of voiceScript.intro) lines.push(paragraph.map((segment) => segment.text).join(''))
-  lines.push('')
-  lines.push(`${voiceScript.beforeYouStart.title} — ${voiceScript.beforeYouStart.label}`)
-  for (const bullet of voiceScript.beforeYouStart.bullets) lines.push(`• ${bullet}`)
-  lines.push('')
-  for (const section of voiceScript.sections) {
-    lines.push(section.title + (section.duration ? ` — ${section.duration}` : ''))
-    if (section.instruction) lines.push(section.instruction)
-    for (const block of section.blocks) {
-      if (block.label) lines.push(block.label)
-      lines.push(block.lines.join(block.paragraphGap ? '\n\n\n' : '\n'))
-    }
-    if (section.closingInstruction) lines.push(section.closingInstruction)
-    lines.push('')
-  }
-  lines.push(`${voiceScript.coverageChecklist.title} — ${voiceScript.coverageChecklist.label}`)
-  for (const item of voiceScript.coverageChecklist.items) lines.push(`• ${item}`)
-  return lines.join('\n')
-}
-
-export function downloadVoiceScript() {
-  const blob = new Blob([buildScriptText()], { type: 'text/plain;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = 'chapter-ip-voice-script.txt'
-  anchor.click()
-  URL.revokeObjectURL(url)
 }
