@@ -99,7 +99,7 @@
 
   <ul
     tabindex="-1"
-    class="dropdown-content menu rounded-box z-30 md:w-100 w-[90vw] min-h-162.5 p-3.75 rounded-md shadow-[3px_6px_8px_0_rgba(21,34,50,0.08)]
+    class="dropdown-content flex flex-col rounded-box z-30 md:w-100 w-[90vw] min-h-162.5 p-3.75 rounded-md shadow-[3px_6px_8px_0_rgba(21,34,50,0.08)]
     border border-[#1A1A2E1A] top-12 bg-cream text-sm font-medium text-left text-[#1A1A2E99]
     md:translate-x-6 max-md:fixed max-md:left-1/2 max-md:-translate-x-1/2 max-md:top-16"
   >
@@ -185,14 +185,14 @@
       {/if}
     </div>
 
-    <div class="flex flex-col h-full mt-auto px-3 pb-3.75">
+    <div class="flex flex-col w-full min-w-0 mt-auto px-3 pb-3.75">
       <div class="border-t border-[#DDD7D1] mb-3.5"></div>
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between gap-2">
         <span class="text-[13px] text-[#1A1A2E99] font-semibold wrap-break-word min-w-0">
           {unreadNotifications.length} unread of {$notificationStore.length} notifications
         </span>
         <button
-          class="text-[13px] font-semibold text-primary hover:opacity-80 transition cursor-pointer"
+          class="shrink-0 text-[13px] font-semibold text-primary hover:opacity-80 transition cursor-pointer"
           onclick={() => {
             goto('/authed/notifications')
           }}

@@ -94,7 +94,7 @@
         </div>
         <div class="flex md:gap-1">
           {#each filters as f (f)}
-            {@const isDisabled = f === 'Written works' || f === 'Locations'}
+            {@const isDisabled = f === 'Written works'}
             <button
               onclick={() => {
                 if (isDisabled) return
