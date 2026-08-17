@@ -30,12 +30,12 @@
     aria-modal="true"
     aria-labelledby={titleId}
     tabindex="-1"
-    class="max-h-[90vh] w-full max-w-3xl overflow-y-auto bg-[#f5f1ec] p-5 shadow-2xl sm:p-8"
+    class="max-h-[90vh] w-full max-w-3xl overflow-y-auto bg-cream p-5 shadow-2xl sm:p-8"
   >
     <div class="flex items-start justify-between gap-4">
       <div>
         <p class="text-xs leading-4 font-semibold tracking-[0.14em] text-primary uppercase">Location License</p>
-        <h2 id={titleId} class="mt-1 font-heading text-2xl leading-8 font-semibold text-[#1a1a2e]">
+        <h2 id={titleId} class="mt-1 font-heading text-2xl leading-8 font-semibold text-dark">
           {location.name}
         </h2>
         {#if byline}
@@ -44,7 +44,7 @@
       </div>
       <button
         type="button"
-        class="btn btn-ghost min-h-10 rounded-none px-3 text-xl leading-none text-[#1a1a2e]"
+        class="btn btn-ghost min-h-10 rounded-none px-3 text-xl leading-none text-dark"
         aria-label="Close license details"
         onclick={onClose}
       >
@@ -54,18 +54,18 @@
 
     <div class="mt-6 grid gap-6 text-sm leading-6 text-[#45424d]">
       <section aria-label="Description">
-        <h3 class="text-base leading-5 font-semibold text-[#1a1a2e]">Description</h3>
+        <h3 class="text-base leading-5 font-semibold text-dark">Description</h3>
         <p class="mt-2 whitespace-pre-line">{location.description || 'Not specified.'}</p>
       </section>
 
       <section aria-label="Licenses">
-        <h3 class="text-base leading-5 font-semibold text-[#1a1a2e]">Licenses</h3>
+        <h3 class="text-base leading-5 font-semibold text-dark">Licenses</h3>
         {#if location.licenses.length > 0}
           <div class="mt-3 grid gap-3">
             {#each location.licenses as license (license.id)}
               <div class="border border-[#1a1a2e1a] bg-white p-4">
                 <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-                  <h4 class="font-semibold text-[#1a1a2e]">{license.name}</h4>
+                  <h4 class="font-semibold text-dark">{license.name}</h4>
                   <p class="font-semibold text-primary">${license.price}</p>
                 </div>
                 {#if license.description}
@@ -97,7 +97,7 @@
 
       {#if location.tags.length > 0}
         <section aria-label="Tags">
-          <h3 class="text-base leading-5 font-semibold text-[#1a1a2e]">Tags</h3>
+          <h3 class="text-base leading-5 font-semibold text-dark">Tags</h3>
           <p class="mt-2">{location.tags.join(', ')}</p>
         </section>
       {/if}

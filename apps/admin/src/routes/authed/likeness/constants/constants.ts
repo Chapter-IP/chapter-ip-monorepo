@@ -51,3 +51,53 @@ export const TERRITORIES = [
   'South America',
   'United States only',
 ]
+
+type MediaUploadGuideline = {
+  label: string
+  description: string
+  fileKey: 'headshots' | 'bodyShots' | 'voiceSamples' | 'videoReels'
+  mediaKind: 'image' | 'audio' | 'video'
+  required: boolean
+  header: string
+  headerLink?: { text: string }
+}
+
+export const MEDIA_UPLOAD_GUIDELINES: MediaUploadGuideline[] = [
+  {
+    label: 'Headshots',
+    description:
+      'Clear, recent photos of your face — front-on and profile, in good lighting. No filters, heavy makeup looks, sunglasses, or other people in frame.',
+    fileKey: 'headshots',
+    mediaKind: 'image',
+    required: true,
+    header: 'Uploading Headshots and Body Shots',
+  },
+  {
+    label: 'Full Body Shots',
+    description:
+      'Full-length shots in normal, everyday clothing that show your natural build and posture. A plain background and a front, side, and back angle work best.',
+    fileKey: 'bodyShots',
+    mediaKind: 'image',
+    required: false,
+    header: '',
+  },
+  {
+    label: 'Voice Samples',
+    description:
+      'Your natural speaking voice, recorded in a quiet room — no music, echo, or other voices. For the best profile, read our 10-minute recording script.',
+    fileKey: 'voiceSamples',
+    mediaKind: 'audio',
+    required: false,
+    header: 'Uploading Voice Samples',
+    headerLink: { text: 'Open ChapterIP voice script' },
+  },
+  {
+    label: 'Video reels',
+    description:
+      'Short, well-lit clips of you speaking and moving on camera — 30 seconds to a few minutes, with only you in frame. Interviews, self-tapes, and casual phone footage all work.',
+    fileKey: 'videoReels',
+    mediaKind: 'video',
+    required: false,
+    header: 'Uploading Video Reels',
+  },
+]

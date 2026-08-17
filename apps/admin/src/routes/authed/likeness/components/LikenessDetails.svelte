@@ -1,6 +1,9 @@
 <script lang="ts">
   import { EYE_COLOR_OPTIONS, ETHNICITY_OPTIONS, HAIR_COLOR_OPTIONS, UNION_OPTIONS } from '../constants/constants'
   import { getHeightTotalInches, likenessStore } from '../stores/likeness-store'
+  import type { Snippet } from 'svelte'
+
+  let { children }: { children: Snippet } = $props()
 
   const heightCm = $derived(() => {
     const totalInches = getHeightTotalInches($likenessStore.profile.attributes)
@@ -86,7 +89,7 @@
       </div>
     </label>
   </div>
-  <div class="flex justify-between max-w-137.5 gap-2.5">
+  <div class="flex justify-between max-w-137.5 gap-2.5 mb-12.5">
     <label class="block space-y-3 w-full">
       <span class="mb-2 block text-sm text-[#71707a]">Eye Color</span>
       <select
@@ -114,7 +117,9 @@
       </select>
     </label>
   </div>
-  <div class="border-t border-[#ddd] my-12.25 mx-10"></div>
+
+  {@render children()}
+
   <div class="space-y-3">
     <h3 class="text-base font-semibold text-left">Union Affiliations</h3>
 
