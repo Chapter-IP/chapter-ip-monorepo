@@ -263,7 +263,7 @@ export const voiceScript: VoiceScriptData = {
     },
     {
       title: 'Section 6 — Dynamics & prosody',
-      duration: '~1 minutes',
+      duration: '~1 minute',
       instruction: '[ Same sentence, different deliveries. Reset between each. ]',
       closingInstruction:
         '[ Finally, three natural, non-verbal moments — one each, genuine: a short laugh, a long sigh, a thoughtful "hmm." ]',
@@ -310,7 +310,7 @@ export const voiceScript: VoiceScriptData = {
       blocks: [
         {
           lines: [
-            'This concludes my voice profile recording session. Recorded by me, [FULL NAME], on [DATE]. Thank you',
+            'This concludes my voice profile recording session. Recorded by me, [FULL NAME], on [DATE]. Thank you.',
           ],
         },
       ],

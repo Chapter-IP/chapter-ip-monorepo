@@ -1,6 +1,6 @@
 <script lang="ts">
   import { voiceScript } from '../service/voice-script'
-  import { getNumberedLines, splitPlaceholders } from '../service/voice-script-modal'
+  import { downloadVoiceScript, getNumberedLines, splitPlaceholders } from '../service/voice-script-helpers'
   import type { TVoiceScriptModalProps } from '../types/voice-script.types'
 
   let { close, isOpen }: TVoiceScriptModalProps = $props()
@@ -64,7 +64,7 @@
         <button
           type="button"
           class="font-sans text-sm font-medium text-primary flex items-center gap-2 cursor-pointer"
-          onclick={() => console.log('Download script clicked')}
+          onclick={downloadVoiceScript}
         >
           Download script
           <span class="text-[20px] self-end">↘</span>
@@ -96,7 +96,7 @@
                     {#if section.numbered}
                       <div class="flex gap-4">
                         <span class="shrink-0 w-6 text-right text-base font-medium text-[#747474]"
-                          >{numberedLines[si][bi][li].number}.</span
+                          >{numberedLines[si][bi][li]}.</span
                         >
                         <p class="text-base text-[#747474] font-georgia italic leading-6">
                           {@render scriptLine(line)}

@@ -3,6 +3,7 @@
   import MediaUpload from './MediaUpload.svelte'
   import LikenessDetails from './LikenessDetails.svelte'
   import { MEDIA_UPLOAD_GUIDELINES } from '../constants/constants'
+  import { openVoiceScriptModal } from '../service/voice-script-modal'
 
   let {
     currentStep = $bindable(),
@@ -95,7 +96,7 @@
           required={guideline.required}
           descriptions={guideline.description}
           header={guideline.header}
-          headerLink={guideline.headerLink}
+          headerLink={guideline.headerLink && { ...guideline.headerLink, onClick: openVoiceScriptModal }}
         />
       {/each}
     </div>

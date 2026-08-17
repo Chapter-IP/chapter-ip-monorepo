@@ -32,6 +32,6 @@ export type VoiceScriptPlaceholderSegment = {
 }
 
 export type TVoiceScriptModalProps = {
-  close: () => boolean
+  close: () => void
   isOpen: boolean
 }
