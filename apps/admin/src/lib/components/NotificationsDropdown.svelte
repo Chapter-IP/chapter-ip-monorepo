@@ -97,6 +97,7 @@
     </div>
   </button>
 
+  {#if dropdownOpen}
   <ul
     tabindex="-1"
     class="dropdown-content flex flex-col rounded-box z-30 md:w-100 w-[90vw] min-h-162.5 p-3.75 rounded-md shadow-[3px_6px_8px_0_rgba(21,34,50,0.08)]
@@ -202,4 +203,5 @@
       </div>
     </div>
   </ul>
+  {/if}
 </div>
