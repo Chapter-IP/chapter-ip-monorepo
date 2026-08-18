@@ -9,15 +9,20 @@
   import StatusCell from '$lib/components/StatusCell.svelte'
   import { getMenuItems } from './constants'
   import { TABLE_PAGE_SIZE } from '$lib/constants'
-  import { type StatusValue } from '../../authed/likeness/constants/constants'
+  import { STATUS, type StatusValue } from '../../authed/likeness/constants/constants'
+  import { getTrpcClient } from '$lib/stores/trpc-client'
+  import { notify, ToastType } from '@repo/ui-components'
 
   let { data } = $props()
   let activeFilter = $state('All')
   let activeMenuRow = $state<string | null>(null)
   let currentPage = $state(1)
+  let statusById = $state<Record<string, StatusValue>>({})
+  let updatingId = $state<string | null>(null)
 
   const pageSize = TABLE_PAGE_SIZE
   const filters = ['All', 'Written works', 'Locations', 'Likeness'] as const
+  const trpcClient = getTrpcClient()
 
   const typeOrder = {
     'Written works': 0,
@@ -54,7 +59,7 @@
           'Untitled',
         fileType: normalizeFileType(item?.metadata?.type),
         licenseType: getLicenseTypes(item.metadata as TMetadata),
-        status: item.status,
+        status: statusById[item.id] ?? item.status,
         sales: item.statistic?.boughtLicensesAmount ?? 0,
         revenue: item.statistic?.revenue ?? { fiat: '0', token: '0', eth: '0' },
       }))
@@ -72,6 +77,28 @@
   const writtenWorksCount = $derived(rows.filter((row) => row.fileType === 'Written works').length)
   const locationsCount = $derived(rows.filter((row) => row.fileType === 'Locations').length)
   const likenessCount = $derived(rows.filter((row) => row.fileType === 'Likeness').length)
+
+  async function handleMenuSelect(
+    menuItem: { text: string; href?: string; action?: string },
+    row: { id: string; item: { status?: string }; status: string },
+  ) {
+    if (menuItem.action !== 'activate' && menuItem.action !== 'deactivate') return
+    if (row.status === STATUS.DRAFT) return
+    if (updatingId === row.id) return
+
+    const newStatus = menuItem.action === 'activate' ? STATUS.ACTIVE : STATUS.SALE_DISABLED
+    updatingId = row.id
+    try {
+      await trpcClient.contents.updateContentMetadata.mutate({ contentId: row.id, status: newStatus })
+      statusById[row.id] = newStatus
+      row.item.status = newStatus
+      notify('Status updated', ToastType.SUCCESS)
+    } catch {
+      notify('Failed to update status', ToastType.FAIL)
+    } finally {
+      updatingId = null
+    }
+  }
 </script>
 
 <div class="min-h-xl md:p-8 p-y-6 border border-[#eef2f6] rounded-3xl bg-[#f8f5f1]">
@@ -158,7 +185,7 @@
                       {row.sales}
                     </td>
                     <td class="px-4 py-1.5">
-                      <StatusCell contentId={row.id} bind:status={row.status as StatusValue} />
+                      <StatusCell status={row.status as StatusValue} />
                     </td>
 
                     <td class="px-4 py-1.5">
@@ -166,9 +193,10 @@
                     </td>
                     <td class="px-4 py-1.5 text-right">
                       <RowActionMenu
-                        items={getMenuItems(row.id, row.item.metadata?.type)}
+                        items={getMenuItems(row.id, row.item.metadata?.type, row.status as StatusValue)}
                         buttonLabel={`Open actions for ${row.listingName || 'listing'}`}
                         onOpenChange={(open) => (activeMenuRow = open ? row.id : null)}
+                        onSelect={(item) => handleMenuSelect(item, row)}
                       />
                     </td>
                   </tr>

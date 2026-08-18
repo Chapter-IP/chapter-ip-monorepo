@@ -1,4 +1,6 @@
-export function getMenuItems(contentId: string, contentType?: string) {
+import { STATUS, type StatusValue } from '../../authed/likeness/constants/constants'
+
+export function getMenuItems(contentId: string, contentType?: string, status?: StatusValue) {
   const type = String(contentType ?? '').toLowerCase()
   const editHref = type.includes('likeness')
     ? `/authed/likeness/${contentId}`
@@ -7,22 +9,17 @@ export function getMenuItems(contentId: string, contentType?: string) {
       : `/authed/files/${contentId}`
 
   return [
-    // {
-    //   text: 'View listing',
-    //   href: '/authed/files',
-    // },
     {
       text: 'Edit listing',
       href: editHref,
     },
-    // {
-    //   text: 'Set as draft',
-    //   href: '/authed/files',
-    // },
-    // {
-    //   text: 'Deactivate listing',
-    //   href: '/authed/files',
-    // },
+    ...(status === STATUS.DRAFT
+      ? []
+      : [
+          status === STATUS.ACTIVE
+            ? { text: 'Deactivate', action: 'deactivate' }
+            : { text: 'Activate', action: 'activate' },
+        ]),
     {
       text: 'View history',
       href: '/authed/history',
