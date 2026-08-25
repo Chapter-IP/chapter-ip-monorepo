@@ -11,6 +11,7 @@
   import { NOTIFICATIONS_DROPDOWN_LIMIT } from '$lib/constants'
   import { type TNotificationItem } from '@repo/notifications'
   import NotificationsDropdown from '$lib/components/NotificationsDropdown.svelte'
+  import { adminStore } from '$lib/stores/admin.svelte'
 
   let { children } = $props()
   let avatarUrl = $derived(publisherStore.avatarUrl || '')
@@ -80,6 +81,9 @@
     <div class="flex h-full items-stretch w-full justify-between md:pl-15 pl-2">
       <div class="flex items-stretch">
         <NavLink href="/authed/files">Dashboard</NavLink>
+        {#if adminStore.isClientAdmin}
+          <NavLink href="/authed/cashouts">Сashouts</NavLink>
+        {/if}
       </div>
       <div class="flex items-center md:gap-7.25 gap-4">
         <NotificationsDropdown />
