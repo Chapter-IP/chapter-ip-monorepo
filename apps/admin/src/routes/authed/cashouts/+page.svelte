@@ -5,6 +5,17 @@
   import { TABLE_PAGE_SIZE } from '$lib/constants'
   import { notify, ToastType } from '@repo/ui-components'
   import { MOCK_CASHOUT_REQUESTS, CashoutMenuItems, type TCashoutRequest } from './constants'
+  import PaymentConfirmModal from '$lib/components/PaymentConfirmModal.svelte'
+  import { modals, type ModalProps } from 'svelte-modals'
+
+  type PaymentConfirmModalProps = {
+    variant: 'accept' | 'decline'
+    publisherName: string
+    paymentMethod: string
+    amount: number
+    onCancel?: () => void
+    onConfirm?: (reason: string) => void | Promise<void>
+  }
 
   let items = $state<TCashoutRequest[]>(MOCK_CASHOUT_REQUESTS)
   let activeFilter = $state('All')
@@ -40,13 +51,33 @@
   const paginatedItems = $derived(filteredItems.slice((safeCurrentPage - 1) * pageSize, safeCurrentPage * pageSize))
 
   function handleAccept(id: string) {
-    items = items.map((r) => (r.id === id ? { ...r, status: 'approved' as const } : r))
-    notify('Payment accepted', ToastType.SUCCESS)
+    const request = items.find((r) => r.id === id)
+    if (!request) return
+    modals.open<ModalProps & PaymentConfirmModalProps>(PaymentConfirmModal, {
+      variant: 'accept',
+      publisherName: request.publisherName,
+      paymentMethod: request.paymentMethod,
+      amount: request.amount,
+      onConfirm: () => {
+        items = items.map((r) => (r.id === id ? { ...r, status: 'approved' as const } : r))
+        notify('Payment accepted', ToastType.SUCCESS)
+      },
+    })
   }
 
   function handleReject(id: string) {
-    items = items.map((r) => (r.id === id ? { ...r, status: 'rejected' as const } : r))
-    notify('Payment rejected', ToastType.FAIL)
+    const request = items.find((r) => r.id === id)
+    if (!request) return
+    modals.open<ModalProps & PaymentConfirmModalProps>(PaymentConfirmModal, {
+      variant: 'decline',
+      publisherName: request.publisherName,
+      paymentMethod: request.paymentMethod,
+      amount: request.amount,
+      onConfirm: () => {
+        items = items.map((r) => (r.id === id ? { ...r, status: 'rejected' as const } : r))
+        notify('Payment rejected', ToastType.FAIL)
+      },
+    })
   }
 
   function handleMenuSelect(_item: { text: string; href?: string; action?: string }, _id: string) {}
@@ -71,7 +102,7 @@
               ? 'bg-[#6d6b76] text-[#f8f5f1] font-semibold'
               : 'bg-[#f8f5f1]/50 text-dark/30 font-medium'}"
           >
-            {f.label}({f.count})
+            {f.label} ({f.count})
           </button>
         {/each}
       </div>
