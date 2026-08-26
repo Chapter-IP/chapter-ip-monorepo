@@ -2,13 +2,14 @@ import { Router, Query, UseMiddlewares, Ctx } from 'nestjs-trpc'
 import { z } from 'zod'
 
 import { AuthMiddleware, AdminAuthMiddleware } from './common/auth/auth.middleware'
+import { CommonClientService } from './common/client/client.service'
 import type { TAppContextWithTokenPayload } from './common/auth/auth.types'
 
 import { healthOutputSchema } from './app.dto'
 import type { TAppContext } from './app.context'
 @Router({ alias: 'app' })
 export class AppRouter {
-  constructor() {}
+  constructor(private readonly commonClientService: CommonClientService) {}
 
   @Query({ output: healthOutputSchema })
   health(@Ctx() ctx: TAppContext): {
@@ -33,5 +34,15 @@ export class AppRouter {
   @Query({ output: z.boolean() })
   isClientAdmin(): boolean {
     return true
+  }
+
+  @UseMiddlewares(AuthMiddleware)
+  @Query({ output: z.boolean() })
+  async isClientAdminSafe(@Ctx() ctx: TAppContextWithTokenPayload): Promise<boolean> {
+    try {
+      return await this.commonClientService.verifySubIsClientAdmin(ctx.authTokenPayload.sub)
+    } catch {
+      return false
+    }
   }
 }

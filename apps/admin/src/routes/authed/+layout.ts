@@ -44,8 +44,9 @@ async function loadFunction() {
   }
 
   try {
-    const isClientAdmin = await trpcClient.app.isClientAdmin.query()
+    const isClientAdmin = await trpcClient.app.isClientAdminSafe.query()
     adminStore.set(isClientAdmin)
+    console.log('isClientAdmin', isClientAdmin)
   } catch {
     adminStore.set(false)
   }

@@ -31,6 +31,9 @@ const appRouter = t.router({
       .query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     isClientAdmin: publicProcedure
       .output(z.boolean())
+      .query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    isClientAdminSafe: publicProcedure
+      .output(z.boolean())
       .query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
     }),
   auth: t.router({

@@ -11,8 +11,6 @@ export interface TCashoutRequest {
   createdAt: string
 }
 
-export const CASHOUT_FILTERS = ['All', 'Pending', 'Approved', 'Rejected', 'Paid'] as const
-
 export const CashoutMenuItems: { text: string; action: string }[] = []
 
 export const MOCK_CASHOUT_REQUESTS: TCashoutRequest[] = [
@@ -69,86 +67,5 @@ export const MOCK_CASHOUT_REQUESTS: TCashoutRequest[] = [
     amount: 180000,
     status: 'approved',
     createdAt: '2025-01-10T11:10:00Z',
-  },
-  {
-    id: '7',
-    publisherName: 'Eva Martinez',
-    publisherEmail: 'eva@example.com',
-    paymentMethod: 'Venmo',
-    amount: 95000,
-    status: 'pending',
-    createdAt: '2025-01-09T13:55:00Z',
-  },
-  {
-    id: '8',
-    publisherName: 'Frank Garcia',
-    publisherEmail: 'frank@example.com',
-    paymentMethod: 'CashApp',
-    amount: 420000,
-    status: 'paid',
-    createdAt: '2025-01-08T07:30:00Z',
-  },
-  {
-    id: '9',
-    publisherName: 'Grace Lee',
-    publisherEmail: 'grace@example.com',
-    paymentMethod: 'Venmo',
-    amount: 60000,
-    status: 'rejected',
-    createdAt: '2025-01-07T15:40:00Z',
-  },
-  {
-    id: '10',
-    publisherName: 'Henry Wilson',
-    publisherEmail: 'henry@example.com',
-    paymentMethod: 'CashApp',
-    amount: 140000,
-    status: 'pending',
-    createdAt: '2025-01-06T10:05:00Z',
-  },
-  {
-    id: '11',
-    publisherName: 'Iris Chen',
-    publisherEmail: 'iris@example.com',
-    paymentMethod: 'Venmo',
-    amount: 275000,
-    status: 'approved',
-    createdAt: '2025-01-05T12:25:00Z',
-  },
-  {
-    id: '12',
-    publisherName: 'Jack Thompson',
-    publisherEmail: 'jack@example.com',
-    paymentMethod: 'CashApp',
-    amount: 88000,
-    status: 'paid',
-    createdAt: '2025-01-04T08:50:00Z',
-  },
-  {
-    id: '13',
-    publisherName: 'Karen White',
-    publisherEmail: 'karen@example.com',
-    paymentMethod: 'Venmo',
-    amount: 195000,
-    status: 'pending',
-    createdAt: '2025-01-03T14:15:00Z',
-  },
-  {
-    id: '14',
-    publisherName: 'Leo Harris',
-    publisherEmail: 'leo@example.com',
-    paymentMethod: 'CashApp',
-    amount: 310000,
-    status: 'rejected',
-    createdAt: '2025-01-02T09:35:00Z',
-  },
-  {
-    id: '15',
-    publisherName: 'Mia Clark',
-    publisherEmail: 'mia@example.com',
-    paymentMethod: 'Venmo',
-    amount: 120000,
-    status: 'approved',
-    createdAt: '2025-01-01T11:00:00Z',
   },
 ]

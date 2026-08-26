@@ -4,24 +4,35 @@
   import { formatDate } from '../files/helper'
   import { TABLE_PAGE_SIZE } from '$lib/constants'
   import { notify, ToastType } from '@repo/ui-components'
-  import { MOCK_CASHOUT_REQUESTS, CASHOUT_FILTERS, CashoutMenuItems, type TCashoutRequest } from './constants'
+  import { MOCK_CASHOUT_REQUESTS, CashoutMenuItems, type TCashoutRequest } from './constants'
 
   let items = $state<TCashoutRequest[]>(MOCK_CASHOUT_REQUESTS)
   let activeFilter = $state('All')
-  let searchQuery = $state('')
   let activeMenuRow = $state<string | null>(null)
   let currentPage = $state(1)
 
   const pageSize = TABLE_PAGE_SIZE
 
+  const statusCounts = $derived({
+    all: items.length,
+    accepted: items.filter((r) => r.status === 'approved' || r.status === 'paid').length,
+    rejected: items.filter((r) => r.status === 'rejected').length,
+    pending: items.filter((r) => r.status === 'pending').length,
+  })
+
+  const filters = [
+    { label: 'All', value: 'All', count: statusCounts.all },
+    { label: 'Accepted', value: 'Accepted', count: statusCounts.accepted },
+    { label: 'Rejected', value: 'Rejected', count: statusCounts.rejected },
+    { label: 'Pending', value: 'Pending', count: statusCounts.pending },
+  ]
+
   const filteredItems = $derived(
-    items
-      .filter((r) => activeFilter === 'All' || r.status === activeFilter.toLowerCase())
-      .filter((r) => {
-        if (!searchQuery) return true
-        const q = searchQuery.toLowerCase()
-        return r.publisherName.toLowerCase().includes(q) || r.publisherEmail.toLowerCase().includes(q)
-      }),
+    items.filter((r) => {
+      if (activeFilter === 'All') return true
+      if (activeFilter === 'Accepted') return r.status === 'approved' || r.status === 'paid'
+      return r.status === activeFilter.toLowerCase()
+    }),
   )
 
   const totalPages = $derived(Math.max(1, Math.ceil(filteredItems.length / pageSize)))
@@ -38,41 +49,32 @@
     notify('Payment rejected', ToastType.FAIL)
   }
 
-  function handleMenuSelect(item: { text: string; href?: string; action?: string }, id: string) {}
+  function handleMenuSelect(_item: { text: string; href?: string; action?: string }, _id: string) {}
 </script>
 
-<div class="min-h-xl md:p-8 p-y-6 border border-[#eef2f6] rounded-3xl bg-[#f8f5f1]">
-  <h2 class="md:mb-2.5 font-semibold md:text-2xl text-xl leading-7.25 text-[#202025]">Admin Dashboard</h2>
+<div class="min-h-xl md:p-12.5 py-6 border border-[#eef2f6] rounded-3xl bg-[#f8f5f1]">
+  <h2 class="md:mb-2.5 text-lg font-semibold leading-[1.61px] text-left text-dark">Admin Dashboard</h2>
 
-  <div class="md:mt-9.75">
+  <div class="mt-14">
     <div
       class="flex flex-col md:flex-row md:items-center justify-between py-4 border-b border-[#f0ede6] gap-4 md:gap-0"
     >
-      <h2 class="md:text-base text-sm font-semibold">My Listings</h2>
-      <div class="flex md:gap-1">
-        {#each CASHOUT_FILTERS as f (f)}
+      <h2 class="text-base font-semibold leading-[1.81px] text-dark">My Listings</h2>
+      <div class="flex gap-1.5">
+        {#each filters as f (f.value)}
           <button
             onclick={() => {
-              activeFilter = f
+              activeFilter = f.value
               currentPage = 1
             }}
-            class="md:px-5.25 px-3 py-1 rounded-full md:text-[13px] text-[11px] font-medium {activeFilter === f
-              ? 'bg-[#6d6b76] text-[#f8f5f1]'
-              : 'text-dark rounded-full'}"
+            class="md:px-5.25 px-3 py-0.75 rounded-full text-[13px] {activeFilter === f.value
+              ? 'bg-[#6d6b76] text-[#f8f5f1] font-semibold'
+              : 'bg-[#f8f5f1]/50 text-dark/30 font-medium'}"
           >
-            {f}
+            {f.label}({f.count})
           </button>
         {/each}
       </div>
-    </div>
-
-    <div class="my-4">
-      <input
-        type="text"
-        bind:value={searchQuery}
-        placeholder="Search by publisher name or email"
-        class="w-full md:w-80 px-4 py-2 rounded-md border border-[#ddd] text-sm font-medium text-dark placeholder:text-dark/40 focus:outline-none focus:border-[#6d6b76]"
-      />
     </div>
 
     <div class="border border-[#ddd] rounded-md overflow-visible">
@@ -85,7 +87,7 @@
               <th class="px-4 py-3.5">Email Address</th>
               <th class="px-4 py-3.5">Payment via</th>
               <th class="px-4 py-3.5">Total</th>
-              <th class="px-4 py-3.5">Status</th>
+              <th class="px-4 py-3.5 min-w-43">Status</th>
               <th class="px-4 py-3.5"></th>
             </tr>
           </thead>
