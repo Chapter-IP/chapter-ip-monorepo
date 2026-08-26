@@ -20,12 +20,12 @@
     pending: items.filter((r) => r.status === 'pending').length,
   })
 
-  const filters = [
+  const filters = $derived([
     { label: 'All', value: 'All', count: statusCounts.all },
     { label: 'Accepted', value: 'Accepted', count: statusCounts.accepted },
     { label: 'Rejected', value: 'Rejected', count: statusCounts.rejected },
     { label: 'Pending', value: 'Pending', count: statusCounts.pending },
-  ]
+  ])
 
   const filteredItems = $derived(
     items.filter((r) => {
@@ -77,11 +77,11 @@
       </div>
     </div>
 
-    <div class="border border-[#ddd] rounded-md overflow-visible">
+    <div class="border border-[#ddd] rounded-md overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-sm font-medium text-dark/60">
           <thead>
-            <tr class="text-left border-b border-[#ddd] bg-cream">
+            <tr class="text-left border-b border-dark/10 bg-cream">
               <th class="px-4 py-3.5">Date</th>
               <th class="px-4 py-3.5">Name</th>
               <th class="px-4 py-3.5">Email Address</th>
@@ -101,7 +101,7 @@
                       ? 'bg-[#f8f5f1]'
                       : 'bg-cream'}"
                 >
-                  <td class="px-4 py-1.5">{formatDate(request.createdAt)}</td>
+                  <td class="px-4 py-1.5 min-w-24">{formatDate(request.createdAt)}</td>
                   <td class="px-4 py-1.5">{request.publisherName}</td>
                   <td class="px-4 py-1.5">{request.publisherEmail}</td>
                   <td class="px-4 py-1.5">{request.paymentMethod}</td>
@@ -111,21 +111,27 @@
                       <div class="flex gap-2">
                         <button
                           onclick={() => handleAccept(request.id)}
-                          class="px-3 py-1 rounded text-xs font-semibold text-white bg-[#499b60] hover:bg-[#3d8a52] transition-colors"
+                          class="inline-flex items-center gap-1 px-3 py-1 rounded text-sm font-medium text-[#499b60] bg-[#f1fbf5] border border-[#93c4a1]/25 hover:bg-[#e5f5eb] transition-colors whitespace-nowrap"
                         >
-                          Accept
+                          ✓ Accept
                         </button>
                         <button
                           onclick={() => handleReject(request.id)}
-                          class="px-3 py-1 rounded text-xs font-semibold text-white bg-[#d14e4e] hover:bg-[#b93c3c] transition-colors"
+                          class="inline-flex items-center gap-1 px-3 py-1 rounded text-sm font-medium text-[#f80000] bg-[#fff4f4] border border-[#f80000]/25 hover:bg-[#ffe8e8] transition-colors whitespace-nowrap"
                         >
-                          Reject
+                          ✗ Reject
                         </button>
                       </div>
-                    {:else if request.status === 'approved' || request.status === 'paid'}
-                      <span class="text-sm font-semibold text-[#499b60]">Payment accepted</span>
                     {:else}
-                      <span class="text-sm font-semibold text-[#d14e4e]">Payment rejected</span>
+                      {@const STATUS = {
+                        approved: { label: '✓ Payment accepted', classes: 'text-[#499b60]' },
+                        paid: { label: '✓ Payment accepted', classes: 'text-[#499b60]' },
+                        rejected: { label: '✗ Payment rejected', classes: 'text-[#f80000]' },
+                      }}
+                      {@const cfg = STATUS[request.status]}
+                      <span class="inline-flex items-center gap-1 text-sm font-medium {cfg.classes} whitespace-nowrap">
+                        {cfg.label}
+                      </span>
                     {/if}
                   </td>
                   <td class="px-4 py-1.5 text-right">
