@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { tick } from 'svelte'
   import ArrowLeft from '$lib/assets/arrow-down-left.svg'
 
   let {
@@ -69,8 +70,9 @@
           <div class="flex gap-4 mt-7.5 justify-end">
             <button
               class="px-8 py-2.5 rounded bg-primary text-cream text-sm font-medium"
-              onclick={() => {
+              onclick={async () => {
                 close()
+                await tick()
                 onCancel?.()
               }}
             >
@@ -80,6 +82,7 @@
               class="px-8 py-2.5 rounded {confirmBg} text-cream text-sm font-medium"
               onclick={async () => {
                 close()
+                await tick()
                 await onConfirm?.(reason)
               }}
             >
