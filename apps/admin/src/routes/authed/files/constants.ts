@@ -21,6 +21,10 @@ export function getMenuItems(contentId: string, contentType?: string, status?: S
             : { text: 'Activate', action: 'activate' },
         ]),
     {
+      text: 'Delete',
+      action: 'delete',
+    },
+    {
       text: 'View history',
       href: '/authed/history',
     },

@@ -11,18 +11,21 @@
   import { TABLE_PAGE_SIZE } from '$lib/constants'
   import { STATUS, type StatusValue } from '../../authed/likeness/constants/constants'
   import { getTrpcClient } from '$lib/stores/trpc-client'
-  import { notify, ToastType } from '@repo/ui-components'
+  import { ConfirmModal, notify, ToastType, type TConfirmModalProps } from '@repo/ui-components'
+  import { modals, type ModalProps } from 'svelte-modals'
 
   let { data } = $props()
   let activeFilter = $state('All')
   let activeMenuRow = $state<string | null>(null)
   let currentPage = $state(1)
   let statusById = $state<Record<string, StatusValue>>({})
+  let deletedIds = $state<Record<string, true>>({})
   let updatingId = $state<string | null>(null)
 
   const pageSize = TABLE_PAGE_SIZE
   const filters = ['All', 'Written works', 'Locations', 'Likeness'] as const
   const trpcClient = getTrpcClient()
+  const DELETE_CONFIRM_PHRASE = 'I confirm to delete my content'
 
   const typeOrder = {
     'Written works': 0,
@@ -49,6 +52,7 @@
 
   const rows = $derived(
     data.items
+      .filter((item) => !deletedIds[item.id])
       .map((item) => ({
         id: item.id,
         item,
@@ -78,10 +82,40 @@
   const locationsCount = $derived(rows.filter((row) => row.fileType === 'Locations').length)
   const likenessCount = $derived(rows.filter((row) => row.fileType === 'Likeness').length)
 
+  function openDeleteConfirm(rowId: string) {
+    if (updatingId === rowId || deletedIds[rowId]) return
+
+    modals.open<ModalProps & TConfirmModalProps>(ConfirmModal, {
+      title: 'Delete listing?',
+      description:
+        'This cannot be undone. Customers who purchased a license will lose access to this content.',
+      confirmPhrase: DELETE_CONFIRM_PHRASE,
+      submitText: 'Delete',
+      onSubmit: async () => {
+        if (updatingId === rowId || deletedIds[rowId]) return
+        updatingId = rowId
+        try {
+          await trpcClient.contents.removeContent.mutate({ contentId: rowId })
+          deletedIds[rowId] = true
+          notify('Listing deleted', ToastType.SUCCESS)
+        } catch {
+          notify('Failed to delete listing', ToastType.FAIL)
+        } finally {
+          updatingId = null
+        }
+      },
+    })
+  }
+
   async function handleMenuSelect(
     menuItem: { text: string; href?: string; action?: string },
     row: { id: string; item: { status?: string }; status: string },
   ) {
+    if (menuItem.action === 'delete') {
+      openDeleteConfirm(row.id)
+      return
+    }
+
     if (menuItem.action !== 'activate' && menuItem.action !== 'deactivate') return
     if (row.status === STATUS.DRAFT) return
     if (updatingId === row.id) return
