@@ -39,6 +39,8 @@ import {
   registerContentOutputSchema,
   removeContentFileInputSchema,
   removeContentFileOutputSchema,
+  removeContentInputSchema,
+  removeContentOutputSchema,
   requestLazyMintContentTokenInputSchema,
   requestLazyMintContentTokenOutputSchema,
   type TCreateContentFileUploadUrlInput,
@@ -61,6 +63,8 @@ import {
   type TRegisterContentOutput,
   type TRemoveContentFileInput,
   type TRemoveContentFileOutput,
+  type TRemoveContentInput,
+  type TRemoveContentOutput,
   type TRequestLazyMintContentTokenInput,
   type TRequestLazyMintContentTokenOutput,
   type TUpdateContentMetadataInput,
@@ -280,14 +284,27 @@ export class ContentRouter {
       throw new TRPCError({ message, code: 'FORBIDDEN' })
     }
 
-    await this.fileService.removeObject({
-      Bucket: contentFile.bucket,
-      Key: contentFile.key,
-    })
+    return await this.commonContentService.removeContentFile(contentFile)
+  }
 
-    await this.fileService.getModel().deleteOne({ _id: contentFile._id })
+  @UseMiddlewares(AuthMiddleware)
+  @Mutation({
+    input: removeContentInputSchema,
+    output: removeContentOutputSchema,
+  })
+  async removeContent(
+    @Ctx() ctx: TAppContextWithTokenPayload,
+    @Input() input: TRemoveContentInput,
+  ): Promise<TRemoveContentOutput> {
+    const [isOwner, message] = await this.commonContentService.verifyIsOwnerById(
+      ctx.authTokenPayload.sub,
+      input.contentId,
+    )
+    if (!isOwner) {
+      throw new TRPCError({ message, code: 'FORBIDDEN' })
+    }
 
-    return { ok: true }
+    return await this.commonContentService.removeContent(input.contentId)
   }
 
   @Query({
