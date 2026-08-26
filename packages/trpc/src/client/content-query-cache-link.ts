@@ -11,6 +11,7 @@ const CONTENT_QUERY_CACHE_INVALIDATING_MUTATIONS = new Set([
   'contents.updateContentMetadata',
   'contents.registerContentFile',
   'contents.removeContentFile',
+  'contents.removeContent',
 ])
 
 type QueryCacheResult = OperationResultEnvelope<unknown, TRPCClientError<AppRouter>>

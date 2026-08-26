@@ -39,6 +39,8 @@ import {
   registerContentOutputSchema,
   removeContentFileInputSchema,
   removeContentFileOutputSchema,
+  removeContentInputSchema,
+  removeContentOutputSchema,
   requestLazyMintContentTokenInputSchema,
   requestLazyMintContentTokenOutputSchema,
   type TCreateContentFileUploadUrlInput,
@@ -61,6 +63,8 @@ import {
   type TRegisterContentOutput,
   type TRemoveContentFileInput,
   type TRemoveContentFileOutput,
+  type TRemoveContentInput,
+  type TRemoveContentOutput,
   type TRequestLazyMintContentTokenInput,
   type TRequestLazyMintContentTokenOutput,
   type TUpdateContentMetadataInput,
@@ -286,6 +290,52 @@ export class ContentRouter {
     })
 
     await this.fileService.getModel().deleteOne({ _id: contentFile._id })
+
+    return { ok: true }
+  }
+
+  @UseMiddlewares(AuthMiddleware)
+  @Mutation({
+    input: removeContentInputSchema,
+    output: removeContentOutputSchema,
+  })
+  async removeContent(
+    @Ctx() ctx: TAppContextWithTokenPayload,
+    @Input() input: TRemoveContentInput,
+  ): Promise<TRemoveContentOutput> {
+    const [isOwner, message] = await this.commonContentService.verifyIsOwnerById(
+      ctx.authTokenPayload.sub,
+      input.contentId,
+    )
+    if (!isOwner) {
+      throw new TRPCError({ message, code: 'FORBIDDEN' })
+    }
+
+    const content = await this.contentService.findById(input.contentId)
+    if (!content) {
+      throw new TRPCError({ message: 'Content is not found', code: 'NOT_FOUND' })
+    }
+
+
+    const fileQuery = { contentId: content.id }
+    const files = await this.fileService.getModel().collection.find(fileQuery).toArray()
+    const keysByBucket = new Map<string, string[]>()
+    for (const file of files) {
+      const bucket = String(file.bucket)
+      const key = String(file.key)
+      const keys = keysByBucket.get(bucket) ?? []
+      keys.push(key)
+      keysByBucket.set(bucket, keys)
+    }
+    for (const [bucket, keys] of keysByBucket) {
+      await this.fileService.removeObjects({
+        Bucket: bucket,
+        Delete: { Objects: keys.map((Key) => ({ Key })), Quiet: true },
+      })
+    }
+    await this.fileService.getModel().collection.deleteMany(fileQuery)
+
+    await this.contentService.getModel().deleteOne({ _id: content._id })
 
     return { ok: true }
   }

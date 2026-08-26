@@ -7,6 +7,8 @@ import {
   PutObjectCommandInput,
   DeleteObjectCommandInput,
   DeleteObjectCommand,
+  DeleteObjectsCommand,
+  DeleteObjectsCommandInput,
   GetObjectCommand,
   GetObjectCommandInput,
   PutObjectCommand,
@@ -65,6 +67,12 @@ export class FileService extends CommonModelService<ContentFile> {
   async removeObject(data: DeleteObjectCommandInput) {
     const delete_file_command = new DeleteObjectCommand(data)
     return await this.r2.send(delete_file_command)
+  }
+
+  async removeObjects(data: DeleteObjectsCommandInput) {
+    if (!data.Delete?.Objects?.length) return
+
+    await this.r2.send(new DeleteObjectsCommand(data))
   }
 
   async getSignedObjectUrl(opts: GetObjectCommandInput): Promise<string> {
