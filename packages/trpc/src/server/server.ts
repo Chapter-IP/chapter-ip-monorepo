@@ -15,7 +15,7 @@ const t = initTRPC.create();
 const publicProcedure = t.procedure;
 import { healthOutputSchema } from "../../../../apps/backend/src/app.dto.js";
 import { refreshTokenInputSchema, authTokenOutputSchema, exchangeCodeInputSchema } from "../../../../apps/backend/src/auth/auth.dto.js";
-import { createUserFileUploadUrlInputSchema, presignedPutOutputSchema, createContentFileUploadUrlInputSchema, registerContentInputSchema, registerContentOutputSchema, updateContentMetadataInputSchema, updateContentMetadataOutputSchema, registerContentFileInputSchema, registerContentFileOutputSchema, removeContentFileInputSchema, removeContentFileOutputSchema, findContentInputSchema, findContentOutputSchema, getContentByIdInputSchema, getContentByIdOutputSchema, getContentStatisticInputSchema, getContentStatisticOutputSchema, getContentFileLinkInputSchema, getContentFileLinkOutputSchema, getContentAllFilesLinkInputSchema, getContentAllFilesLinkOutputSchema, uploadTokenMetadataInputSchema, uploadTokenMetadataOutputSchema, requestLazyMintContentTokenInputSchema, requestLazyMintContentTokenOutputSchema, findPurchaseHistoryInputSchema, findPurchaseHistoryOutputSchema, getContentConfigOutputSchema } from "../../../../apps/backend/src/content/content.dto.js";
+import { createUserFileUploadUrlInputSchema, presignedPutOutputSchema, createContentFileUploadUrlInputSchema, registerContentInputSchema, registerContentOutputSchema, updateContentMetadataInputSchema, updateContentMetadataOutputSchema, registerContentFileInputSchema, registerContentFileOutputSchema, removeContentFileInputSchema, removeContentFileOutputSchema, removeContentInputSchema, removeContentOutputSchema, findContentInputSchema, findContentOutputSchema, getContentByIdInputSchema, getContentByIdOutputSchema, getContentStatisticInputSchema, getContentStatisticOutputSchema, getContentFileLinkInputSchema, getContentFileLinkOutputSchema, getContentAllFilesLinkInputSchema, getContentAllFilesLinkOutputSchema, uploadTokenMetadataInputSchema, uploadTokenMetadataOutputSchema, requestLazyMintContentTokenInputSchema, requestLazyMintContentTokenOutputSchema, findPurchaseHistoryInputSchema, findPurchaseHistoryOutputSchema, getContentConfigOutputSchema } from "../../../../apps/backend/src/content/content.dto.js";
 import { findBlockedLicensesInputSchema, findBlockedLicensesOutputSchema } from "../../../../apps/backend/src/license/../common/license/blocked-license/blocked-license.dto.js";
 import { findNotificationsInputSchema, findNotificationsOutputSchema, markNotificationAsReadInputSchema, markNotificationAsReadOutputSchema, markAllMyNotificationsAsReadOutputSchema } from "../../../../apps/backend/src/notification/notification.dto.js";
 import { setPublisherInputSchema, setPublisherOutputSchema, getPublisherDataInputSchema, getPublisherDataOutputSchema, findPublishersInputSchema, findPublishersOutputSchema, mintContentNftTokenInputSchema, mintContentNftTokenOutputSchema } from "../../../../apps/backend/src/publisher/publisher.dto.js";
@@ -70,6 +70,10 @@ const appRouter = t.router({
     removeContentFile: publicProcedure
       .input(removeContentFileInputSchema)
       .output(removeContentFileOutputSchema)
+      .mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    removeContent: publicProcedure
+      .input(removeContentInputSchema)
+      .output(removeContentOutputSchema)
       .mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     findContent: publicProcedure
       .input(findContentInputSchema)

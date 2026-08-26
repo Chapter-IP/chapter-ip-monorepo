@@ -148,6 +148,22 @@ describe('contentQueryCacheLink', () => {
     expect(secondNext).toHaveBeenCalledWith(createResult({ fresh: true }))
   })
 
+  it('invalidates cached content queries after contents.removeContent', () => {
+    let responseIndex = 0
+    const { next } = createImmediateNext(() => ({ responseIndex: ++responseIndex }))
+    const link = contentQueryCacheLink()({})
+    const op = createOperation('contents.getContentById', { id: 'content-to-remove' })
+
+    link({ op, next }).subscribe({})
+    link({
+      op: createOperation('contents.removeContent', { contentId: 'content-to-remove' }, 'mutation'),
+      next,
+    }).subscribe({})
+    link({ op, next }).subscribe({})
+
+    expect(next).toHaveBeenCalledTimes(3)
+  })
+
   it('lazily expires cached entries', () => {
     vi.useFakeTimers()
     vi.setSystemTime(0)

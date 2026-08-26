@@ -31,6 +31,14 @@ export class CommonModelService<T> {
     return await this.model.findByIdAndUpdate(id, omit(params, ['_id']), { returnDocument: 'after' })
   }
 
+  async deleteOne(params?: Partial<T> | Record<string, unknown>) {
+    return await this.model.deleteOne(params as Record<string, unknown>)
+  }
+
+  async deleteMany(params?: Partial<T> | Record<string, unknown>) {
+    return await this.model.deleteMany(params as Record<string, unknown>)
+  }
+
   buildPaginationOptions(opts: TPaginatedRequestWithCursor): TBuiltPaginationOptions {
     const limit = opts.limit ? parseInt(opts.limit) : 50
     if (limit > 100) {

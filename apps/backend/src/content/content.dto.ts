@@ -113,6 +113,16 @@ export const removeContentFileOutputSchema = z.object({
 })
 export type TRemoveContentFileOutput = z.infer<typeof removeContentFileOutputSchema>
 
+export const removeContentInputSchema = z.object({
+  contentId: z.string(),
+})
+export type TRemoveContentInput = z.infer<typeof removeContentInputSchema>
+
+export const removeContentOutputSchema = z.object({
+  ok: z.literal(true),
+})
+export type TRemoveContentOutput = z.infer<typeof removeContentOutputSchema>
+
 export const contentOutputSchema = registerContentOutputSchema.extend({
   files: z.array(contentFileOutputSchema),
 })
