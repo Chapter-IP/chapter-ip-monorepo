@@ -6,6 +6,7 @@ import { abi as membershipAbi } from '@credenza3/contracts/artifacts/ChapterIpMe
 import { CommonEvmService } from '../common/evm/evm.service'
 import { CommonLicenseService } from '../common/license/license.service'
 import { ContentModelService } from './content-model.service'
+import { FileService } from './file/file.service'
 import { EvmEventService } from '../evm-listener/evm-event.service'
 import type { TGetContentStatisticOutput } from './content.dto'
 
@@ -30,6 +31,7 @@ export class ContentService {
     private readonly commonEvmService: CommonEvmService,
     private readonly commonLicenseService: CommonLicenseService,
     private readonly contentService: ContentModelService,
+    private readonly fileService: FileService,
     private readonly evmEventService: EvmEventService,
   ) {
     const provider = this.commonEvmService.getProvider()
@@ -89,6 +91,34 @@ export class ContentService {
     } catch {
       return [false, 'Forbidden']
     }
+  }
+
+  public async removeContent(contentId: string): Promise<{ ok: true }> {
+    const files = await this.fileService.find({ contentId })
+    const keysByBucket = new Map<string, string[]>()
+    for (const file of files) {
+      const keys = keysByBucket.get(file.bucket) ?? []
+      keys.push(file.key)
+      keysByBucket.set(file.bucket, keys)
+    }
+    for (const [bucket, keys] of keysByBucket) {
+      await this.fileService.removeObjects({
+        Bucket: bucket,
+        Delete: { Objects: keys.map((Key) => ({ Key })), Quiet: true },
+      })
+    }
+    await this.fileService.deleteMany({ contentId })
+    await this.contentService.deleteOne({ _id: contentId })
+    return { ok: true }
+  }
+
+  public async removeContentFile(file: { bucket: string; key: string; _id: unknown }): Promise<{ ok: true }> {
+    await this.fileService.removeObject({
+      Bucket: file.bucket,
+      Key: file.key,
+    })
+    await this.fileService.deleteOne({ _id: file._id })
+    return { ok: true }
   }
 
   public async getOwner(contentTokenId: string): Promise<string> {

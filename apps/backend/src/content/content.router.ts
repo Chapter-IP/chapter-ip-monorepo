@@ -284,14 +284,7 @@ export class ContentRouter {
       throw new TRPCError({ message, code: 'FORBIDDEN' })
     }
 
-    await this.fileService.removeObject({
-      Bucket: contentFile.bucket,
-      Key: contentFile.key,
-    })
-
-    await this.fileService.getModel().deleteOne({ _id: contentFile._id })
-
-    return { ok: true }
+    return await this.commonContentService.removeContentFile(contentFile)
   }
 
   @UseMiddlewares(AuthMiddleware)
@@ -311,33 +304,7 @@ export class ContentRouter {
       throw new TRPCError({ message, code: 'FORBIDDEN' })
     }
 
-    const content = await this.contentService.findById(input.contentId)
-    if (!content) {
-      throw new TRPCError({ message: 'Content is not found', code: 'NOT_FOUND' })
-    }
-
-
-    const fileQuery = { contentId: content.id }
-    const files = await this.fileService.getModel().collection.find(fileQuery).toArray()
-    const keysByBucket = new Map<string, string[]>()
-    for (const file of files) {
-      const bucket = String(file.bucket)
-      const key = String(file.key)
-      const keys = keysByBucket.get(bucket) ?? []
-      keys.push(key)
-      keysByBucket.set(bucket, keys)
-    }
-    for (const [bucket, keys] of keysByBucket) {
-      await this.fileService.removeObjects({
-        Bucket: bucket,
-        Delete: { Objects: keys.map((Key) => ({ Key })), Quiet: true },
-      })
-    }
-    await this.fileService.getModel().collection.deleteMany(fileQuery)
-
-    await this.contentService.getModel().deleteOne({ _id: content._id })
-
-    return { ok: true }
+    return await this.commonContentService.removeContent(input.contentId)
   }
 
   @Query({
