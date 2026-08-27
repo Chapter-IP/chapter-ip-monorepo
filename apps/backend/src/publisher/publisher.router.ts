@@ -19,6 +19,8 @@ import {
   type TFindPublishersInput,
   findPublishersOutputSchema,
   type TFindPublishersOutput,
+  getMyBalanceOutputSchema,
+  type TGetMyBalanceOutput,
   mintContentNftTokenInputSchema,
   type TMintContentNftTokenInput,
   mintContentNftTokenOutputSchema,
@@ -87,6 +89,14 @@ export class PublisherRouter {
   async findPublishers(@Input() input: TFindPublishersInput): Promise<TFindPublishersOutput> {
     const paginationOptions = this.publisherService.buildPaginationOptions(input)
     return await this.publisherService.paginate(paginationOptions)
+  }
+
+  @UseMiddlewares(AuthMiddleware)
+  @Query({
+    output: getMyBalanceOutputSchema,
+  })
+  async getMyBalance(@Ctx() ctx: TAppContextWithTokenPayload): Promise<TGetMyBalanceOutput> {
+    return await this.publisherService.getFiatBalance(ctx.authTokenPayload.sub)
   }
 
   @UseMiddlewares(AuthMiddleware)

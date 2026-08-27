@@ -11,6 +11,7 @@ import { PublisherModule } from './publisher/publisher.module'
 import { LicenseModule } from './license/license.module'
 import { EvmListenerModule } from './evm-listener/evm-listener.module'
 import { NotificationModule } from './notification/notification.module'
+import { CashoutModule } from './cashout/cashout.module'
 
 import { TrpcPanelController } from './trpc-ui.controller'
 import { AppRouter } from './app.router'
@@ -57,6 +58,7 @@ const environmentConfig = env === ENV.STAGING ? stagingConfig : env === ENV.PROD
     LicenseModule,
     EvmListenerModule,
     NotificationModule,
+    CashoutModule,
   ],
   controllers: [TrpcPanelController],
   providers: [AppContext, AppRouter],
