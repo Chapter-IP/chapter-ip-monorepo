@@ -84,14 +84,14 @@
   })
 </script>
 
-<div class="flex w-full max-w-md flex-col">
+<div class="flex w-full flex-col">
   <h2 class="text-[22px] font-semibold text-dark">Subscription price</h2>
   <p class="mt-1 text-sm text-[#69656d]">Set a subscription price for your membership.</p>
 
   {#if !publisherStore.evmAddress}
     <p class="mt-6 text-sm text-[#9d99a0]">Publisher wallet address is not available.</p>
   {:else}
-    <div class="mt-6 flex flex-col items-start w-full">
+    <div class="mt-6 flex w-full max-w-md flex-col items-start">
       <label for="subscription-price" class="mb-2.5 block text-sm font-medium text-[#69656d]">
         Subscription Price ($)
       </label>
@@ -117,7 +117,7 @@
     </div>
 
     {#if !hideSaveButton}
-      <div class="mt-10 flex justify-end">
+      <div class="mt-10 flex justify-center">
         <button
           type="button"
           disabled={!hasChanges || value <= 0 || loading || saving}

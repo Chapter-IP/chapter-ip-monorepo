@@ -21,12 +21,14 @@ export function useCursorPagination<TItem>({ fetchPage, onError }: CursorPaginat
   let hasNext = $state(false)
 
   let cancelled = false
+  let requestId = 0
 
   const loadPage = async (cursor?: string) => {
+    const id = ++requestId
     loading = true
     try {
       const result = await fetchPage(cursor)
-      if (cancelled) return
+      if (cancelled || id !== requestId) return
 
       items = result.items
       totalCount = result.totalCount ?? 0
@@ -38,11 +40,11 @@ export function useCursorPagination<TItem>({ fetchPage, onError }: CursorPaginat
         cursorStack = [...cursorStack.slice(0, currentPage + 1), nextCursor!]
       }
     } catch (err) {
-      if (cancelled) return
+      if (cancelled || id !== requestId) return
       items = []
       onError?.(err)
     } finally {
-      if (!cancelled) loading = false
+      if (!cancelled && id === requestId) loading = false
     }
   }
 
@@ -66,6 +68,12 @@ export function useCursorPagination<TItem>({ fetchPage, onError }: CursorPaginat
     await loadPage(cursorStack[currentPage])
   }
 
+  const reload = async () => {
+    currentPage = 0
+    cursorStack = [undefined]
+    await loadPage()
+  }
+
   return {
     get loading() {
       return loading
@@ -87,5 +95,6 @@ export function useCursorPagination<TItem>({ fetchPage, onError }: CursorPaginat
     },
     nextPage,
     prevPage,
+    reload,
   }
 }
