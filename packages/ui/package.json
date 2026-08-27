@@ -10,6 +10,10 @@
       "types": "./index.ts",
       "svelte": "./index.ts"
     },
+    "./components/modals/Base.svelte": {
+      "types": "./components/modals/Base.svelte",
+      "svelte": "./components/modals/Base.svelte"
+    },
     "./assets/ch-logo.svg": {
       "import": "./assets/ch-logo.svg",
       "svelte": "./assets/ch-logo.svg"
