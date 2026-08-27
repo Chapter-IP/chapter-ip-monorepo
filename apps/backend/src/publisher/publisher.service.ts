@@ -26,4 +26,44 @@ export class PublisherService extends CommonModelService<Publisher> {
     }
     return result
   }
+
+  async getFiatBalance(sub: string): Promise<{ available: number; pending: number }> {
+    const publisher = await this.publisherModel.findOne({ sub })
+    return {
+      available: publisher?.fiatBalance?.available ?? 0,
+      pending: publisher?.fiatBalance?.pending ?? 0,
+    }
+  }
+
+  async incrementFiatAvailable(sub: string, amount: number): Promise<Publisher | null> {
+    return await this.publisherModel.findOneAndUpdate(
+      { sub },
+      { $inc: { 'fiatBalance.available': amount } },
+      { returnDocument: 'after' },
+    )
+  }
+
+  async lockFiatAvailable(sub: string, amount: number): Promise<Publisher | null> {
+    return await this.publisherModel.findOneAndUpdate(
+      { sub, 'fiatBalance.available': { $gte: amount } } as Record<string, unknown>,
+      { $inc: { 'fiatBalance.available': -amount, 'fiatBalance.pending': amount } },
+      { returnDocument: 'after' },
+    )
+  }
+
+  async unlockFiatPending(sub: string, amount: number): Promise<Publisher | null> {
+    return await this.publisherModel.findOneAndUpdate(
+      { sub, 'fiatBalance.pending': { $gte: amount } } as Record<string, unknown>,
+      { $inc: { 'fiatBalance.available': amount, 'fiatBalance.pending': -amount } },
+      { returnDocument: 'after' },
+    )
+  }
+
+  async settleFiatPending(sub: string, amount: number): Promise<Publisher | null> {
+    return await this.publisherModel.findOneAndUpdate(
+      { sub, 'fiatBalance.pending': { $gte: amount } } as Record<string, unknown>,
+      { $inc: { 'fiatBalance.pending': -amount } },
+      { returnDocument: 'after' },
+    )
+  }
 }
