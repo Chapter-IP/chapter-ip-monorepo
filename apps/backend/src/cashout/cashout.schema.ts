@@ -8,6 +8,11 @@ export enum CashoutStatus {
   CANCELLED = 'cancelled',
 }
 
+export enum CashoutPlatform {
+  VENMO = 'venmo',
+  CASHAPP = 'cashapp',
+}
+
 export type TCashoutDocument = HydratedDocument<Cashout>
 
 @Schema({
@@ -31,6 +36,12 @@ export class Cashout extends Document<ObjectId> {
 
   @Prop({ required: true, min: 1 })
   declare amount: number
+
+  @Prop({ required: true })
+  declare username: string
+
+  @Prop({ required: true, enum: CashoutPlatform })
+  declare platform: CashoutPlatform
 
   @Prop({ required: true, enum: CashoutStatus, default: CashoutStatus.PENDING })
   declare status: CashoutStatus

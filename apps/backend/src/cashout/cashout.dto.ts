@@ -2,12 +2,14 @@ import { z } from 'zod'
 
 import { paginatedRequestWithCursorSchema, createPaginatedResponseSchema } from '../common/model/model.dto'
 
-import { CashoutStatus } from './cashout.schema'
+import { CashoutPlatform, CashoutStatus } from './cashout.schema'
 
 export const cashoutSchema = z.object({
   id: z.string(),
   sub: z.string(),
   amount: z.number().int().positive(),
+  username: z.string(),
+  platform: z.enum(CashoutPlatform),
   status: z.enum(CashoutStatus),
   reason: z.string().optional(),
   createdAt: z.date(),
@@ -17,6 +19,8 @@ export type TCashout = z.infer<typeof cashoutSchema>
 
 export const createCashoutInputSchema = z.object({
   amount: z.number().int().positive(),
+  username: z.string().trim().min(1).max(128),
+  platform: z.enum(CashoutPlatform),
 })
 export type TCreateCashoutInput = z.infer<typeof createCashoutInputSchema>
 
