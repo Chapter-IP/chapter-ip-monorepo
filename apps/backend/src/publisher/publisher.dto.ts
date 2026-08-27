@@ -2,6 +2,15 @@ import { z } from 'zod'
 
 import { paginatedRequestWithCursorSchema, createPaginatedResponseSchema } from '../common/model/model.dto'
 
+export const publisherFiatBalanceSchema = z.object({
+  available: z.number().int().nonnegative(),
+  pending: z.number().int().nonnegative(),
+})
+export type TPublisherFiatBalance = z.infer<typeof publisherFiatBalanceSchema>
+
+export const getMyBalanceOutputSchema = publisherFiatBalanceSchema
+export type TGetMyBalanceOutput = z.infer<typeof getMyBalanceOutputSchema>
+
 export const setPublisherInputSchema = z.object({
   title: z.string(),
   avatarUrl: z.string().optional(),
@@ -13,6 +22,7 @@ export const setPublisherOutputSchema = z.object({
   sub: z.string(),
   title: z.string(),
   avatarUrl: z.string().optional(),
+  fiatBalance: publisherFiatBalanceSchema.default({ available: 0, pending: 0 }),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

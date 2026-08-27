@@ -8,6 +8,7 @@ import { EvmEvent } from '../evm-listener/evm-event.schema'
 import { ContentModelService } from '../content/content-model.service'
 import { ContentService } from '../content/content.service'
 import { PurchaseHistoryService } from '../content/purchase-history/purchase-history.service'
+import { PublisherService } from '../publisher/publisher.service'
 
 import { CommonNotificationService } from '../common/notification/notification.service'
 import { type TCommonNotificationDocument } from '../common/notification/notification.schema'
@@ -26,6 +27,7 @@ export class NotificationService implements OnModuleInit {
     private readonly commonEvmService: CommonEvmService,
     private readonly commonNotificationService: CommonNotificationService,
     private readonly purchaseHistoryService: PurchaseHistoryService,
+    private readonly publisherService: PublisherService,
   ) {}
 
   private async restartEvmEventsChangeStream() {
@@ -85,6 +87,11 @@ export class NotificationService implements OnModuleInit {
                 },
               }
 
+              const priceFiat = toCents(args[3])
+              const platformFeeAmount = String(args[7] ?? '0')
+              const agencyFeeAmount = String(args[8] ?? '0')
+              const fiatCredit = priceFiat - toCents(platformFeeAmount) - toCents(agencyFeeAmount)
+
               await Promise.all([
                 this.commonNotificationService
                   .getModel()
@@ -104,10 +111,19 @@ export class NotificationService implements OnModuleInit {
                   priceEther: String(args[4] ?? '0'),
                   priceToken: String(args[5] ?? '0'),
                   currencyTokenContract: String(args[6] ?? '').toLowerCase(),
-                  platformFeeAmount: String(args[7] ?? '0'),
-                  agencyFeeAmount: String(args[8] ?? '0'),
+                  platformFeeAmount,
+                  agencyFeeAmount,
                   ownerId: content.sub,
                 }),
+                ...(fiatCredit > 0
+                  ? [
+                      this.publisherService.incrementFiatAvailable(content.sub, fiatCredit).then((publisher) => {
+                        if (!publisher) {
+                          this.logger.warn(`Cannot credit fiat balance; publisher not found for sub: ${content.sub}`)
+                        }
+                      }),
+                    ]
+                  : []),
               ])
               break
             }
@@ -140,4 +156,12 @@ export class NotificationService implements OnModuleInit {
   onModuleInit() {
     this.startEvmEventsChangeStream()
   }
+}
+
+function toCents(value: unknown): number {
+  const amount = Number(value ?? 0)
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return 0
+  }
+  return Math.trunc(amount)
 }

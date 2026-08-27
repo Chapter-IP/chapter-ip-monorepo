@@ -3,6 +3,17 @@ import { HydratedDocument, Document, ObjectId, Schema as Mongooseschema } from '
 
 export type TPublisherDocument = HydratedDocument<Publisher>
 
+@Schema({ _id: false })
+export class PublisherFiatBalance {
+  @Prop({ required: true, default: 0, min: 0 })
+  declare available: number
+
+  @Prop({ required: true, default: 0, min: 0 })
+  declare pending: number
+}
+
+export const PublisherFiatBalanceSchema = SchemaFactory.createForClass(PublisherFiatBalance)
+
 @Schema({
   timestamps: {
     createdAt: 'createdAt',
@@ -30,6 +41,9 @@ export class Publisher extends Document<ObjectId> {
 
   @Prop({ required: false })
   declare avatarUrl?: string
+
+  @Prop({ type: PublisherFiatBalanceSchema, required: true, default: () => ({ available: 0, pending: 0 }) })
+  declare fiatBalance: PublisherFiatBalance
 
   declare createdAt: Date
   declare updatedAt: Date
