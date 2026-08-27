@@ -53,6 +53,8 @@ export class CashoutService extends CommonModelService<Cashout> {
       const cashout = await this.cashoutModel.create({
         sub,
         amount: input.amount,
+        username: input.username,
+        platform: input.platform,
         status: CashoutStatus.PENDING,
       })
       if (!cashout) {
