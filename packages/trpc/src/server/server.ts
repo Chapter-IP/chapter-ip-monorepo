@@ -15,10 +15,11 @@ const t = initTRPC.create();
 const publicProcedure = t.procedure;
 import { healthOutputSchema } from "../../../../apps/backend/src/app.dto.js";
 import { refreshTokenInputSchema, authTokenOutputSchema, exchangeCodeInputSchema } from "../../../../apps/backend/src/auth/auth.dto.js";
+import { createCashoutInputSchema, createCashoutOutputSchema, getMyCashoutsInputSchema, getMyCashoutsOutputSchema, cancelCashoutInputSchema, cancelCashoutOutputSchema, findCashoutsInputSchema, findCashoutsOutputSchema, updateCashoutStatusInputSchema, updateCashoutStatusOutputSchema } from "../../../../apps/backend/src/cashout/cashout.dto.js";
 import { createUserFileUploadUrlInputSchema, presignedPutOutputSchema, createContentFileUploadUrlInputSchema, registerContentInputSchema, registerContentOutputSchema, updateContentMetadataInputSchema, updateContentMetadataOutputSchema, registerContentFileInputSchema, registerContentFileOutputSchema, removeContentFileInputSchema, removeContentFileOutputSchema, removeContentInputSchema, removeContentOutputSchema, findContentInputSchema, findContentOutputSchema, getContentByIdInputSchema, getContentByIdOutputSchema, getContentStatisticInputSchema, getContentStatisticOutputSchema, getContentFileLinkInputSchema, getContentFileLinkOutputSchema, getContentAllFilesLinkInputSchema, getContentAllFilesLinkOutputSchema, uploadTokenMetadataInputSchema, uploadTokenMetadataOutputSchema, requestLazyMintContentTokenInputSchema, requestLazyMintContentTokenOutputSchema, findPurchaseHistoryInputSchema, findPurchaseHistoryOutputSchema, getContentConfigOutputSchema } from "../../../../apps/backend/src/content/content.dto.js";
 import { findBlockedLicensesInputSchema, findBlockedLicensesOutputSchema } from "../../../../apps/backend/src/license/../common/license/blocked-license/blocked-license.dto.js";
 import { findNotificationsInputSchema, findNotificationsOutputSchema, markNotificationAsReadInputSchema, markNotificationAsReadOutputSchema, markAllMyNotificationsAsReadOutputSchema } from "../../../../apps/backend/src/notification/notification.dto.js";
-import { setPublisherInputSchema, setPublisherOutputSchema, getPublisherDataInputSchema, getPublisherDataOutputSchema, findPublishersInputSchema, findPublishersOutputSchema, mintContentNftTokenInputSchema, mintContentNftTokenOutputSchema } from "../../../../apps/backend/src/publisher/publisher.dto.js";
+import { setPublisherInputSchema, setPublisherOutputSchema, getPublisherDataInputSchema, getPublisherDataOutputSchema, findPublishersInputSchema, findPublishersOutputSchema, getMyBalanceOutputSchema, mintContentNftTokenInputSchema, mintContentNftTokenOutputSchema } from "../../../../apps/backend/src/publisher/publisher.dto.js";
 import type { NotificationRouter } from "../../../../apps/backend/src/notification/notification.router.js";
 
 const appRouter = t.router({
@@ -41,6 +42,28 @@ const appRouter = t.router({
     exchangeCode: publicProcedure
       .input(exchangeCodeInputSchema)
       .output(authTokenOutputSchema)
+      .mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+    }),
+  cashouts: t.router({
+    createCashout: publicProcedure
+      .input(createCashoutInputSchema)
+      .output(createCashoutOutputSchema)
+      .mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getMyCashouts: publicProcedure
+      .input(getMyCashoutsInputSchema)
+      .output(getMyCashoutsOutputSchema)
+      .query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    cancelCashout: publicProcedure
+      .input(cancelCashoutInputSchema)
+      .output(cancelCashoutOutputSchema)
+      .mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    findCashouts: publicProcedure
+      .input(findCashoutsInputSchema)
+      .output(findCashoutsOutputSchema)
+      .query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    updateCashoutStatus: publicProcedure
+      .input(updateCashoutStatusInputSchema)
+      .output(updateCashoutStatusOutputSchema)
       .mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
     }),
   contents: t.router({
@@ -141,6 +164,9 @@ const appRouter = t.router({
     findPublishers: publicProcedure
       .input(findPublishersInputSchema)
       .output(findPublishersOutputSchema)
+      .query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getMyBalance: publicProcedure
+      .output(getMyBalanceOutputSchema)
       .query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     mintContentNftToken: publicProcedure
       .input(mintContentNftTokenInputSchema)
