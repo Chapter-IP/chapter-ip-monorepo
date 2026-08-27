@@ -23,6 +23,8 @@ export function createAuthStore<T>(
     isInitialized: false,
   })
 
+  let refreshTokenPromise: Promise<boolean> | null = null
+
   async function init() {
     if (!browser) return
 
@@ -135,7 +137,7 @@ export function createAuthStore<T>(
     }
   }
 
-  async function refreshAccessToken(silent = false): Promise<boolean> {
+  async function performRefreshAccessToken(silent: boolean): Promise<boolean> {
     if (!browser) return false
 
     const refreshToken = localStorage.getItem('refresh_token')
@@ -170,6 +172,21 @@ export function createAuthStore<T>(
 
       logout()
       return false
+    }
+  }
+
+  async function refreshAccessToken(silent = false): Promise<boolean> {
+    if (refreshTokenPromise) return await refreshTokenPromise
+
+    const refresh = async () => await performRefreshAccessToken(silent)
+    const promise =
+      'locks' in navigator ? navigator.locks.request('chapter-ip:oauth-refresh-token', refresh) : refresh()
+
+    refreshTokenPromise = promise
+    try {
+      return await promise
+    } finally {
+      if (refreshTokenPromise === promise) refreshTokenPromise = null
     }
   }
 
@@ -225,7 +242,7 @@ export function createAuthStore<T>(
   function logout() {
     if (!browser) return
 
-    revokeOAuth2Session()
+    const accessToken = state.accessToken
     localStorage.removeItem('refresh_token')
 
     state = {
@@ -237,14 +254,20 @@ export function createAuthStore<T>(
     }
 
     goto(resolve('/'))
+
+    if (accessToken) {
+      void revokeOAuth2Session(accessToken).catch((error: unknown) => {
+        console.error('Error revoking session:', error)
+      })
+    }
   }
 
-  async function revokeOAuth2Session() {
+  async function revokeOAuth2Session(accessToken: string) {
     try {
       const response = await fetch(`${config.accountsUri}/oauth2/revoke-session`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${await getAccessToken()}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       })
       if (!response.ok) throw new Error(response.statusText)

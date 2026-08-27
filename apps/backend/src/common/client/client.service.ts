@@ -20,7 +20,6 @@ export class CommonClientService {
 
   formatBasicToken() {
     const { clientId, clientSecret } = this.getClientIdAndSecret()
-    console.log('clientId', clientId, 'clientSecret', clientSecret)
     const credentials = `${clientId}:${clientSecret}`
     const basicToken = Buffer.from(credentials).toString('base64')
     const authorizationHeader = `Basic ${basicToken}`
