@@ -1,6 +1,7 @@
 <script lang="ts">
   import { tick } from 'svelte'
   import { ModalBase } from '@repo/ui-components'
+  import { formatPrice } from '$lib/helpers/format'
 
   let {
     close,
@@ -27,8 +28,8 @@
   const title = $derived(variant === 'accept' ? 'Accept payment' : 'Decline payment')
   const description = $derived(
     variant === 'accept'
-      ? `Please note that you are about to confirm payment to @${publisherName} via ${paymentMethod} in the amount of $${(amount / 100).toFixed(2).replace('.', ',')}.`
-      : `Please note that you are about to decline payment to @${publisherName} in the amount of $${(amount / 100).toFixed(2).replace('.', ',')}.`,
+      ? `Please note that you are about to confirm payment to @${publisherName} via ${paymentMethod} in the amount of ${formatPrice(amount)}.`
+      : `Please note that you are about to decline payment to @${publisherName} in the amount of ${formatPrice(amount)}.`,
   )
   const confirmLabel = $derived(variant === 'accept' ? 'Accept Payment' : 'Decline Payment')
   const confirmBg = $derived(variant === 'accept' ? 'bg-[#499b60]' : 'bg-[#f80000]')

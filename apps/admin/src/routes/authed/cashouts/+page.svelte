@@ -8,6 +8,7 @@
   import { modals, type ModalProps } from 'svelte-modals'
   import { updateCashoutStatusByAdmin, type UpdateCashoutStatusInput } from '$lib/services/cashout'
   import { getUserBySub } from '$lib/services/account'
+  import { formatPrice } from '$lib/helpers/format'
   import { getTrpcClient } from '$lib/stores/trpc-client'
   import { useCursorPagination } from '$lib/hooks/useCursorPagination.svelte'
 
@@ -168,7 +169,7 @@
                   {/await}
                   <td class="px-4 py-1.5">{PaymentMethodLabel[request.platform]}</td>
                   <td class="px-4 py-1.5 whitespace-nowrap">{request.username}</td>
-                  <td class="px-4 py-1.5">${(request.amount / 100).toFixed(2)}</td>
+                  <td class="px-4 py-1.5">{formatPrice(request.amount)}</td>
                   <td class="px-4 py-1.5">
                     {#if request.status === 'pending'}
                       <div class="flex gap-2">
