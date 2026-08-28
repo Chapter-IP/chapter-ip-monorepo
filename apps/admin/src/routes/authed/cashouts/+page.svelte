@@ -1,12 +1,12 @@
 <script lang="ts">
-  import RowActionMenu from '$lib/components/RowActionMenu.svelte'
   import TablePagination from '$lib/components/TablePagination.svelte'
   import { formatDate } from '../files/helper'
   import { TABLE_PAGE_SIZE } from '$lib/constants'
   import { notify, ToastType } from '@repo/ui-components'
-  import { MOCK_CASHOUT_REQUESTS, CashoutMenuItems, type TCashoutRequest } from './constants'
+  import { PaymentMethodLabel, type TCashoutRequest } from './constants'
   import PaymentConfirmModal from '$lib/components/PaymentConfirmModal.svelte'
   import { modals, type ModalProps } from 'svelte-modals'
+  import { updateCashoutStatusByAdmin, type UpdateCashoutStatusInput } from '$lib/services/cashout'
 
   type PaymentConfirmModalProps = {
     variant: 'accept' | 'decline'
@@ -17,16 +17,17 @@
     onConfirm?: (reason: string) => void | Promise<void>
   }
 
-  let items = $state<TCashoutRequest[]>(MOCK_CASHOUT_REQUESTS)
+  let { data } = $props()
+
+  let items = $state<TCashoutRequest[]>(data.cashouts)
   let activeFilter = $state('All')
-  let activeMenuRow = $state<string | null>(null)
   let currentPage = $state(1)
 
   const pageSize = TABLE_PAGE_SIZE
 
   const statusCounts = $derived({
     all: items.length,
-    accepted: items.filter((r) => r.status === 'approved' || r.status === 'paid').length,
+    accepted: items.filter((r) => r.status === 'paid').length,
     rejected: items.filter((r) => r.status === 'rejected').length,
     pending: items.filter((r) => r.status === 'pending').length,
   })
@@ -41,7 +42,7 @@
   const filteredItems = $derived(
     items.filter((r) => {
       if (activeFilter === 'All') return true
-      if (activeFilter === 'Accepted') return r.status === 'approved' || r.status === 'paid'
+      if (activeFilter === 'Accepted') return r.status === 'paid'
       return r.status === activeFilter.toLowerCase()
     }),
   )
@@ -55,12 +56,22 @@
     if (!request) return
     modals.open<ModalProps & PaymentConfirmModalProps>(PaymentConfirmModal, {
       variant: 'accept',
-      publisherName: request.publisherName,
-      paymentMethod: request.paymentMethod,
+      publisherName: request.username,
+      paymentMethod: PaymentMethodLabel[request.platform],
       amount: request.amount,
-      onConfirm: () => {
-        items = items.map((r) => (r.id === id ? { ...r, status: 'approved' as const } : r))
-        notify('Payment accepted', ToastType.SUCCESS)
+      onConfirm: async (reason: string) => {
+        try {
+          const updated = await updateCashoutStatusByAdmin({
+            id,
+            status: 'paid' as UpdateCashoutStatusInput['status'],
+            reason,
+          })
+          items = items.map((r) => (r.id === id ? (updated as TCashoutRequest) : r))
+          notify('Payment accepted', ToastType.SUCCESS)
+        } catch (error) {
+          const message = error instanceof Error && error.message ? error.message : 'Failed to accept payment'
+          notify(message, ToastType.FAIL)
+        }
       },
     })
   }
@@ -70,17 +81,25 @@
     if (!request) return
     modals.open<ModalProps & PaymentConfirmModalProps>(PaymentConfirmModal, {
       variant: 'decline',
-      publisherName: request.publisherName,
-      paymentMethod: request.paymentMethod,
+      publisherName: request.username,
+      paymentMethod: PaymentMethodLabel[request.platform],
       amount: request.amount,
-      onConfirm: () => {
-        items = items.map((r) => (r.id === id ? { ...r, status: 'rejected' as const } : r))
-        notify('Payment rejected', ToastType.FAIL)
+      onConfirm: async (reason: string) => {
+        try {
+          const updated = await updateCashoutStatusByAdmin({
+            id,
+            status: 'rejected' as UpdateCashoutStatusInput['status'],
+            reason,
+          })
+          items = items.map((r) => (r.id === id ? (updated as TCashoutRequest) : r))
+          notify('Payment rejected', ToastType.FAIL)
+        } catch (error) {
+          const message = error instanceof Error && error.message ? error.message : 'Failed to reject payment'
+          notify(message, ToastType.FAIL)
+        }
       },
     })
   }
-
-  function handleMenuSelect(_item: { text: string; href?: string; action?: string }, _id: string) {}
 </script>
 
 <div class="min-h-xl md:p-12.5 py-6 border border-[#eef2f6] rounded-3xl bg-[#f8f5f1]">
@@ -117,25 +136,20 @@
               <th class="px-4 py-3.5">Name</th>
               <th class="px-4 py-3.5">Email Address</th>
               <th class="px-4 py-3.5">Payment via</th>
+              <th class="px-4 py-3.5">User name</th>
               <th class="px-4 py-3.5">Total</th>
               <th class="px-4 py-3.5 min-w-43">Status</th>
-              <th class="px-4 py-3.5"></th>
             </tr>
           </thead>
           <tbody>
             {#if paginatedItems.length}
               {#each paginatedItems as request, i (request.id)}
-                <tr
-                  class="border-b border-[#ddd] last:border-0 {activeMenuRow === request.id
-                    ? 'bg-[#ece7df]'
-                    : i % 2 === 0
-                      ? 'bg-[#f8f5f1]'
-                      : 'bg-cream'}"
-                >
+                <tr class="border-b border-[#ddd] last:border-0 {i % 2 === 0 ? 'bg-[#f8f5f1]' : 'bg-cream'}">
                   <td class="px-4 py-1.5 min-w-24">{formatDate(request.createdAt)}</td>
-                  <td class="px-4 py-1.5">{request.publisherName}</td>
-                  <td class="px-4 py-1.5">{request.publisherEmail}</td>
-                  <td class="px-4 py-1.5">{request.paymentMethod}</td>
+                  <td class="px-4 py-1.5">name</td>
+                  <td class="px-4 py-1.5">email</td>
+                  <td class="px-4 py-1.5">{PaymentMethodLabel[request.platform]}</td>
+                  <td class="px-4 py-1.5">{request.username}</td>
                   <td class="px-4 py-1.5">${(request.amount / 100).toFixed(2)}</td>
                   <td class="px-4 py-1.5">
                     {#if request.status === 'pending'}
@@ -155,23 +169,15 @@
                       </div>
                     {:else}
                       {@const STATUS = {
-                        approved: { label: '✓ Payment accepted', classes: 'text-[#499b60]' },
                         paid: { label: '✓ Payment accepted', classes: 'text-[#499b60]' },
                         rejected: { label: '✗ Payment rejected', classes: 'text-[#f80000]' },
+                        cancelled: { label: 'Cancelled', classes: 'text-dark/40' },
                       }}
                       {@const cfg = STATUS[request.status]}
                       <span class="inline-flex items-center gap-1 text-sm font-medium {cfg.classes} whitespace-nowrap">
                         {cfg.label}
                       </span>
                     {/if}
-                  </td>
-                  <td class="px-4 py-1.5 text-right">
-                    <RowActionMenu
-                      items={CashoutMenuItems}
-                      buttonLabel={`Open actions for ${request.publisherName}`}
-                      onOpenChange={(open) => (activeMenuRow = open ? request.id : null)}
-                      onSelect={(item) => handleMenuSelect(item, request.id)}
-                    />
                   </td>
                 </tr>
               {/each}
