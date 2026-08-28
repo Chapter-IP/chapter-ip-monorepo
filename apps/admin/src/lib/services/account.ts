@@ -21,14 +21,19 @@ async function fetchAccount(sub: string) {
   return response.json()
 }
 
-const cache = new Map<string, { name: string; email: string }>()
+const cache = new Map<string, Promise<{ name: string; email: string }>>()
 
-export async function getUserBySub(sub: string) {
+export function getUserBySub(sub: string) {
   const cached = cache.get(sub)
   if (cached) return cached
 
-  const data = await fetchAccount(sub)
-  const user = { name: data.name ?? '', email: data.email ?? '' }
-  cache.set(sub, user)
-  return user
+  const promise = fetchAccount(sub)
+    .then((data) => ({ name: data.name ?? '', email: data.email ?? '' }))
+    .catch((err) => {
+      cache.delete(sub)
+      throw err
+    })
+
+  cache.set(sub, promise)
+  return promise
 }

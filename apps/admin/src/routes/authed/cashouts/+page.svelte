@@ -156,10 +156,16 @@
               {#each pagination.items as request, i (request.id)}
                 <tr class="border-b border-[#ddd] last:border-0 {i % 2 === 0 ? 'bg-[#f8f5f1]' : 'bg-cream'}">
                   <td class="px-4 py-1.5 whitespace-nowrap">{formatDate(request.createdAt)}</td>
-                  <td class="px-4 py-1.5">{#await getUserBySub(request.sub)}…{:then user}{user.name}{/await}</td>
-                  <td class="px-4 py-1.5 whitespace-nowrap"
-                    >{#await getUserBySub(request.sub)}…{:then user}{user.email}{/await}</td
-                  >
+                  {#await getUserBySub(request.sub)}
+                    <td class="px-4 py-1.5">…</td>
+                    <td class="px-4 py-1.5 whitespace-nowrap">…</td>
+                  {:then user}
+                    <td class="px-4 py-1.5">{user.name}</td>
+                    <td class="px-4 py-1.5 whitespace-nowrap">{user.email}</td>
+                  {:catch}
+                    <td class="px-4 py-1.5">—</td>
+                    <td class="px-4 py-1.5 whitespace-nowrap">—</td>
+                  {/await}
                   <td class="px-4 py-1.5">{PaymentMethodLabel[request.platform]}</td>
                   <td class="px-4 py-1.5 whitespace-nowrap">{request.username}</td>
                   <td class="px-4 py-1.5">${(request.amount / 100).toFixed(2)}</td>

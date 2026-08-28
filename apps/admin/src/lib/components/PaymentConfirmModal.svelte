@@ -60,7 +60,7 @@
       </div>
 
       <div class="flex flex-col gap-1 mt-3.75">
-        <label for="reason" class="text-sm text-[#71707a]">Reason for declining payment?</label>
+        <label for="reason" class="text-sm text-[#71707a]">Reason (optional)</label>
         <textarea
           id="reason"
           bind:value={reason}
