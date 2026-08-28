@@ -130,7 +130,7 @@
 
     <div class="border border-[#ddd] rounded-md overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full text-sm font-medium text-dark/60">
+        <table class="table-fixed w-full text-sm font-medium text-dark/60">
           <thead>
             <tr class="text-left border-b border-dark/10 bg-cream">
               <th class="px-4 py-3.5">Date</th>
@@ -150,7 +150,7 @@
                   <td class="px-4 py-1.5">{#await getUserBySub(request.sub)}…{:then user}{user.name}{/await}</td>
                   <td class="px-4 py-1.5">{#await getUserBySub(request.sub)}…{:then user}{user.email}{/await}</td>
                   <td class="px-4 py-1.5">{PaymentMethodLabel[request.platform]}</td>
-                  <td class="px-4 py-1.5">{request.username}</td>
+                  <td class="px-4 py-1.5 whitespace-nowrap">{request.username}</td>
                   <td class="px-4 py-1.5">${(request.amount / 100).toFixed(2)}</td>
                   <td class="px-4 py-1.5">
                     {#if request.status === 'pending'}

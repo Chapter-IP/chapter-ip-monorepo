@@ -11,6 +11,7 @@
     formattedAvailable,
     formattedPending,
     canSubmit,
+    usernameError,
     platform = $bindable('' as CashoutPlatform | ''),
     username = $bindable(''),
     onCashout,
@@ -22,6 +23,7 @@
     formattedAvailable: string
     formattedPending: string
     canSubmit: boolean
+    usernameError: boolean
     platform: CashoutPlatform | ''
     username: string
     onCashout: () => void
@@ -74,8 +76,13 @@
         placeholder="@username"
         maxlength={128}
         disabled={loading || submitting || available === 0}
-        class="h-[52px] w-full rounded-[4px] border border-[#ded9d5] bg-white px-4 text-[15px] text-dark outline-none transition-colors placeholder:text-[#c0bcc2] focus:border-primary focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-70"
+        class="h-13 w-full rounded-sm border bg-white px-4 text-[15px] text-dark outline-none transition-colors placeholder:text-[#c0bcc2] focus:ring-1 disabled:cursor-not-allowed disabled:opacity-70 {usernameError
+          ? 'border-[#f80000] focus:border-[#f80000] focus:ring-[#f80000]'
+          : 'border-[#ded9d5] focus:border-primary focus:ring-primary'}"
       />
+      {#if usernameError}
+        <p class="mt-1.5 text-xs text-[#f80000]">Username must start with @ and contain no spaces.</p>
+      {/if}
     </div>
   </div>
 
