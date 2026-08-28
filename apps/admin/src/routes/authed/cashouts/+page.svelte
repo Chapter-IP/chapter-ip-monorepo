@@ -100,7 +100,7 @@
           })
           pagination.setItems(pagination.items.map((r) => (r.id === id ? (updated as TCashoutRequest) : r)))
           await pagination.reload()
-          notify('Payment rejected', ToastType.FAIL)
+          notify('Payment rejected', ToastType.SUCCESS)
         } catch (error) {
           const message = error instanceof Error && error.message ? error.message : 'Failed to reject payment'
           notify(message, ToastType.FAIL)
