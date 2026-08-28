@@ -130,7 +130,7 @@
 
     <div class="border border-[#ddd] rounded-md overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="table-fixed w-full text-sm font-medium text-dark/60">
+        <table class="w-full text-sm font-medium text-dark/60">
           <thead>
             <tr class="text-left border-b border-dark/10 bg-cream">
               <th class="px-4 py-3.5">Date</th>
@@ -146,9 +146,11 @@
             {#if paginatedItems.length}
               {#each paginatedItems as request, i (request.id)}
                 <tr class="border-b border-[#ddd] last:border-0 {i % 2 === 0 ? 'bg-[#f8f5f1]' : 'bg-cream'}">
-                  <td class="px-4 py-1.5 min-w-24">{formatDate(request.createdAt)}</td>
+                  <td class="px-4 py-1.5 whitespace-nowrap">{formatDate(request.createdAt)}</td>
                   <td class="px-4 py-1.5">{#await getUserBySub(request.sub)}…{:then user}{user.name}{/await}</td>
-                  <td class="px-4 py-1.5">{#await getUserBySub(request.sub)}…{:then user}{user.email}{/await}</td>
+                  <td class="px-4 py-1.5 whitespace-nowrap"
+                    >{#await getUserBySub(request.sub)}…{:then user}{user.email}{/await}</td
+                  >
                   <td class="px-4 py-1.5">{PaymentMethodLabel[request.platform]}</td>
                   <td class="px-4 py-1.5 whitespace-nowrap">{request.username}</td>
                   <td class="px-4 py-1.5">${(request.amount / 100).toFixed(2)}</td>
