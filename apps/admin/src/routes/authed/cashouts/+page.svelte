@@ -8,6 +8,8 @@
   import { modals, type ModalProps } from 'svelte-modals'
   import { updateCashoutStatusByAdmin, type UpdateCashoutStatusInput } from '$lib/services/cashout'
   import { getUserBySub } from '$lib/services/account'
+  import { getTrpcClient } from '$lib/stores/trpc-client'
+  import { useCursorPagination } from '$lib/hooks/useCursorPagination.svelte'
 
   type PaymentConfirmModalProps = {
     variant: 'accept' | 'decline'
@@ -18,42 +20,44 @@
     onConfirm?: (reason: string) => void | Promise<void>
   }
 
-  let { data } = $props()
+  const trpcClient = getTrpcClient()
 
-  let items = $state<TCashoutRequest[]>(data.cashouts)
+  type FindCashoutsStatus = Parameters<typeof trpcClient.cashouts.findCashouts.query>[0]['status']
+
   let activeFilter = $state('All')
-  let currentPage = $state(1)
 
-  const pageSize = TABLE_PAGE_SIZE
-
-  const statusCounts = $derived({
-    all: items.length,
-    accepted: items.filter((r) => r.status === 'paid').length,
-    rejected: items.filter((r) => r.status === 'rejected').length,
-    pending: items.filter((r) => r.status === 'pending').length,
-  })
-
-  const filters = $derived([
-    { label: 'All', value: 'All', count: statusCounts.all },
-    { label: 'Accepted', value: 'Accepted', count: statusCounts.accepted },
-    { label: 'Rejected', value: 'Rejected', count: statusCounts.rejected },
-    { label: 'Pending', value: 'Pending', count: statusCounts.pending },
-  ])
-
-  const filteredItems = $derived(
-    items.filter((r) => {
-      if (activeFilter === 'All') return true
-      if (activeFilter === 'Accepted') return r.status === 'paid'
-      return r.status === activeFilter.toLowerCase()
-    }),
+  const activeStatus = $derived<FindCashoutsStatus>(
+    activeFilter === 'Accepted'
+      ? ('paid' as FindCashoutsStatus)
+      : activeFilter === 'All'
+        ? undefined
+        : (activeFilter.toLowerCase() as FindCashoutsStatus),
   )
 
-  const totalPages = $derived(Math.max(1, Math.ceil(filteredItems.length / pageSize)))
-  const safeCurrentPage = $derived(Math.min(currentPage, totalPages))
-  const paginatedItems = $derived(filteredItems.slice((safeCurrentPage - 1) * pageSize, safeCurrentPage * pageSize))
+  const pagination = useCursorPagination<TCashoutRequest>({
+    fetchPage: (cursor) =>
+      trpcClient.cashouts.findCashouts.query({
+        limit: String(TABLE_PAGE_SIZE),
+        sort: 'createdAt',
+        order: 'desc',
+        ...(activeStatus ? { status: activeStatus } : {}),
+        ...(cursor ? { cursor } : {}),
+      }),
+    onError: (err) => {
+      console.error('Failed to load cash out requests', err)
+      notify('Failed to load cash out requests', ToastType.FAIL)
+    },
+  })
 
-  function handleAccept(id: string) {
-    const request = items.find((r) => r.id === id)
+  const filters = ['All', 'Accepted', 'Rejected', 'Pending'] as const
+
+  async function changeFilter(value: string) {
+    activeFilter = value
+    await pagination.reload()
+  }
+
+  async function handleAccept(id: string) {
+    const request = pagination.items.find((r) => r.id === id)
     if (!request) return
     modals.open<ModalProps & PaymentConfirmModalProps>(PaymentConfirmModal, {
       variant: 'accept',
@@ -67,7 +71,8 @@
             status: 'paid' as UpdateCashoutStatusInput['status'],
             reason,
           })
-          items = items.map((r) => (r.id === id ? (updated as TCashoutRequest) : r))
+          pagination.setItems(pagination.items.map((r) => (r.id === id ? (updated as TCashoutRequest) : r)))
+          await pagination.reload()
           notify('Payment accepted', ToastType.SUCCESS)
         } catch (error) {
           const message = error instanceof Error && error.message ? error.message : 'Failed to accept payment'
@@ -77,8 +82,8 @@
     })
   }
 
-  function handleReject(id: string) {
-    const request = items.find((r) => r.id === id)
+  async function handleReject(id: string) {
+    const request = pagination.items.find((r) => r.id === id)
     if (!request) return
     modals.open<ModalProps & PaymentConfirmModalProps>(PaymentConfirmModal, {
       variant: 'decline',
@@ -92,7 +97,8 @@
             status: 'rejected' as UpdateCashoutStatusInput['status'],
             reason,
           })
-          items = items.map((r) => (r.id === id ? (updated as TCashoutRequest) : r))
+          pagination.setItems(pagination.items.map((r) => (r.id === id ? (updated as TCashoutRequest) : r)))
+          await pagination.reload()
           notify('Payment rejected', ToastType.FAIL)
         } catch (error) {
           const message = error instanceof Error && error.message ? error.message : 'Failed to reject payment'
@@ -112,17 +118,14 @@
     >
       <h2 class="text-base font-semibold leading-[1.81px] text-dark">My Listings</h2>
       <div class="flex gap-1.5">
-        {#each filters as f (f.value)}
+        {#each filters as f (f)}
           <button
-            onclick={() => {
-              activeFilter = f.value
-              currentPage = 1
-            }}
-            class="md:px-5.25 px-3 py-0.75 rounded-full text-[13px] {activeFilter === f.value
+            onclick={() => changeFilter(f)}
+            class="md:px-5.25 px-3 py-0.75 rounded-full text-[13px] {activeFilter === f
               ? 'bg-[#6d6b76] text-[#f8f5f1] font-semibold'
               : 'bg-[#f8f5f1]/50 text-dark/30 font-medium'}"
           >
-            {f.label} ({f.count})
+            {f}
           </button>
         {/each}
       </div>
@@ -143,8 +146,14 @@
             </tr>
           </thead>
           <tbody>
-            {#if paginatedItems.length}
-              {#each paginatedItems as request, i (request.id)}
+            {#if pagination.loading}
+              <tr>
+                <td colspan="7" class="px-4 py-6 text-center">
+                  <span class="loading loading-spinner loading-sm"></span>
+                </td>
+              </tr>
+            {:else if pagination.items.length}
+              {#each pagination.items as request, i (request.id)}
                 <tr class="border-b border-[#ddd] last:border-0 {i % 2 === 0 ? 'bg-[#f8f5f1]' : 'bg-cream'}">
                   <td class="px-4 py-1.5 whitespace-nowrap">{formatDate(request.createdAt)}</td>
                   <td class="px-4 py-1.5">{#await getUserBySub(request.sub)}…{:then user}{user.name}{/await}</td>
@@ -195,18 +204,14 @@
     </div>
 
     <TablePagination
-      from={paginatedItems.length ? (safeCurrentPage - 1) * pageSize + 1 : 0}
-      to={Math.min(safeCurrentPage * pageSize, filteredItems.length)}
-      total={filteredItems.length}
+      from={pagination.items.length ? pagination.currentPage * TABLE_PAGE_SIZE + 1 : 0}
+      to={pagination.currentPage * TABLE_PAGE_SIZE + pagination.items.length}
+      total={pagination.totalCount}
       label="requests"
-      previousDisabled={safeCurrentPage === 1}
-      nextDisabled={safeCurrentPage === totalPages}
-      onPrevious={() => {
-        currentPage = Math.max(1, safeCurrentPage - 1)
-      }}
-      onNext={() => {
-        currentPage = Math.min(totalPages, safeCurrentPage + 1)
-      }}
+      previousDisabled={pagination.currentPage === 0 || pagination.loading}
+      nextDisabled={!pagination.hasNext || pagination.loading}
+      onPrevious={pagination.prevPage}
+      onNext={pagination.nextPage}
     />
   </div>
 </div>
