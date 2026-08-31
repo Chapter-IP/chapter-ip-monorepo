@@ -1,6 +1,4 @@
-import isPlainObject from 'lodash/isPlainObject'
-import mapValues from 'lodash/mapValues'
-import snakeCase from 'lodash/snakeCase'
+import { isPlainObject, mapValues, snakeCase } from 'es-toolkit'
 
 export function withEnvOverrides<T>(config: T, prefix = ''): T {
   return mapValues(config as Record<string, unknown>, (value, key) => {

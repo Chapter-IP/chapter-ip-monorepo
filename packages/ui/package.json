@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "module": "./index.ts",
   "main": "./index.ts",
+  "module": "./index.ts",
   "exports": {
     ".": {
       "types": "./index.ts",
@@ -23,6 +23,12 @@
       "svelte": "./assets/chapter-new-logo.png"
     }
   },
+  "scripts": {
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint --deny-warnings .",
+    "lint:fix": "oxlint --fix --deny-warnings ."
+  },
   "dependencies": {
     "@zerodevx/svelte-toast": "^0.9.6"
   },
@@ -30,6 +36,6 @@
     "@repo/notifications": "workspace:*"
   },
   "peerDependencies": {
-    "svelte": "^5.39.5"
+    "svelte": "^5.57.0"
   }
 }

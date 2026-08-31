@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-import { paginatedRequestWithCursorSchema, createPaginatedResponseSchema } from '../common/model/model.dto'
-import { ContentStatus } from './content.schema'
+import { paginatedRequestWithCursorSchema, createPaginatedResponseSchema } from '../common/model/model.dto.js'
+import { ContentStatus } from './content.schema.js'
 
 export const contentMetadataRecordSchema = z.record(z.string(), z.any()).optional()
 

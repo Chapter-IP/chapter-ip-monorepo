@@ -5,11 +5,11 @@ import { mongo, Model } from 'mongoose'
 
 import type { TNotification } from '@repo/notifications'
 
-import { CommonModelService } from '../model/model.service'
-import type { TBuiltPaginationOptions } from '../model/model.dto'
+import { CommonModelService } from '../model/model.service.js'
+import type { TBuiltPaginationOptions } from '../model/model.dto.js'
 
-import { CommonNotification } from './notification.schema'
-import type { TFindCommonNotificationsInput } from './notification.dto'
+import { CommonNotification } from './notification.schema.js'
+import type { TFindCommonNotificationsInput } from './notification.dto.js'
 
 @Injectable()
 export class CommonNotificationService extends CommonModelService<CommonNotification> implements OnModuleInit {

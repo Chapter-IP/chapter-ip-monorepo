@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
 
-import { ContentModelService } from './content-model.service'
-import { ContentRouter } from './content.router'
-import { ContentSchema, Content } from './content.schema'
-import { ContentFileSchema, ContentFile } from './file/file.schema'
-import { FileService } from './file/file.service'
-import { PurchaseHistoryItemSchema, PurchaseHistoryItem } from './purchase-history/purchase-history-item.schema'
-import { PurchaseHistoryService } from './purchase-history/purchase-history.service'
-import { ContentService } from './content.service'
-import { EvmListenerModule } from '../evm-listener/evm-listener.module'
+import { ContentModelService } from './content-model.service.js'
+import { ContentRouter } from './content.router.js'
+import { ContentSchema, Content } from './content.schema.js'
+import { ContentFileSchema, ContentFile } from './file/file.schema.js'
+import { FileService } from './file/file.service.js'
+import { PurchaseHistoryItemSchema, PurchaseHistoryItem } from './purchase-history/purchase-history-item.schema.js'
+import { PurchaseHistoryService } from './purchase-history/purchase-history.service.js'
+import { ContentService } from './content.service.js'
+import { EvmListenerModule } from '../evm-listener/evm-listener.module.js'
 
 @Module({
   imports: [

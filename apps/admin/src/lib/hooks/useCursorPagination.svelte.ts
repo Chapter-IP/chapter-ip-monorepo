@@ -50,7 +50,7 @@ export function useCursorPagination<TItem>({ fetchPage, onError }: CursorPaginat
 
   $effect(() => {
     cancelled = false
-    loadPage()
+    void loadPage()
     return () => {
       cancelled = true
     }

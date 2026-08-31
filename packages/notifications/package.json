@@ -2,10 +2,17 @@
   "name": "@repo/notifications",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "exports": {
     ".": "./src/index.ts"
   },
+  "scripts": {
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint --deny-warnings .",
+    "lint:fix": "oxlint --fix --deny-warnings ."
+  },
   "peerDependencies": {
-    "zod": "^4"
+    "zod": "^4.5.4"
   }
 }

@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { type JWTPayload, type JSONWebKeySet } from 'jose'
 
-import type { TAuthTokenPayload } from './auth.types'
-import { BEARER_TOKEN } from './auth.constants'
+import type { TAuthTokenPayload } from './auth.types.js'
+import { BEARER_TOKEN } from './auth.constants.js'
 
 @Injectable()
 export class CommonAuthService {

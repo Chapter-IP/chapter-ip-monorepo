@@ -2,9 +2,9 @@ import { Logger } from '@nestjs/common'
 import { Router, Subscription, UseMiddlewares, Ctx, Options, Query, Input, Mutation } from 'nestjs-trpc'
 import { TRPCError } from '@trpc/server'
 
-import { CommonNotificationService } from '../common/notification/notification.service'
-import { AuthMiddleware } from '../common/auth/auth.middleware'
-import type { TAppContextWithTokenPayload } from '../common/auth/auth.types'
+import { CommonNotificationService } from '../common/notification/notification.service.js'
+import { AuthMiddleware } from '../common/auth/auth.middleware.js'
+import type { TAppContextWithTokenPayload } from '../common/auth/auth.types.js'
 
 import {
   findNotificationsInputSchema,
@@ -17,7 +17,7 @@ import {
   type TMarkNotificationAsReadOutput,
   markAllMyNotificationsAsReadOutputSchema,
   type TMarkAllMyNotificationsAsReadOutput,
-} from './notification.dto'
+} from './notification.dto.js'
 
 @Router({ alias: 'notifications' })
 export class NotificationRouter {

@@ -81,8 +81,8 @@
             {#each items as item, i (item.id)}
               <tr
                 class="border-b border-[#ddd] last:border-0 {i % 2 === 0
-                    ? 'bg-[#f8f5f1]'
-                    : 'bg-cream'} text-sm font-medium"
+                  ? 'bg-[#f8f5f1]'
+                  : 'bg-cream'} text-sm font-medium"
               >
                 <td class="px-4 py-1.5">{formatDate(item.createdAt)}</td>
                 <td class="px-4 py-1.5">{formatCents(item.amount)}</td>
@@ -113,14 +113,5 @@
       </table>
     </div>
   </div>
-  <TablePagination
-    {from}
-    {to}
-    {total}
-    label="requests"
-    {previousDisabled}
-    {nextDisabled}
-    {onPrevious}
-    {onNext}
-  />
+  <TablePagination {from} {to} {total} label="requests" {previousDisabled} {nextDisabled} {onPrevious} {onNext} />
 {/if}

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument, Document, ObjectId, Schema as Mongooseschema, Types } from 'mongoose'
 
-import { Content } from '../content.schema'
+import { Content } from '../content.schema.js'
 
 export type TContentFileDocument = HydratedDocument<ContentFile>
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 
-import { TClientInfo } from './client.types'
+import { TClientInfo } from './client.types.js'
 
 @Injectable()
 export class CommonClientService {

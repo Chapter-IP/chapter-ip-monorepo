@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Contract } from 'ethers'
-import { abi as licenseAbi } from '@credenza3/contracts/artifacts/LicenseNftContract.json'
+import licenseNftContract from '@credenza3/contracts/artifacts/LicenseNftContract.json' with { type: 'json' }
 
-import { CommonEvmService } from '../evm/evm.service'
+import { CommonEvmService } from '../evm/evm.service.js'
 
-import { BlockedLicenseService } from './blocked-license/blocked-license.service'
+import { BlockedLicenseService } from './blocked-license/blocked-license.service.js'
 
 @Injectable()
 export class CommonLicenseService {
@@ -22,7 +22,7 @@ export class CommonLicenseService {
     if (!licenceContractAddress) {
       throw new Error('Missing EVM_LICENSE_NTF_CONTRACT_ADDRESS')
     }
-    this.licenseNftContract = new Contract(licenceContractAddress, licenseAbi, provider)
+    this.licenseNftContract = new Contract(licenceContractAddress, licenseNftContract.abi, provider)
   }
 
   public getLicenseNftContract() {

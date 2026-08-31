@@ -3,16 +3,16 @@
   "ui": "tui",
   "globalEnv": ["PORT", "NODE_ENV", "ACCOUNTS_URL"],
   "tasks": {
-    "//#trpc:generate": {
-      "cache": true,
+    "backend#trpc:generate": {
+      "cache": false,
       "persistent": false
     },
-    "//#trpc:watch": {
+    "backend#trpc:watch": {
       "persistent": true,
-      "cache": true
+      "cache": false
     },
     "backend#dev": {
-      "with": ["//#trpc:watch"],
+      "with": ["backend#trpc:watch"],
       "cache": false,
       "persistent": true,
       "env": [
@@ -41,6 +41,17 @@
     },
     "lint": {
       "dependsOn": ["^lint"]
+    },
+    "lint:fix": {
+      "dependsOn": ["^lint:fix"],
+      "cache": false
+    },
+    "format": {
+      "dependsOn": ["^format"],
+      "cache": false
+    },
+    "format:check": {
+      "dependsOn": ["^format:check"]
     },
     "check-types": {
       "dependsOn": ["^check-types"]

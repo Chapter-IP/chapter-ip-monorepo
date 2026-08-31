@@ -1,8 +1,8 @@
 import type { Model, ProjectionType, QueryOptions, UpdateQuery } from 'mongoose'
 import { BadRequestException } from '@nestjs/common'
 
-import type { TPaginatedRequestWithCursor, TPaginatedResponseWithCursor, TBuiltPaginationOptions } from './model.dto'
-import omit from 'lodash/omit'
+import type { TPaginatedRequestWithCursor, TPaginatedResponseWithCursor, TBuiltPaginationOptions } from './model.dto.js'
+import { omit } from 'es-toolkit'
 
 export class CommonModelService<T> {
   constructor(protected model: Model<T>) {}
@@ -28,7 +28,9 @@ export class CommonModelService<T> {
   }
 
   async updateById(id: string, params: Partial<T> | UpdateQuery<T>) {
-    return await this.model.findByIdAndUpdate(id, omit(params, ['_id']), { returnDocument: 'after' })
+    const update = omit(params as Record<string, unknown>, ['_id']) as UpdateQuery<T>
+
+    return await this.model.findByIdAndUpdate(id, update, { returnDocument: 'after' })
   }
 
   async deleteOne(params?: Partial<T> | Record<string, unknown>) {

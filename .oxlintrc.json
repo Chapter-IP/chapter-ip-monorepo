@@ -1,0 +1,62 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "options": {
+    "denyWarnings": true,
+    "reportUnusedDisableDirectives": "error",
+    "respectEslintDisableDirectives": false
+  },
+  "plugins": ["typescript"],
+  "ignorePatterns": ["packages/trpc/src/server/server.ts"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "complexity": ["error", 25],
+    "eqeqeq": ["error", "smart"],
+    "max-lines-per-function": [
+      "error",
+      {
+        "max": 250,
+        "skipBlankLines": true,
+        "skipComments": true
+      }
+    ],
+    "no-console": "off",
+    "no-unsafe-optional-chaining": "off",
+    "no-unused-vars": [
+      "error",
+      {
+        "ignoreRestSiblings": true,
+        "varsIgnorePattern": "^_",
+        "argsIgnorePattern": "^_"
+      }
+    ],
+    "typescript/consistent-type-imports": "off",
+    "typescript/no-base-to-string": "off",
+    "typescript/no-explicit-any": "off",
+    "typescript/no-floating-promises": "error",
+    "typescript/no-meaningless-void-operator": "off",
+    "typescript/no-misused-spread": "off",
+    "typescript/no-redundant-type-constituents": "off",
+    "typescript/no-useless-default-assignment": "off",
+    "typescript/require-array-sort-compare": "off",
+    "typescript/restrict-template-expressions": "off",
+    "typescript/use-unknown-in-catch-callback-variable": "error"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
+      "rules": {
+        "max-lines-per-function": "off",
+        "no-unassigned-vars": "off"
+      }
+    },
+    {
+      "files": ["**/*.test.ts", "**/*.spec.ts"],
+      "rules": {
+        "max-lines-per-function": "off",
+        "typescript/unbound-method": "off"
+      }
+    }
+  ]
+}

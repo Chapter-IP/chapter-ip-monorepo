@@ -8,7 +8,7 @@ const getMembershipContract = async (): Promise<ethers.Contract | null> => {
   if (!accessToken) return null
   if (membershipContract) return membershipContract
 
-  initProvider(accessToken)
+  await initProvider(accessToken)
   const signer = await getSigner()
 
   membershipContract = configStore.getContract(ContractName.MEMBERSHIP, signer)

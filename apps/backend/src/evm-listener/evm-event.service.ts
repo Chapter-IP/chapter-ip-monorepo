@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
-import { CommonModelService } from '../common/model/model.service'
+import { CommonModelService } from '../common/model/model.service.js'
 
-import { EvmEvent } from './evm-event.schema'
+import { EvmEvent } from './evm-event.schema.js'
 
 @Injectable()
 export class EvmEventService extends CommonModelService<EvmEvent> {

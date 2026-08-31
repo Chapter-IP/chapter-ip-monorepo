@@ -5,8 +5,14 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "scripts": {
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint --deny-warnings .",
+    "lint:fix": "oxlint --fix --deny-warnings ."
+  },
   "peerDependencies": {
-    "socket.io-client": "^4.8.1",
-    "@credenza3/evm-provider": "^0.0.2"
+    "@credenza3/evm-provider": "^0.0.2",
+    "socket.io-client": "^4.8.3"
   }
 }

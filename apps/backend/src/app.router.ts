@@ -1,11 +1,11 @@
 import { Router, Query, UseMiddlewares, Ctx } from 'nestjs-trpc'
 import { z } from 'zod'
 
-import { AuthMiddleware, AdminAuthMiddleware } from './common/auth/auth.middleware'
-import type { TAppContextWithTokenPayload } from './common/auth/auth.types'
+import { AuthMiddleware, AdminAuthMiddleware } from './common/auth/auth.middleware.js'
+import type { TAppContextWithTokenPayload } from './common/auth/auth.types.js'
 
-import { healthOutputSchema } from './app.dto'
-import type { TAppContext } from './app.context'
+import { healthOutputSchema } from './app.dto.js'
+import type { TAppContext } from './app.context.js'
 @Router({ alias: 'app' })
 export class AppRouter {
   constructor() {}
