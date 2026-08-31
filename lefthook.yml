@@ -5,6 +5,6 @@ pre-commit:
       run: pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
     lint:
-      glob: '*.{js,mjs,cjs,jsx,ts,mts,cts,tsx}'
+      glob: '*.{js,mjs,cjs,jsx,ts,mts,cts,tsx,svelte}'
       run: pnpm exec oxlint --type-aware --fix --deny-warnings {staged_files}
       stage_fixed: true
