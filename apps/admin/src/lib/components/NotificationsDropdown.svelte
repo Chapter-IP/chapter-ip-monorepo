@@ -155,7 +155,7 @@
                       {#if activeMenuRow === i}
                         <ul
                           role="menu"
-                          class="absolute right-0 top-full z-50 mt-2 w-40 rounded-md border border-[#1A1A2E]/10 bg-cream p-2 text-left text-sm font-medium text-[#1A1A2E99] shadow-[3px_6px_8px_0_rgba(21,34,50,0.08)]"
+                          class="absolute right-0 top-full z-50 mt-2 w-40 rounded-md border border-dark/10 bg-cream p-2 text-left text-sm font-medium text-[#1A1A2E99] shadow-[3px_6px_8px_0_rgba(21,34,50,0.08)]"
                         >
                           {#each NotificationsMenuItems as item (`${item.action || item.href}-${item.text}`)}
                             <li role="none">
