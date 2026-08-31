@@ -100,7 +100,7 @@
   {#if dropdownOpen}
     <ul
       tabindex="-1"
-      class="dropdown-content flex flex-col rounded-box z-30 md:w-100 w-[90vw] min-h-162.5 p-3.75 rounded-md shadow-[3px_6px_8px_0_rgba(21,34,50,0.08)]
+      class="dropdown-content flex flex-col z-30 md:w-100 w-[90vw] min-h-162.5 p-3.75 rounded-md shadow-[3px_6px_8px_0_rgba(21,34,50,0.08)]
     border border-[#1A1A2E1A] top-12 bg-cream text-sm font-medium text-left text-[#1A1A2E99]
     md:translate-x-6 max-md:fixed max-md:left-1/2 max-md:-translate-x-1/2 max-md:top-16"
     >
