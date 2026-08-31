@@ -28,8 +28,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "trpc:chmod": "chmod +x node_modules/nestjs-trpc/native/**/*",
     "trpc:generate": "cd ../.. && nestjs-trpc generate --output packages/trpc/src/server/server.ts --entrypoint apps/backend/src/main.ts",
     "trpc:watch": "sleep 3 && cd ../.. && nestjs-trpc watch --output packages/trpc/src/server/server.ts --entrypoint apps/backend/src/main.ts",
+    "postinstall": "pnpm run trpc:chmod",
     "dev": "nest start --watch"
   },
   "dependencies": {

@@ -4,12 +4,12 @@
   "globalEnv": ["PORT", "NODE_ENV", "ACCOUNTS_URL"],
   "tasks": {
     "backend#trpc:generate": {
-      "cache": true,
+      "cache": false,
       "persistent": false
     },
     "backend#trpc:watch": {
       "persistent": true,
-      "cache": true
+      "cache": false
     },
     "backend#dev": {
       "with": ["backend#trpc:watch"],

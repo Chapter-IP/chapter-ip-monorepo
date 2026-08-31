@@ -178,9 +178,11 @@ export function createAuthStore(
   async function refreshAccessToken(silent = false): Promise<boolean> {
     if (refreshTokenPromise) return await refreshTokenPromise
 
-    const refresh = async () => await performRefreshAccessToken(silent)
+    const refresh = () => performRefreshAccessToken(silent)
     const promise =
-      'locks' in navigator ? navigator.locks.request('chapter-ip:oauth-refresh-token', refresh) : refresh()
+      'locks' in navigator
+        ? navigator.locks.request('chapter-ip:oauth-refresh-token', refresh).then((result) => result)
+        : refresh()
 
     refreshTokenPromise = promise
     try {

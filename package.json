@@ -8,13 +8,11 @@
     "lint:fix": "turbo run lint:fix",
     "format": "turbo run format",
     "format:check": "turbo run format:check",
-    "trpc:chmod": "chmod +x node_modules/.pnpm/nestjs-trpc@*/node_modules/nestjs-trpc/native/**/*",
-    "trpc:generate": "pnpm --filter backend trpc:generate",
-    "trpc:watch": "pnpm --filter backend trpc:watch",
+    "trpc:generate": "turbo run trpc:generate --filter=backend",
+    "trpc:watch": "turbo run trpc:watch --filter=backend",
     "check-types": "turbo run check-types",
     "ncu": "pnpm dlx npm-check-updates --deep -i",
-    "prepare": "[ -n \"$RAILWAY_ENVIRONMENT_ID\" ] || lefthook install",
-    "postinstall": "pnpm run trpc:chmod"
+    "prepare": "[ -n \"$RAILWAY_ENVIRONMENT_ID\" ] || lefthook install"
   },
   "devDependencies": {
     "@typescript/native": "npm:typescript@^7.0.2",
