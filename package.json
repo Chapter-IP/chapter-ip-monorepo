@@ -5,28 +5,28 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{js,ts,tsx,svelte,md,html,json,css}\"",
+    "lint:fix": "turbo run lint:fix",
+    "format": "turbo run format",
+    "format:check": "turbo run format:check",
     "trpc:chmod": "chmod +x node_modules/.pnpm/nestjs-trpc@*/node_modules/nestjs-trpc/native/**/*",
-    "trpc:generate": "nestjs-trpc generate --output packages/trpc/src/server/server.ts --entrypoint apps/backend/main.ts",
-    "trpc:watch": "sleep 3 && nestjs-trpc watch --output packages/trpc/src/server/server.ts --entrypoint apps/backend/main.ts",
+    "trpc:generate": "pnpm --filter backend trpc:generate",
+    "trpc:watch": "pnpm --filter backend trpc:watch",
     "check-types": "turbo run check-types",
     "ncu": "pnpm dlx npm-check-updates --deep -i",
-    "prepare": "husky",
+    "prepare": "[ -n \"$RAILWAY_ENVIRONMENT_ID\" ] || lefthook install",
     "postinstall": "pnpm run trpc:chmod"
   },
   "devDependencies": {
-    "concurrently": "^10.0.4",
-    "eslint": "^10.8.1",
-    "husky": "^9.1.7",
-    "lint-staged": "^17.3.0",
-    "nestjs-trpc": "^2.13.0",
-    "prettier": "^3.9.6",
-    "prettier-plugin-svelte": "^4.1.1",
-    "turbo": "^2.10.9",
-    "typescript": "6.0.3"
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "lefthook": "^2.1.12",
+    "oxfmt": "^0.65.0",
+    "oxlint": "^1.80.0",
+    "oxlint-tsgolint": "^7.0.2001",
+    "turbo": "^2.10.12",
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
-  "packageManager": "pnpm@11.21.0",
   "engines": {
     "node": ">=24"
-  }
+  },
+  "packageManager": "pnpm@11.24.0"
 }

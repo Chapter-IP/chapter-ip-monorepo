@@ -1,9 +1,10 @@
 {
   "name": "backend",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
   "private": true,
+  "description": "",
+  "license": "UNLICENSED",
+  "author": "",
   "exports": {
     "./content-status": {
       "types": "./src/content/content.schema.ts",
@@ -11,89 +12,90 @@
       "default": "./src/content/content.schema.ts"
     }
   },
-  "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "check-types": "tsc --noEmit -p tsconfig.json",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "lint": "oxlint --type-aware --deny-warnings .",
+    "lint:fix": "oxlint --type-aware --fix --deny-warnings .",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "trpc:generate": "cd ../.. && nestjs-trpc generate --output packages/trpc/src/server/server.ts --entrypoint apps/backend/src/main.ts",
+    "trpc:watch": "sleep 3 && cd ../.. && nestjs-trpc watch --output packages/trpc/src/server/server.ts --entrypoint apps/backend/src/main.ts",
     "dev": "nest start --watch"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1108.0",
-    "@aws-sdk/lib-storage": "^3.1108.0",
-    "@aws-sdk/s3-request-presigner": "^3.1108.0",
+    "@aws-sdk/client-s3": "^3.1121.0",
+    "@aws-sdk/lib-storage": "^3.1121.0",
+    "@aws-sdk/s3-request-presigner": "^3.1121.0",
     "@credenza3/contracts": "^0.0.21",
-    "@nestjs/common": "^11.1.29",
-    "@nestjs/config": "^4.0.4",
-    "@nestjs/core": "^11.1.29",
-    "@nestjs/mongoose": "^11.0.4",
-    "@nestjs/platform-express": "^11.1.29",
+    "@nestjs/common": "^12.0.1",
+    "@nestjs/config": "^12.0.0",
+    "@nestjs/core": "^12.0.1",
+    "@nestjs/mongoose": "^12.0.0",
+    "@nestjs/platform-express": "^12.0.1",
     "@nestjs/throttler": "^6.5.0",
     "@repo/notifications": "workspace:*",
     "@trpc/server": "^11.18.0",
     "body-parser": "^2.3.0",
     "ethers": "^6.17.0",
-    "jose": "^6.2.8",
+    "jose": "^6.2.10",
     "lodash": "^4.18.1",
     "luxon": "^3.7.2",
     "mime-types": "^3.0.2",
-    "mongoose": "9.9.2",
+    "mongoose": "9.9.4",
     "nestjs-trpc": "^2.13.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "trpc-ui-zod4": "^1.1.0",
     "ws": "^8.21.3",
-    "zod": "^4.4.3"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.24",
-    "@nestjs/schematics": "^11.1.0",
-    "@nestjs/testing": "^11.1.29",
-    "@repo/eslint-config": "workspace:*",
+    "@nestjs/cli": "^12.0.0",
+    "@nestjs/schematics": "^12.0.0",
+    "@nestjs/testing": "^12.0.1",
     "@types/body-parser": "^1.19.6",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.25",
-    "@types/luxon": "^3.7.4",
+    "@types/luxon": "^3.7.5",
     "@types/mime-types": "^3.0.1",
-    "@types/node": "^26.2.0",
+    "@types/node": "^26.4.0",
     "@types/supertest": "^7.2.1",
     "@types/ws": "^8.18.1",
-    "eslint": "^10.8.1",
-    "jest": "^30.4.2",
-    "prettier": "^3.9.6",
+    "jest": "^30.5.0",
     "source-map-support": "^0.5.21",
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.12",
     "ts-loader": "^9.6.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^6.0.3"
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
   "jest": {
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
     "moduleFileExtensions": [
       "js",
       "json",
       "ts"
     ],
     "rootDir": "src",
+    "testEnvironment": "node",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    }
   }
 }

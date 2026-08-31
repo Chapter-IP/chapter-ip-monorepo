@@ -10,7 +10,8 @@ export const RECENT_LIMIT = 10
 type EqualityFilterValue = string | number | boolean | null
 
 export type LocationFilterCondition =
-  { field: string; op: 'eq'; val: EqualityFilterValue } | { field: string; op: 'regex'; val: string }
+  | { field: string; op: 'eq'; val: EqualityFilterValue }
+  | { field: string; op: 'regex'; val: string }
 
 export type LocationFilterNode = LocationFilterCondition | { and: LocationFilterNode[] } | { or: LocationFilterNode[] }
 

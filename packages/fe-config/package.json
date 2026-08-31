@@ -3,20 +3,26 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "module": "./src/index.ts",
   "main": "./src/index.ts",
+  "module": "./src/index.ts",
   "exports": {
     ".": {
       "types": "./src/index.ts",
       "svelte": "./src/index.ts"
     }
   },
+  "scripts": {
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint --deny-warnings .",
+    "lint:fix": "oxlint --fix --deny-warnings ."
+  },
   "devDependencies": {
-    "typescript": "^6.0.3"
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
   "peerDependencies": {
-    "@credenza3/contracts": "^0.0.20",
+    "@credenza3/contracts": "^0.0.21",
     "@repo/fe-evm-provider": "workspace:*",
-    "svelte": "^5.39.5"
+    "svelte": "^5.57.0"
   }
 }

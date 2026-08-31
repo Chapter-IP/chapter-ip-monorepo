@@ -23,7 +23,7 @@ type CurrentLicensePrices = {
 
 export default class BlockchainService {
   constructor(private readonly accessToken: string) {
-    initProvider(accessToken)
+    void initProvider(accessToken)
   }
 
   async updateContentPrices(tokenId: string, prices: ContentPrices): Promise<void> {

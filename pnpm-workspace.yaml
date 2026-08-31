@@ -11,7 +11,9 @@ packages:
 allowBuilds:
   '@credenza3/passport-evm': false
   '@nestjs/core': false
+  '@parcel/watcher': false
   esbuild: true
+  lefthook: true
   unrs-resolver: false
 
 minimumReleaseAge: 0

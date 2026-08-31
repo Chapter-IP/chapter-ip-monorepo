@@ -1,4 +1,4 @@
-import type { Content, ContentFile } from './content'
+import type { Content } from './content'
 
 export type { ContentFile } from './content'
 

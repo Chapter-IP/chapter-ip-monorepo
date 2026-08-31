@@ -2,7 +2,7 @@ import type { TAccountUser, TAuthStore, TAuthConfig } from './types'
 import { generateRandomString, sha256, base64urlencode } from './helper'
 import { createClient } from '@repo/trpc/client'
 
-export function createAuthStore<T>(
+export function createAuthStore(
   config: TAuthConfig,
   svelteKit: {
     browser: boolean
@@ -197,16 +197,11 @@ export function createAuthStore<T>(
     }
 
     if (!accessTokenPromise) {
-      accessTokenPromise = new Promise(async (resolve) => {
-        const refreshed = await refreshAccessToken(true)
-        if (refreshed) {
-          resolve(state.accessToken)
-        } else {
-          resolve(null)
-        }
-
-        accessTokenPromise = null
-      })
+      accessTokenPromise = refreshAccessToken(true)
+        .then((refreshed) => (refreshed ? state.accessToken : null))
+        .finally(() => {
+          accessTokenPromise = null
+        })
     }
 
     return accessTokenPromise
@@ -253,7 +248,7 @@ export function createAuthStore<T>(
       isInitialized: true,
     }
 
-    goto(resolve('/'))
+    void goto(resolve('/'))
 
     if (accessToken) {
       void revokeOAuth2Session(accessToken).catch((error: unknown) => {

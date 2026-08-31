@@ -33,7 +33,7 @@ export const load = async () => {
   localStorage.setItem('credenza_web_sdk:access_token', accessToken)
   localStorage.setItem('credenza_web_sdk:login_provider', 'oauth')
 
-  initProvider(accessToken)
+  await initProvider(accessToken)
   const signer = await getSigner()
   const userAddress = await signer.getAddress()
 

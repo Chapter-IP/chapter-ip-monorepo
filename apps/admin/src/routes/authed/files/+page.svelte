@@ -87,8 +87,7 @@
 
     modals.open<ModalProps & TConfirmModalProps>(ConfirmModal, {
       title: 'Delete listing?',
-      description:
-        'This cannot be undone. Customers who purchased a license will lose access to this content.',
+      description: 'This cannot be undone. Customers who purchased a license will lose access to this content.',
       confirmPhrase: DELETE_CONFIRM_PHRASE,
       submitText: 'Delete',
       onSubmit: async () => {

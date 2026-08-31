@@ -2,9 +2,6 @@
   "name": "@repo/trpc",
   "version": "0.0.0",
   "private": true,
-  "scripts": {
-    "test": "vitest --run"
-  },
   "exports": {
     "./client": {
       "types": "./src/client/client.ts",
@@ -17,14 +14,21 @@
       "default": "./src/server/server.ts"
     }
   },
+  "scripts": {
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint --deny-warnings .",
+    "lint:fix": "oxlint --fix --deny-warnings .",
+    "test": "vitest --run"
+  },
   "dependencies": {
     "@trpc/client": "^11.18.0",
     "@trpc/server": "^11.18.0"
   },
   "devDependencies": {
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "peerDependencies": {
-    "zod": "^4"
+    "zod": "^4.5.4"
   }
 }

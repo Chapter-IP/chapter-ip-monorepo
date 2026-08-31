@@ -11,7 +11,6 @@ import { PurchaseHistoryService } from '../content/purchase-history/purchase-his
 import { PublisherService } from '../publisher/publisher.service'
 
 import { CommonNotificationService } from '../common/notification/notification.service'
-import { type TCommonNotificationDocument } from '../common/notification/notification.schema'
 import { CommonEvmService } from '../common/evm/evm.service'
 
 @Injectable()

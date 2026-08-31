@@ -25,7 +25,7 @@ export const forwardTransaction = async (
         },
       },
       (data: { error?: { message: string }; payload: { hash: string } }) => {
-        disconnectSocketIO(opts.evm_wss)
+        void disconnectSocketIO(opts.evm_wss)
         if (data.error) {
           return reject(new Error(data.error.message))
         }
