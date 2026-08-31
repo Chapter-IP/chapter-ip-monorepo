@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 
-import { CommonClientService } from './client.service'
-import { ClientInfoMiddleware } from './client.middleware'
+import { CommonClientService } from './client.service.js'
+import { ClientInfoMiddleware } from './client.middleware.js'
 
 @Module({
   imports: [],

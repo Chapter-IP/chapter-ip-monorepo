@@ -9,8 +9,8 @@ import {
   type TExchangeCodeInput,
   type TRefreshTokenInput,
   type TAuthTokenOutput,
-} from './auth.dto'
-import { AuthService } from './auth.service'
+} from './auth.dto.js'
+import { AuthService } from './auth.service.js'
 
 @Router({ alias: 'auth' })
 export class AuthRouter {

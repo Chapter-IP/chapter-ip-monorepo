@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { paginatedRequestWithCursorSchema, createPaginatedResponseSchema } from '../common/model/model.dto'
+import { paginatedRequestWithCursorSchema, createPaginatedResponseSchema } from '../common/model/model.dto.js'
 
 export const publisherFiatBalanceSchema = z.object({
   available: z.number().int().nonnegative(),

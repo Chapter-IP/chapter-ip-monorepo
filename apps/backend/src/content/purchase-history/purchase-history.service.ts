@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
-import { CommonModelService } from '../../common/model/model.service'
-import type { TBuiltPaginationOptions } from '../../common/model/model.dto'
-import type { TFindPurchaseHistoryInput } from '../content.dto'
+import { CommonModelService } from '../../common/model/model.service.js'
+import type { TBuiltPaginationOptions } from '../../common/model/model.dto.js'
+import type { TFindPurchaseHistoryInput } from '../content.dto.js'
 
-import { PurchaseHistoryItem } from './purchase-history-item.schema'
+import { PurchaseHistoryItem } from './purchase-history-item.schema.js'
 
 @Injectable()
 export class PurchaseHistoryService extends CommonModelService<PurchaseHistoryItem> {

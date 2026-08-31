@@ -2,8 +2,8 @@ import { MiddlewareOptions, MiddlewareResponse, TRPCMiddleware } from 'nestjs-tr
 import { TRPCError } from '@trpc/server'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 
-import { CommonClientService } from './client.service'
-import { TAppContextWithClientInfo } from './client.types'
+import { CommonClientService } from './client.service.js'
+import { TAppContextWithClientInfo } from './client.types.js'
 
 @Injectable()
 export class ClientInfoMiddleware implements TRPCMiddleware {

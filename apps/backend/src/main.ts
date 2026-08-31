@@ -10,7 +10,7 @@ import { AppRouterHost } from 'nestjs-trpc'
 import { randomUUID } from 'crypto'
 import type { Server } from 'http'
 
-import { AppModule } from './app.module'
+import { AppModule } from './app.module.js'
 
 async function bootstrap() {
   const env = process.env.NODE_ENV

@@ -1,15 +1,15 @@
 import { Logger } from '@nestjs/common'
 import { Router, Query, Input, Ctx, UseMiddlewares } from 'nestjs-trpc'
 
-import { AuthMiddleware } from '../common/auth/auth.middleware'
-import type { TAppContextWithTokenPayload } from '../common/auth/auth.types'
-import { BlockedLicenseService } from '../common/license/blocked-license/blocked-license.service'
+import { AuthMiddleware } from '../common/auth/auth.middleware.js'
+import type { TAppContextWithTokenPayload } from '../common/auth/auth.types.js'
+import { BlockedLicenseService } from '../common/license/blocked-license/blocked-license.service.js'
 import {
   findBlockedLicensesInputSchema,
   findBlockedLicensesOutputSchema,
   type TFindBlockedLicensesInput,
   type TFindBlockedLicensesOutput,
-} from '../common/license/blocked-license/blocked-license.dto'
+} from '../common/license/blocked-license/blocked-license.dto.js'
 
 @Router({ alias: 'licenses' })
 export class LicenseRouter {

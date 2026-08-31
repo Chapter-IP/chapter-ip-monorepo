@@ -1,4 +1,4 @@
-import { withEnvOverrides } from '../common/utils/utils'
+import { withEnvOverrides } from '../common/utils/utils.js'
 
 export const ENV = {
   LOCAL: 'local',

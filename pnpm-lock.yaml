@@ -168,15 +168,15 @@ importers:
       body-parser:
         specifier: ^2.3.0
         version: 2.3.0(supports-color@10.2.2)
+      es-toolkit:
+        specifier: ^1.52.0
+        version: 1.52.0
       ethers:
         specifier: ^6.17.0
         version: 6.17.0
       jose:
         specifier: ^6.2.10
         version: 6.2.10
-      lodash:
-        specifier: ^4.18.1
-        version: 4.18.1
       luxon:
         specifier: ^3.7.2
         version: 3.7.2
@@ -223,9 +223,6 @@ importers:
       '@types/jest':
         specifier: ^30.0.0
         version: 30.0.0
-      '@types/lodash':
-        specifier: ^4.17.25
-        version: 4.17.25
       '@types/luxon':
         specifier: ^3.7.5
         version: 3.7.5
@@ -2218,9 +2215,6 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
-  '@types/lodash@4.17.25':
-    resolution: {integrity: sha512-+K1NIO8I+F9/wNulfVvu23QYd0Pe9/OCqRrim4NoYIf1VoEDL90Ve4ClzpyqBLc7NpGGWRvYNCKZ1BE/Jpf8dQ==}
-
   '@types/luxon@3.7.5':
     resolution: {integrity: sha512-jJ41Q4z6ZVO260MNDdHfW7+7a5iMiX8Mr6ZJHcmgrvhZha6dz5704o/lF2kKl6URjH6ivEL97w9xS/MgpJEphg==}
 
@@ -3242,6 +3236,9 @@ packages:
 
   es-toolkit@1.51.0:
     resolution: {integrity: sha512-zC2lQGkM7QX+Gm6iM3+WIdZJzthsEd14LvRNJneSO2hzyz/zNBENR8+YXWo1cKxgPBtV6ksPYHELbcwBRzmdCw==}
+
+  es-toolkit@1.52.0:
+    resolution: {integrity: sha512-XTNEJQh1tY1ZJVcf6ayP/2n4ZPyaHlW2FWs7xvw5ddPuhUVjLD3olQVQS7kf58JbAB48iL0uL/jerTrjtV3lDA==}
 
   escalade@3.2.0:
     resolution: {integrity: sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA==}
@@ -7494,8 +7491,6 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
-  '@types/lodash@4.17.25': {}
-
   '@types/luxon@3.7.5': {}
 
   '@types/mdast@4.0.4':
@@ -8431,6 +8426,8 @@ snapshots:
       hasown: 2.0.4
 
   es-toolkit@1.51.0: {}
+
+  es-toolkit@1.52.0: {}
 
   escalade@3.2.0: {}
 

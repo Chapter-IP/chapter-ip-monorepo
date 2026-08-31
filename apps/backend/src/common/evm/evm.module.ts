@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 
-import { CommonEvmService } from './evm.service'
+import { CommonEvmService } from './evm.service.js'
 
 @Module({
   imports: [],
