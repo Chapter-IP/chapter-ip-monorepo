@@ -3,17 +3,17 @@ import { InjectModel } from '@nestjs/mongoose'
 import { TRPCError } from '@trpc/server'
 import { Model } from 'mongoose'
 
-import { CommonModelService } from '../common/model/model.service'
-import type { TBuiltPaginationOptions } from '../common/model/model.dto'
-import { PublisherService } from '../publisher/publisher.service'
+import { CommonModelService } from '../common/model/model.service.js'
+import type { TBuiltPaginationOptions } from '../common/model/model.dto.js'
+import { PublisherService } from '../publisher/publisher.service.js'
 
-import { Cashout, CashoutStatus } from './cashout.schema'
+import { Cashout, CashoutStatus } from './cashout.schema.js'
 import type {
   TCancelCashoutInput,
   TCreateCashoutInput,
   TFindCashoutsInput,
   TUpdateCashoutStatusInput,
-} from './cashout.dto'
+} from './cashout.dto.js'
 
 @Injectable()
 export class CashoutService extends CommonModelService<Cashout> {

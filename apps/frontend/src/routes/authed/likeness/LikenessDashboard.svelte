@@ -18,7 +18,6 @@
 
   let openFilter = $state<FilterMenu | null>(null)
   // svelte-ignore state_referenced_locally
-  // eslint-disable-next-line svelte/prefer-writable-derived -- filter handlers assign before URL props reload.
   let filters = $state<LikenessFilters>(cloneFilters(initialFilters))
 
   const recentItems = $derived(getRecentLikenesses(recentSourceItems))

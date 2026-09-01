@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 
-import { TClientInfo } from './client.types'
+import { TClientInfo } from './client.types.js'
 
 @Injectable()
 export class CommonClientService {
@@ -20,7 +20,6 @@ export class CommonClientService {
 
   formatBasicToken() {
     const { clientId, clientSecret } = this.getClientIdAndSecret()
-    console.log('clientId', clientId, 'clientSecret', clientSecret)
     const credentials = `${clientId}:${clientSecret}`
     const basicToken = Buffer.from(credentials).toString('base64')
     const authorizationHeader = `Basic ${basicToken}`

@@ -1,9 +1,9 @@
 import { Router, Mutation, Query, Input, Ctx, UseMiddlewares } from 'nestjs-trpc'
 
-import { AuthMiddleware, AdminAuthMiddleware } from '../common/auth/auth.middleware'
-import type { TAppContextWithTokenPayload } from '../common/auth/auth.types'
+import { AuthMiddleware, AdminAuthMiddleware } from '../common/auth/auth.middleware.js'
+import type { TAppContextWithTokenPayload } from '../common/auth/auth.types.js'
 
-import { CashoutService } from './cashout.service'
+import { CashoutService } from './cashout.service.js'
 import {
   cancelCashoutInputSchema,
   cancelCashoutOutputSchema,
@@ -25,7 +25,7 @@ import {
   type TGetMyCashoutsOutput,
   type TUpdateCashoutStatusInput,
   type TUpdateCashoutStatusOutput,
-} from './cashout.dto'
+} from './cashout.dto.js'
 
 @Router({ alias: 'cashouts' })
 export class CashoutRouter {

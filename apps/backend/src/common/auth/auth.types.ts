@@ -1,7 +1,7 @@
-import type { TAppContext } from '../../app.context'
-import type { TAppContextWithClientInfo } from '../client/client.types'
+import type { TAppContext } from '../../app.context.js'
+import type { TAppContextWithClientInfo } from '../client/client.types.js'
 
-import { CLAIMS, TOKEN_USE } from './auth.constants'
+import { CLAIMS, TOKEN_USE } from './auth.constants.js'
 
 export type TAuthTokenPayload = {
   [CLAIMS.ISSUED_AT]: number

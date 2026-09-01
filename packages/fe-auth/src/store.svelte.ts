@@ -2,7 +2,7 @@ import type { TAccountUser, TAuthStore, TAuthConfig } from './types'
 import { generateRandomString, sha256, base64urlencode } from './helper'
 import { createClient } from '@repo/trpc/client'
 
-export function createAuthStore<T>(
+export function createAuthStore(
   config: TAuthConfig,
   svelteKit: {
     browser: boolean
@@ -22,6 +22,8 @@ export function createAuthStore<T>(
     error: null,
     isInitialized: false,
   })
+
+  let refreshTokenPromise: Promise<boolean> | null = null
 
   async function init() {
     if (!browser) return
@@ -135,7 +137,7 @@ export function createAuthStore<T>(
     }
   }
 
-  async function refreshAccessToken(silent = false): Promise<boolean> {
+  async function performRefreshAccessToken(silent: boolean): Promise<boolean> {
     if (!browser) return false
 
     const refreshToken = localStorage.getItem('refresh_token')
@@ -173,6 +175,23 @@ export function createAuthStore<T>(
     }
   }
 
+  async function refreshAccessToken(silent = false): Promise<boolean> {
+    if (refreshTokenPromise) return await refreshTokenPromise
+
+    const refresh = () => performRefreshAccessToken(silent)
+    const promise =
+      'locks' in navigator
+        ? navigator.locks.request('chapter-ip:oauth-refresh-token', refresh).then((result) => result)
+        : refresh()
+
+    refreshTokenPromise = promise
+    try {
+      return await promise
+    } finally {
+      if (refreshTokenPromise === promise) refreshTokenPromise = null
+    }
+  }
+
   let accessTokenPromise: Promise<string | null> | null = null
   async function getAccessToken(): Promise<string | null> {
     if (state.accessToken) {
@@ -180,16 +199,11 @@ export function createAuthStore<T>(
     }
 
     if (!accessTokenPromise) {
-      accessTokenPromise = new Promise(async (resolve) => {
-        const refreshed = await refreshAccessToken(true)
-        if (refreshed) {
-          resolve(state.accessToken)
-        } else {
-          resolve(null)
-        }
-
-        accessTokenPromise = null
-      })
+      accessTokenPromise = refreshAccessToken(true)
+        .then((refreshed) => (refreshed ? state.accessToken : null))
+        .finally(() => {
+          accessTokenPromise = null
+        })
     }
 
     return accessTokenPromise
@@ -225,7 +239,7 @@ export function createAuthStore<T>(
   function logout() {
     if (!browser) return
 
-    revokeOAuth2Session()
+    const accessToken = state.accessToken
     localStorage.removeItem('refresh_token')
 
     state = {
@@ -236,15 +250,21 @@ export function createAuthStore<T>(
       isInitialized: true,
     }
 
-    goto(resolve('/'))
+    void goto(resolve('/'))
+
+    if (accessToken) {
+      void revokeOAuth2Session(accessToken).catch((error: unknown) => {
+        console.error('Error revoking session:', error)
+      })
+    }
   }
 
-  async function revokeOAuth2Session() {
+  async function revokeOAuth2Session(accessToken: string) {
     try {
       const response = await fetch(`${config.accountsUri}/oauth2/revoke-session`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${await getAccessToken()}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       })
       if (!response.ok) throw new Error(response.statusText)

@@ -2,10 +2,10 @@ import { Logger } from '@nestjs/common'
 import { Router, Mutation, Query, Input, Ctx, UseMiddlewares } from 'nestjs-trpc'
 import { TRPCError } from '@trpc/server'
 
-import { AuthMiddleware } from '../common/auth/auth.middleware'
-import type { TAppContextWithTokenPayload } from '../common/auth/auth.types'
+import { AuthMiddleware } from '../common/auth/auth.middleware.js'
+import type { TAppContextWithTokenPayload } from '../common/auth/auth.types.js'
 
-import { PublisherService } from './publisher.service'
+import { PublisherService } from './publisher.service.js'
 import {
   setPublisherInputSchema,
   type TSetPublisherInput,
@@ -25,8 +25,8 @@ import {
   type TMintContentNftTokenInput,
   mintContentNftTokenOutputSchema,
   type TMintContentNftTokenOutput,
-} from './publisher.dto'
-import { CommonEvmService } from '../common/evm/evm.service'
+} from './publisher.dto.js'
+import { CommonEvmService } from '../common/evm/evm.service.js'
 
 @Router({ alias: 'publishers' })
 export class PublisherRouter {

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 
-import { LicenseRouter } from './license.router'
+import { LicenseRouter } from './license.router.js'
 
 @Module({
   imports: [],

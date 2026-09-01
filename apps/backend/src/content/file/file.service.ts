@@ -23,9 +23,9 @@ import {
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
-import { CommonModelService } from '../../common/model/model.service'
+import { CommonModelService } from '../../common/model/model.service.js'
 
-import { ContentFile } from './file.schema'
+import { ContentFile } from './file.schema.js'
 
 @Injectable()
 export class FileService extends CommonModelService<ContentFile> {

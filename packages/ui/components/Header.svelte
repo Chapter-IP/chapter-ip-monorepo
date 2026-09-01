@@ -130,7 +130,7 @@
 
       <ul
         tabindex="-1"
-        class="dropdown-content menu rounded-box z-1 md:w-52 w-35 p-2 rounded-md
+        class="dropdown-content menu z-1 md:w-52 w-35 p-2 rounded-md
       shadow-[3px_6px_8px_0_rgba(21,34,50,0.08)]
       border border-[#1A1A2E1A]
       bg-cream text-sm font-medium text-left text-[#1A1A2E99] right-0 top-12"

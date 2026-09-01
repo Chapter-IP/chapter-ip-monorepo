@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { paginatedRequestWithCursorSchema } from '../model/model.dto'
+import { paginatedRequestWithCursorSchema } from '../model/model.dto.js'
 
 export const findCommonNotificationsInputSchema = paginatedRequestWithCursorSchema.extend({
   sub: z.string().optional(),

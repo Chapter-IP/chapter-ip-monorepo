@@ -3,13 +3,13 @@ import { ConfigService } from '@nestjs/config'
 import { InjectModel } from '@nestjs/mongoose'
 import { EventLog, EventFragment, Interface, InterfaceAbi, Log } from 'ethers'
 import { Model } from 'mongoose'
-import { abi as contentAbi } from '@credenza3/contracts/artifacts/ContentNftContract.json'
-import { abi as licenseAbi } from '@credenza3/contracts/artifacts/LicenseNftContract.json'
+import contentNftContract from '@credenza3/contracts/artifacts/ContentNftContract.json' with { type: 'json' }
+import licenseNftContract from '@credenza3/contracts/artifacts/LicenseNftContract.json' with { type: 'json' }
 
-import { CommonEvmService } from '../common/evm/evm.service'
+import { CommonEvmService } from '../common/evm/evm.service.js'
 
-import { EvmEventService } from './evm-event.service'
-import { EvmSyncState } from './evm-sync-state.schema'
+import { EvmEventService } from './evm-event.service.js'
+import { EvmSyncState } from './evm-sync-state.schema.js'
 
 const POLL_INTERVAL_MS = 10_000
 const RETRY_BASE_DELAY_MS = 2_000
@@ -193,8 +193,8 @@ export class EvmListenerService implements OnModuleInit, OnModuleDestroy {
     const licenseNft = this.requireEnv('evm.licenseNftContractAddress')
 
     return [
-      { address: contentNft, abi: contentAbi },
-      { address: licenseNft, abi: licenseAbi },
+      { address: contentNft, abi: contentNftContract.abi },
+      { address: licenseNft, abi: licenseNftContract.abi },
     ]
   }
 

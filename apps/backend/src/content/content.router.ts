@@ -5,15 +5,15 @@ import { extension } from 'mime-types'
 
 import { NOTIFICATION_TYPE } from '@repo/notifications'
 
-import { AuthMiddleware } from '../common/auth/auth.middleware'
-import type { TAppContextWithTokenPayload } from '../common/auth/auth.types'
-import { CommonEvmService } from '../common/evm/evm.service'
-import { CommonNotificationService } from '../common/notification/notification.service'
-import { ContentService } from './content.service'
-import { ContentModelService } from './content-model.service'
-import { ContentStatus } from './content.schema'
-import { FileService } from './file/file.service'
-import { PurchaseHistoryService } from './purchase-history/purchase-history.service'
+import { AuthMiddleware } from '../common/auth/auth.middleware.js'
+import type { TAppContextWithTokenPayload } from '../common/auth/auth.types.js'
+import { CommonEvmService } from '../common/evm/evm.service.js'
+import { CommonNotificationService } from '../common/notification/notification.service.js'
+import { ContentService } from './content.service.js'
+import { ContentModelService } from './content-model.service.js'
+import { ContentStatus } from './content.schema.js'
+import { FileService } from './file/file.service.js'
+import { PurchaseHistoryService } from './purchase-history/purchase-history.service.js'
 import {
   createContentFileUploadUrlInputSchema,
   createUserFileUploadUrlInputSchema,
@@ -74,7 +74,7 @@ import {
   updateContentMetadataOutputSchema,
   uploadTokenMetadataInputSchema,
   uploadTokenMetadataOutputSchema,
-} from './content.dto'
+} from './content.dto.js'
 
 @Router({ alias: 'contents' })
 export class ContentRouter {

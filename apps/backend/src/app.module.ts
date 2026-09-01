@@ -2,24 +2,24 @@ import { Module, Logger } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
 import { TRPCModule } from 'nestjs-trpc'
-import merge from 'lodash/merge'
+import { merge } from 'es-toolkit'
 
-import { CommonModule } from './common/common.module'
-import { AuthModule } from './auth/auth.module'
-import { ContentModule } from './content/content.module'
-import { PublisherModule } from './publisher/publisher.module'
-import { LicenseModule } from './license/license.module'
-import { EvmListenerModule } from './evm-listener/evm-listener.module'
-import { NotificationModule } from './notification/notification.module'
-import { CashoutModule } from './cashout/cashout.module'
+import { CommonModule } from './common/common.module.js'
+import { AuthModule } from './auth/auth.module.js'
+import { ContentModule } from './content/content.module.js'
+import { PublisherModule } from './publisher/publisher.module.js'
+import { LicenseModule } from './license/license.module.js'
+import { EvmListenerModule } from './evm-listener/evm-listener.module.js'
+import { NotificationModule } from './notification/notification.module.js'
+import { CashoutModule } from './cashout/cashout.module.js'
 
-import { TrpcPanelController } from './trpc-ui.controller'
-import { AppRouter } from './app.router'
-import { AppContext } from './app.context'
+import { TrpcPanelController } from './trpc-ui.controller.js'
+import { AppRouter } from './app.router.js'
+import { AppContext } from './app.context.js'
 
-import defaultConfig, { getEnv, ENV } from './app.config/default'
-import stagingConfig from './app.config/staging'
-import prodConfig from './app.config/prod'
+import defaultConfig, { getEnv, ENV } from './app.config/default.js'
+import stagingConfig from './app.config/staging.js'
+import prodConfig from './app.config/prod.js'
 
 const trpcErrorLogger = new Logger('TRPC Error')
 const env: string = getEnv()
@@ -29,7 +29,7 @@ const environmentConfig = env === ENV.STAGING ? stagingConfig : env === ENV.PROD
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [() => merge({}, defaultConfig(), environmentConfig?.() ?? {})],
+      load: [() => merge(defaultConfig(), environmentConfig?.() ?? {})],
     }),
     CommonModule,
     MongooseModule.forRootAsync({

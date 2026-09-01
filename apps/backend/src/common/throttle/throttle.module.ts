@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { APP_GUARD } from '@nestjs/core'
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler'
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 
 @Module({
   imports: [
@@ -10,8 +10,8 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler'
       useFactory: () => [
         {
           name: 'default',
-          ttl: 1000,
-          limit: 3,
+          ttl: 60_000,
+          limit: 120,
         },
       ],
     }),

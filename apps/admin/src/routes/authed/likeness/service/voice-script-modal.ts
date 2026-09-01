@@ -3,5 +3,5 @@ import VoiceScriptModal from '../components/VoiceScriptModal.svelte'
 import type { TVoiceScriptModalProps } from '../types/voice-script.types'
 
 export function openVoiceScriptModal() {
-  modals.open<ModalProps & TVoiceScriptModalProps>(VoiceScriptModal, {})
+  void modals.open<ModalProps & TVoiceScriptModalProps>(VoiceScriptModal, {})
 }

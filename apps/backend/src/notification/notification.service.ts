@@ -3,16 +3,15 @@ import { mongo } from 'mongoose'
 
 import { NOTIFICATION_TYPE } from '@repo/notifications'
 
-import { EvmEventService } from '../evm-listener/evm-event.service'
-import { EvmEvent } from '../evm-listener/evm-event.schema'
-import { ContentModelService } from '../content/content-model.service'
-import { ContentService } from '../content/content.service'
-import { PurchaseHistoryService } from '../content/purchase-history/purchase-history.service'
-import { PublisherService } from '../publisher/publisher.service'
+import { EvmEventService } from '../evm-listener/evm-event.service.js'
+import { EvmEvent } from '../evm-listener/evm-event.schema.js'
+import { ContentModelService } from '../content/content-model.service.js'
+import { ContentService } from '../content/content.service.js'
+import { PurchaseHistoryService } from '../content/purchase-history/purchase-history.service.js'
+import { PublisherService } from '../publisher/publisher.service.js'
 
-import { CommonNotificationService } from '../common/notification/notification.service'
-import { type TCommonNotificationDocument } from '../common/notification/notification.schema'
-import { CommonEvmService } from '../common/evm/evm.service'
+import { CommonNotificationService } from '../common/notification/notification.service.js'
+import { CommonEvmService } from '../common/evm/evm.service.js'
 
 @Injectable()
 export class NotificationService implements OnModuleInit {

@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
-import { paginatedRequestWithCursorSchema, createPaginatedResponseSchema } from '../common/model/model.dto'
+import { paginatedRequestWithCursorSchema, createPaginatedResponseSchema } from '../common/model/model.dto.js'
 
-import { CashoutPlatform, CashoutStatus } from './cashout.schema'
+import { CashoutPlatform, CashoutStatus } from './cashout.schema.js'
 
 export const cashoutSchema = z.object({
   id: z.string(),

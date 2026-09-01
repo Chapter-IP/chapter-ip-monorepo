@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 
-import { CommonClientService } from '../common/client/client.service'
+import { CommonClientService } from '../common/client/client.service.js'
 
-import type { TExchangeCodeInput, TRefreshTokenInput, TAuthTokenOutput } from './auth.dto'
+import type { TExchangeCodeInput, TRefreshTokenInput, TAuthTokenOutput } from './auth.dto.js'
 
 @Injectable()
 export class AuthService {

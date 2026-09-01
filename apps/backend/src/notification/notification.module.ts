@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common'
 
-import { EvmListenerModule } from '../evm-listener/evm-listener.module'
-import { ContentModule } from '../content/content.module'
-import { PublisherModule } from '../publisher/publisher.module'
+import { EvmListenerModule } from '../evm-listener/evm-listener.module.js'
+import { ContentModule } from '../content/content.module.js'
+import { PublisherModule } from '../publisher/publisher.module.js'
 
-import { NotificationRouter } from './notification.router'
-import { NotificationService } from './notification.service'
+import { NotificationRouter } from './notification.router.js'
+import { NotificationService } from './notification.service.js'
 
 @Module({
   imports: [EvmListenerModule, ContentModule, PublisherModule],

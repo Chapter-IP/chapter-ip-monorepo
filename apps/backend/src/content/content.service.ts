@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Contract } from 'ethers'
-import { abi as contentAbi } from '@credenza3/contracts/artifacts/ContentNftContract.json'
-import { abi as membershipAbi } from '@credenza3/contracts/artifacts/ChapterIpMembershipContract.json'
-import { CommonEvmService } from '../common/evm/evm.service'
-import { CommonLicenseService } from '../common/license/license.service'
-import { ContentModelService } from './content-model.service'
-import { FileService } from './file/file.service'
-import { EvmEventService } from '../evm-listener/evm-event.service'
-import type { TGetContentStatisticOutput } from './content.dto'
+import contentNftContract from '@credenza3/contracts/artifacts/ContentNftContract.json' with { type: 'json' }
+import chapterIpMembershipContract from '@credenza3/contracts/artifacts/ChapterIpMembershipContract.json' with { type: 'json' }
+import { CommonEvmService } from '../common/evm/evm.service.js'
+import { CommonLicenseService } from '../common/license/license.service.js'
+import { ContentModelService } from './content-model.service.js'
+import { FileService } from './file/file.service.js'
+import { EvmEventService } from '../evm-listener/evm-event.service.js'
+import type { TGetContentStatisticOutput } from './content.dto.js'
 
 const CONTENT_NFT_VOUCHER_EIP712_TYPE: Record<string, Array<{ name: string; type: string }>> = {
   ContentNFTVoucher: [
@@ -39,10 +39,10 @@ export class ContentService {
     if (!contentContractAddress) {
       throw new Error('Missing EVM_CONTENT_NFT_CONTRACT_ADDRESS')
     }
-    this.contentNftContract = new Contract(contentContractAddress, contentAbi, provider)
+    this.contentNftContract = new Contract(contentContractAddress, contentNftContract.abi, provider)
     const membershipContractAddress = this.configService.get<string>('evm.membershipContractAddress')
     if (membershipContractAddress) {
-      this.membershipContract = new Contract(membershipContractAddress, membershipAbi, provider)
+      this.membershipContract = new Contract(membershipContractAddress, chapterIpMembershipContract.abi, provider)
     }
     const licenseContractAddress = this.configService.get<string>('evm.licenseNftContractAddress')
     if (!licenseContractAddress) {

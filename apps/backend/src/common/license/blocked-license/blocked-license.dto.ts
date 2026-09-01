@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { paginatedRequestWithCursorSchema, createPaginatedResponseSchema } from '../../model/model.dto'
+import { paginatedRequestWithCursorSchema, createPaginatedResponseSchema } from '../../model/model.dto.js'
 
 export const findBlockedLicensesInputSchema = paginatedRequestWithCursorSchema.extend({
   tokenId: z.string().optional(),
