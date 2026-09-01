@@ -1,15 +1,6 @@
-import { ExecutionContext, Injectable, Module } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { APP_GUARD } from '@nestjs/core'
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
-
-@Injectable()
-class AppThrottlerGuard extends ThrottlerGuard {
-  protected getRequestResponse(context: ExecutionContext) {
-    const { req, res } = super.getRequestResponse(context)
-    res.header = res.setHeader.bind(res)
-    return { req, res }
-  }
-}
 
 @Module({
   imports: [
@@ -28,7 +19,7 @@ class AppThrottlerGuard extends ThrottlerGuard {
   providers: [
     {
       provide: APP_GUARD,
-      useClass: AppThrottlerGuard,
+      useClass: ThrottlerGuard,
     },
   ],
 })
