@@ -1,25 +1,15 @@
 <script lang="ts">
   import TablePagination from '$lib/components/TablePagination.svelte'
-  import { formatDate } from '../files/helper'
   import { TABLE_PAGE_SIZE } from '$lib/constants'
   import { notify, ToastType } from '@repo/ui-components'
-  import { PaymentMethodLabel, type TCashoutRequest } from './constants'
+  import { PaymentMethodLabel, type TCashoutRequest, type PaymentDecisionModalProps } from './constants'
   import PaymentDecisionModal from '$lib/components/PaymentDecisionModal.svelte'
   import { modals, type ModalProps } from 'svelte-modals'
   import { updateCashoutStatusByAdmin, type UpdateCashoutStatusInput } from '$lib/services/cashout'
-  import { getUserBySub } from '$lib/services/account'
-  import { formatPrice } from '$lib/helpers/format'
   import { getTrpcClient } from '$lib/stores/trpc-client'
   import { useCursorPagination } from '$lib/hooks/useCursorPagination.svelte'
-
-  type PaymentDecisionModalProps = {
-    variant: 'accept' | 'decline'
-    publisherName: string
-    paymentMethod: string
-    amount: number
-    onCancel?: () => void
-    onConfirm?: (reason: string) => void | Promise<void>
-  }
+  import CashoutFilterBar from './components/CashoutFilterBar.svelte'
+  import CashoutRow from './components/CashoutRow.svelte'
 
   const trpcClient = getTrpcClient()
 
@@ -49,8 +39,6 @@
       notify('Failed to load cash out requests', ToastType.FAIL)
     },
   })
-
-  const filters = ['All', 'Accepted', 'Rejected', 'Pending'] as const
 
   async function changeFilter(value: string) {
     activeFilter = value
@@ -118,18 +106,7 @@
       class="flex flex-col md:flex-row md:items-center justify-between py-4 border-b border-[#f0ede6] gap-4 md:gap-0"
     >
       <h2 class="text-base font-semibold leading-[1.81px] text-dark">My Listings</h2>
-      <div class="flex gap-1.5">
-        {#each filters as f (f)}
-          <button
-            onclick={() => changeFilter(f)}
-            class="md:px-5.25 px-3 py-0.75 rounded-full text-[13px] {activeFilter === f
-              ? 'bg-[#6d6b76] text-[#f8f5f1] font-semibold'
-              : 'bg-[#f8f5f1]/50 text-dark/30 font-medium'}"
-          >
-            {f}
-          </button>
-        {/each}
-      </div>
+      <CashoutFilterBar {activeFilter} onChange={changeFilter} />
     </div>
 
     <div class="border border-[#ddd] rounded-md overflow-hidden">
@@ -155,50 +132,7 @@
               </tr>
             {:else if pagination.items.length}
               {#each pagination.items as request, i (request.id)}
-                <tr class="border-b border-[#ddd] last:border-0 {i % 2 === 0 ? 'bg-[#f8f5f1]' : 'bg-cream'}">
-                  <td class="px-4 py-1.5 whitespace-nowrap">{formatDate(request.createdAt)}</td>
-                  {#await getUserBySub(request.sub)}
-                    <td class="px-4 py-1.5">…</td>
-                    <td class="px-4 py-1.5 whitespace-nowrap">…</td>
-                  {:then user}
-                    <td class="px-4 py-1.5">{user.name}</td>
-                    <td class="px-4 py-1.5 whitespace-nowrap">{user.email}</td>
-                  {:catch}
-                    <td class="px-4 py-1.5">—</td>
-                    <td class="px-4 py-1.5 whitespace-nowrap">—</td>
-                  {/await}
-                  <td class="px-4 py-1.5">{PaymentMethodLabel[request.platform]}</td>
-                  <td class="px-4 py-1.5 whitespace-nowrap">{request.username}</td>
-                  <td class="px-4 py-1.5">{formatPrice(request.amount)}</td>
-                  <td class="px-4 py-1.5">
-                    {#if request.status === 'pending'}
-                      <div class="flex gap-2">
-                        <button
-                          onclick={() => handleAccept(request.id)}
-                          class="inline-flex items-center gap-1 px-3 py-1 rounded text-sm font-medium text-[#499b60] bg-[#f1fbf5] border border-[#93c4a1]/25 hover:bg-[#e5f5eb] transition-colors whitespace-nowrap"
-                        >
-                          ✓ Accept
-                        </button>
-                        <button
-                          onclick={() => handleReject(request.id)}
-                          class="inline-flex items-center gap-1 px-3 py-1 rounded text-sm font-medium text-[#f80000] bg-[#fff4f4] border border-[#f80000]/25 hover:bg-[#ffe8e8] transition-colors whitespace-nowrap"
-                        >
-                          ✗ Reject
-                        </button>
-                      </div>
-                    {:else}
-                      {@const STATUS = {
-                        paid: { label: '✓ Payment accepted', classes: 'text-[#499b60]' },
-                        rejected: { label: '✗ Payment rejected', classes: 'text-[#f80000]' },
-                        cancelled: { label: 'Cancelled', classes: 'text-dark/40' },
-                      }}
-                      {@const cfg = STATUS[request.status]}
-                      <span class="inline-flex items-center gap-1 text-sm font-medium {cfg.classes} whitespace-nowrap">
-                        {cfg.label}
-                      </span>
-                    {/if}
-                  </td>
-                </tr>
+                <CashoutRow {request} index={i} onAccept={handleAccept} onReject={handleReject} />
               {/each}
             {:else}
               <tr class="border-b border-[#ddd] last:border-0 bg-[#f8f5f1]">
