@@ -40,7 +40,7 @@
 
     if (t.includes('likeness')) return 'Likeness'
     if (t.includes('location')) return 'Locations'
-    if (t.includes('written')) return 'Written works'
+    if (t.includes('written') || t.includes('works')) return 'Written works'
 
     return 'Written works'
   }
@@ -154,17 +154,14 @@
         </div>
         <div class="flex md:gap-1">
           {#each filters as f (f)}
-            {@const isDisabled = f === 'Written works'}
             <button
               onclick={() => {
-                if (isDisabled) return
                 activeFilter = f
                 currentPage = 1
               }}
-              disabled={isDisabled}
               class="md:px-5.25 px-3 py-1 rounded-full md:text-[13px] text-[11px] font-medium {activeFilter === f
                 ? 'bg-[#6d6b76] text-[#f8f5f1]'
-                : 'text-dark rounded-full'} {isDisabled ? 'opacity-30 cursor-not-allowed' : ''}"
+                : 'text-dark rounded-full'}"
             >
               {f}
             </button>

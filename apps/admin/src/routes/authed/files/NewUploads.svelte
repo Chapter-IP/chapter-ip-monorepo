@@ -10,8 +10,8 @@
       title: 'Written Works',
       description: 'Scripts, articles and written works.',
       icon: WrittenWorksIcon,
-      path: '/authed/upload',
-      disabled: true,
+      path: '/authed/works',
+      disabled: false,
     },
     {
       id: 'location',
