@@ -21,25 +21,27 @@
       Add a written work to license for commercial and creative use. The details below are what creators see — and what
       every license is anchored to.
     </p>
-    <p class="text-sm text-[#72717b] mt-4"><span class="text-[#ff0000]">* required</span> indicates required field</p>
+    <p class="text-sm text-[#72717b] mt-4">
+      <span class="text-[#ff0000]">* required</span> indicates required field
+    </p>
   </div>
 
   <!-- Form -->
-  <div class="space-y-6">
+  <div class="space-y-6 max-w-137.5">
     <label class="block space-y-3">
       <span class="mb-2 block text-sm text-[#72717b]">Title <span class="text-[#ff0000]">*</span></span>
       <input
         type="text"
         bind:value={$workStore.title}
         placeholder="Title"
-        class="w-full max-w-137.5 h-11.75 bg-white rounded border border-[#ddd] px-3.75 text-sm font-medium text-[#72717b]
+        class="w-full h-11.75 bg-white rounded border border-[#ddd] px-3.75 text-sm font-medium text-[#72717b]
           focus:border-primary focus:outline-none focus:shadow-[0_3px_6px_0_rgba(0,0,0,0.16)] transition-shadow"
       />
     </label>
 
     <label class="block space-y-3">
       <span class="mb-2 block text-sm text-[#72717b]">Content Type <span class="text-[#ff0000]">*</span></span>
-      <div class="relative w-full max-w-137.5">
+      <div class="relative w-full">
         <select
           bind:value={$workStore.contentType}
           class="w-full h-11.75 bg-white rounded border border-[#ddd] px-3.75 pr-10 text-sm font-medium text-[#72717b]
@@ -67,31 +69,29 @@
         </svg>
       </div>
     </label>
+    <div class="flex justify-end gap-1.5 mt-12.5">
+      {#if onSaveDraft}
+        <button
+          class="text-sm font-medium rounded h-9.5 px-7.5 bg-primary disabled:bg-[#1A1A2E4D] text-cream cursor-pointer"
+          onclick={onSaveDraft}
+          disabled={$workStore.ui.loading || !$workStore.title}
+        >
+          Save as Draft
+        </button>
+      {/if}
+      {#if canContinueFromStepOne}
+        <button
+          class="text-sm font-medium rounded h-9.5 px-7.5 bg-primary disabled:bg-[#1A1A2E4D] text-cream cursor-pointer"
+          onclick={() => (currentStep = 2)}
+          disabled={$workStore.ui.loading}
+        >
+          Save and Continue
+        </button>
+      {:else}
+        <button class="text-sm font-medium rounded h-9.5 px-7.5 bg-[#1A1A2E4D] text-cream cursor-not-allowed" disabled>
+          Save and Continue
+        </button>
+      {/if}
+    </div>
   </div>
-</div>
-
-<!-- Buttons -->
-<div class="flex justify-end gap-1.5 mt-12.5">
-  {#if onSaveDraft}
-    <button
-      class="text-sm font-medium rounded h-9.5 px-7.5 bg-primary disabled:bg-[#1A1A2E4D] text-cream cursor-pointer"
-      onclick={onSaveDraft}
-      disabled={$workStore.ui.loading}
-    >
-      Save as Draft
-    </button>
-  {/if}
-  {#if canContinueFromStepOne}
-    <button
-      class="text-sm font-medium rounded h-9.5 px-7.5 bg-primary disabled:bg-[#1A1A2E4D] text-cream cursor-pointer"
-      onclick={() => (currentStep = 2)}
-      disabled={$workStore.ui.loading}
-    >
-      Save and Continue
-    </button>
-  {:else}
-    <button class="text-sm font-medium rounded h-9.5 px-7.5 bg-[#1A1A2E4D] text-cream cursor-not-allowed" disabled>
-      Save and Continue
-    </button>
-  {/if}
 </div>
