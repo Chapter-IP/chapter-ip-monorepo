@@ -31,13 +31,9 @@
     `$${(pending / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
   )
   const trimmedUsername = $derived(username.trim())
+  const usernameValid = $derived(/^@\S+$/.test(trimmedUsername))
   const canSubmit = $derived(
-    available > 0 &&
-      !submitting &&
-      !loading &&
-      platform !== '' &&
-      trimmedUsername !== '' &&
-      trimmedUsername.length <= 128,
+    available > 0 && !submitting && !loading && platform !== '' && usernameValid && trimmedUsername.length <= 128,
   )
 
   const pagination = useCursorPagination<CashoutItem>({
@@ -131,6 +127,7 @@
     {formattedAvailable}
     {formattedPending}
     {canSubmit}
+    usernameError={trimmedUsername !== '' && !usernameValid}
     bind:platform
     bind:username
     onCashout={handleCashout}

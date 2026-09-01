@@ -4,6 +4,7 @@ import { createClient } from '@repo/trpc/client'
 import { goto } from '$app/navigation'
 import { configStore } from '$lib/stores/config.svelte'
 import { publisherStore } from '$lib/stores/publisher.svelte'
+import { adminStore } from '$lib/stores/admin.svelte'
 
 export const prerender = false
 export const ssr = false
@@ -40,6 +41,13 @@ async function loadFunction() {
     publisherStore.setData(publisher)
   } catch {
     console.log('no publisher data found')
+  }
+
+  try {
+    const isClientAdmin = await trpcClient.app.checkSubIsClientAdmin.query()
+    adminStore.set(isClientAdmin)
+  } catch {
+    adminStore.set(false)
   }
 
   return {

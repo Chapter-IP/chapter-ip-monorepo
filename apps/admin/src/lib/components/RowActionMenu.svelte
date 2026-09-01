@@ -87,7 +87,7 @@
   ></button>
 
   <ul
-    class="menu fixed z-50 w-40 rounded-md border border-[#1A1A2E]/10 bg-cream p-2 text-left text-sm font-medium text-[#1A1A2E99] shadow-[3px_6px_8px_0_rgba(21,34,50,0.08)]"
+    class="menu fixed z-50 w-40 rounded-md border border-dark/10 bg-cream p-2 text-left text-sm font-medium text-[#1A1A2E99] shadow-[3px_6px_8px_0_rgba(21,34,50,0.08)]"
     style={`top: ${top}px; left: ${left}px;`}
   >
     {#each items as item, menuIndex (`${item.href || item.action || 'item'}-${item.text}-${menuIndex}`)}
