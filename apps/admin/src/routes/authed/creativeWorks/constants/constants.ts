@@ -13,4 +13,4 @@ export const LICENSE_TYPES: LicenseTypeOption[] = LICENSE_TYPE_OPTIONS.map((opti
   description: WORK_LICENSE_DESCRIPTIONS[option.value] ?? '',
 }))
 
-export const WORK_CONTENT_TYPES = ['Script', 'Article', 'Novel', 'Poem'] as const
+export const WORK_CONTENT_TYPES = ['Script', 'Lyrics'] as const
