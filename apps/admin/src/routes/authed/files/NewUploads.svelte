@@ -10,7 +10,7 @@
       title: 'Written Works',
       description: 'Scripts, articles and written works.',
       icon: WrittenWorksIcon,
-      path: '/authed/works',
+      path: '/authed/creativeWorks',
       disabled: false,
     },
     {
