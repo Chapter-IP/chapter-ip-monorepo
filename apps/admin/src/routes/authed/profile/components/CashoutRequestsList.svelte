@@ -1,6 +1,7 @@
 <script lang="ts">
   import TablePagination from '$lib/components/TablePagination.svelte'
   import { formatDate } from '../../files/helper'
+  import { formatPrice } from '$lib/helpers/format'
 
   type CashoutRow = {
     id: string
@@ -38,10 +39,6 @@
     onNext: () => void
   } = $props()
 
-  function formatCents(cents: number) {
-    return `$${(cents / 100).toFixed(2)}`
-  }
-
   function platformLabel(value: CashoutRow['platform']) {
     return value === 'venmo' ? 'Venmo' : 'CashApp'
   }
@@ -58,7 +55,7 @@
 {:else}
   <div class="mt-4 border border-[#ddd] rounded-md overflow-visible">
     <div class="overflow-x-auto">
-      <table class="min-w-190 w-full table-fixed text-sm font-medium text-[#1A1A2E]/60">
+      <table class="min-w-190 w-full text-sm font-medium text-dark/60">
         <thead>
           <tr class="text-left border-b border-[#ddd] bg-cream">
             <th class="px-4 py-2.75">Date</th>
@@ -84,10 +81,10 @@
                   ? 'bg-[#f8f5f1]'
                   : 'bg-cream'} text-sm font-medium"
               >
-                <td class="px-4 py-1.5">{formatDate(item.createdAt)}</td>
-                <td class="px-4 py-1.5">{formatCents(item.amount)}</td>
+                <td class="px-4 py-1.5 whitespace-nowrap">{formatDate(item.createdAt)}</td>
+                <td class="px-4 py-1.5">{formatPrice(item.amount)}</td>
                 <td class="px-4 py-1.5">{platformLabel(item.platform)}</td>
-                <td class="px-4 py-1.5">{item.username}</td>
+                <td class="px-4 py-1.5 whitespace-nowrap">{item.username}</td>
                 <td class="px-4 py-1.5">{statusLabel(item.status)}</td>
                 <td class="px-4 py-1.5">{item.reason || '—'}</td>
                 <td class="px-4 py-1.5 text-right">

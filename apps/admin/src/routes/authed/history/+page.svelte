@@ -9,6 +9,7 @@
   import { snowtraceUrl } from '@repo/fe-services'
   import { LICENSE_TYPE_VALUES } from '@repo/content-types/content'
   import { TABLE_PAGE_SIZE } from '$lib/constants'
+  import { formatPrice } from '$lib/helpers/format'
   import type { TPurchaseHistoryItem } from './constants'
 
   const trpcClient = getTrpcClient()
@@ -94,7 +95,7 @@
 
                   <td class="px-4 py-1.5">
                     {tx.priceFiat
-                      ? `$${(Number(tx.priceFiat) / 100).toFixed(2)}`
+                      ? `${formatPrice(Number(tx.priceFiat))}`
                       : tx.priceEther
                         ? `${tx.priceEther} ETH`
                         : tx.priceToken

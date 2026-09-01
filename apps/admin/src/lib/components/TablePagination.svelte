@@ -15,8 +15,8 @@
   let { from, to, total, label, previousDisabled = false, nextDisabled = false, onPrevious, onNext }: Props = $props()
 </script>
 
-<div class="flex flex-col gap-2 pt-2.75 text-[13px] font-medium text-[#b6b4b7] sm:flex-row sm:justify-between">
-  <span class="text-[#1A1A2E]/60">Showing {from}-{to} of {total} {label}</span>
+<div class="flex flex-col gap-2 pt-1.5 text-[13px] font-medium text-[#b6b4b7] sm:flex-row sm:justify-between">
+  <span class="text-dark/60">Showing {from}-{to} of {total} {label}</span>
   <div class="flex shrink-0 items-center gap-1.5">
     <button
       type="button"

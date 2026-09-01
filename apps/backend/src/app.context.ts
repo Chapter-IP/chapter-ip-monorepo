@@ -14,6 +14,7 @@ export class AppContext implements TRPCContext {
     const req = opts.req as Request
     const requestId = randomUUID()
 
+    res.header = res.setHeader.bind(res)
     res.setHeader('X-Request-Id', requestId)
     res.removeHeader('X-Powered-By')
 

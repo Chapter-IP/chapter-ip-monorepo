@@ -148,7 +148,7 @@
       >
         <div class="flex flex-col md:flex-row md:items-center md:gap-2.5">
           <h2 class="md:text-base text-sm font-semibold">My Listings</h2>
-          <span class="text-[13px] font-medium text-[#1A1A2E]/60">
+          <span class="text-[13px] font-medium text-dark/60">
             Written works: {writtenWorksCount} | Locations: {locationsCount} | Likeness: {likenessCount}
           </span>
         </div>
