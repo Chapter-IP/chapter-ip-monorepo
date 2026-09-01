@@ -96,6 +96,9 @@ interface WorkState {
   title: string
   contentType: string
   description: string
+  genre: string[]
+  author: string
+  coAuthors: string[]
   licensing: WorkLicensingMetadata
   confirmations: {
     rightsConfirmed: boolean
@@ -118,6 +121,9 @@ function createWorkStore() {
     title: '',
     contentType: '',
     description: '',
+    genre: [],
+    author: '',
+    coAuthors: [],
     licensing: {
       licenseTypes: {
         'single-use': true,
@@ -173,6 +179,26 @@ function createWorkStore() {
     setTitle: (value: string) => update((s) => ({ ...s, title: value })),
     setContentType: (value: string) => update((s) => ({ ...s, contentType: value })),
     setDescription: (value: string) => update((s) => ({ ...s, description: value })),
+    toggleGenre(genre: string) {
+      update((s) => ({
+        ...s,
+        genre: s.genre.includes(genre) ? s.genre.filter((g) => g !== genre) : [...s.genre, genre],
+      }))
+    },
+    addGenre(genre: string) {
+      const trimmed = genre.trim()
+      if (!trimmed) return
+      update((s) => (s.genre.includes(trimmed) ? s : { ...s, genre: [...s.genre, trimmed] }))
+    },
+    setAuthor: (value: string) => update((s) => ({ ...s, author: value })),
+    addCoAuthor(name: string) {
+      const trimmed = name.trim()
+      if (!trimmed) return
+      update((s) => ({ ...s, coAuthors: [...s.coAuthors, trimmed], author: '' }))
+    },
+    removeCoAuthor(index: number) {
+      update((s) => ({ ...s, coAuthors: s.coAuthors.filter((_, i) => i !== index) }))
+    },
     setPreviewImage: (file: File | null) => update((s) => ({ ...s, previewImage: file })),
     setExistingPreviewUrl: (url: string | null) => update((s) => ({ ...s, existingPreviewUrl: url })),
     setLicenseTypeEnabled: (id: string, value: boolean) =>
@@ -209,6 +235,9 @@ function createWorkStore() {
       const title = (metadata.title as string) ?? ''
       const contentType = (metadata.contentType as string) ?? ''
       const description = (metadata.description as string) ?? ''
+      const genre = (metadata.genre as string[]) ?? []
+      const author = (metadata.author as string) ?? ''
+      const coAuthors = (metadata.coAuthors as string[]) ?? []
       const licensing = (metadata.licensing ?? {}) as Partial<WorkLicensingMetadata>
 
       update((s) => ({
@@ -216,6 +245,9 @@ function createWorkStore() {
         title: title ?? '',
         contentType: contentType ?? '',
         description: description ?? '',
+        genre: Array.isArray(genre) ? genre : [],
+        author: author ?? '',
+        coAuthors: Array.isArray(coAuthors) ? coAuthors : [],
         licensing: {
           ...s.licensing,
           ...licensing,
@@ -238,6 +270,9 @@ function createWorkStore() {
         title: '',
         contentType: '',
         description: '',
+        genre: [],
+        author: '',
+        coAuthors: [],
         licensing: {
           licenseTypes: {
             'single-use': true,

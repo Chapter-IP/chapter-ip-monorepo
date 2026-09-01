@@ -14,3 +14,18 @@ export const LICENSE_TYPES: LicenseTypeOption[] = LICENSE_TYPE_OPTIONS.map((opti
 }))
 
 export const WORK_CONTENT_TYPES = ['Script', 'Lyrics'] as const
+
+export const GENRE_OPTIONS = [
+  'Comedy',
+  'Fiction',
+  'Horror',
+  'Memoir',
+  'Mystery',
+  'Non-fiction',
+  'Romance',
+  'Sci-Fi',
+  'Thriller',
+  'Young Adult',
+] as const
+
+export const SCRIPT_FILE_EXTENSIONS = ['pdf', 'docx', 'txt', 'rtf', 'epub', 'md'] as const
