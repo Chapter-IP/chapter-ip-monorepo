@@ -4,7 +4,7 @@
   import { TABLE_PAGE_SIZE } from '$lib/constants'
   import { notify, ToastType } from '@repo/ui-components'
   import { PaymentMethodLabel, type TCashoutRequest } from './constants'
-  import PaymentConfirmModal from '$lib/components/PaymentConfirmModal.svelte'
+  import PaymentDecisionModal from '$lib/components/PaymentDecisionModal.svelte'
   import { modals, type ModalProps } from 'svelte-modals'
   import { updateCashoutStatusByAdmin, type UpdateCashoutStatusInput } from '$lib/services/cashout'
   import { getUserBySub } from '$lib/services/account'
@@ -12,7 +12,7 @@
   import { getTrpcClient } from '$lib/stores/trpc-client'
   import { useCursorPagination } from '$lib/hooks/useCursorPagination.svelte'
 
-  type PaymentConfirmModalProps = {
+  type PaymentDecisionModalProps = {
     variant: 'accept' | 'decline'
     publisherName: string
     paymentMethod: string
@@ -60,7 +60,7 @@
   async function handleAccept(id: string) {
     const request = pagination.items.find((r) => r.id === id)
     if (!request) return
-    modals.open<ModalProps & PaymentConfirmModalProps>(PaymentConfirmModal, {
+    modals.open<ModalProps & PaymentDecisionModalProps>(PaymentDecisionModal, {
       variant: 'accept',
       publisherName: request.username,
       paymentMethod: PaymentMethodLabel[request.platform],
@@ -86,7 +86,7 @@
   async function handleReject(id: string) {
     const request = pagination.items.find((r) => r.id === id)
     if (!request) return
-    modals.open<ModalProps & PaymentConfirmModalProps>(PaymentConfirmModal, {
+    modals.open<ModalProps & PaymentDecisionModalProps>(PaymentDecisionModal, {
       variant: 'decline',
       publisherName: request.username,
       paymentMethod: PaymentMethodLabel[request.platform],
