@@ -38,7 +38,7 @@ export class AppRouter {
 
   @UseMiddlewares(AuthMiddleware)
   @Query({ output: z.boolean() })
-  async isClientAdminSafe(@Ctx() ctx: TAppContextWithTokenPayload): Promise<boolean> {
+  async checkSubIsClientAdmin(@Ctx() ctx: TAppContextWithTokenPayload): Promise<boolean> {
     try {
       return await this.commonClientService.verifySubIsClientAdmin(ctx.authTokenPayload.sub)
     } catch {
