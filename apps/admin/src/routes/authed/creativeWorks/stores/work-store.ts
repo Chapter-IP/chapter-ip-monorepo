@@ -1,90 +1,26 @@
 import { writable, derived } from 'svelte/store'
 import type { UploadProgressEvent } from '$lib/upload/upload.service'
-import type { AppRouter, TRPCClient } from '@repo/trpc/client'
 import { type WorkFileKey } from '$lib/constants/workFileBuckets'
 import type { WorkLicensingMetadata, WorkMetadataInput } from '@repo/content-types/works'
+import {
+  type ExistingFilesByBucket as ExistingFilesByBucketGeneric,
+  type PreloadedExistingFiles,
+  loadExistingFiles as loadFilesFromContent,
+} from '$lib/stores/file-preload'
 
-type ExistingFile = { id: string; name: string; url: string; key: string }
-type ExistingFilesByBucket = Record<WorkFileKey, ExistingFile[]>
+export { isPreviewBucket } from '$lib/stores/file-preload'
+
+type ExistingFilesByBucket = ExistingFilesByBucketGeneric<WorkFileKey>
 
 const emptyExistingFiles = (): ExistingFilesByBucket => ({
   works: [],
 })
 
-export const isPreviewBucket = (bucket?: string) => Boolean(bucket?.includes('preview'))
-
-const stripExtension = (name: string) => {
-  const lastDot = name.lastIndexOf('.')
-  return lastDot === -1 ? name : name.slice(0, lastDot)
-}
-
-const matchesFileName = (label: string, allowedFileNames: Set<string>) => {
-  if (allowedFileNames.has(label)) return true
-  const labelBase = stripExtension(label)
-  for (const allowed of allowedFileNames) {
-    if (allowed === labelBase || stripExtension(allowed) === labelBase) return true
-  }
-  return false
-}
-
-type PreviewCandidate = { id: string; url: string; label: string; filename: string }
-
-const selectPreview = (
-  candidates: PreviewCandidate[],
-  previewFileName: string | undefined,
-): { previewUrl: string | null; previewFileIds: string[] } => {
-  if (candidates.length === 0) return { previewUrl: null, previewFileIds: [] }
-
-  const previewFileIds = candidates.map((candidate) => candidate.id)
-  const preferredNames = previewFileName ? new Set([previewFileName]) : null
-  const preferred =
-    preferredNames &&
-    candidates.find(
-      (candidate) =>
-        matchesFileName(candidate.label, preferredNames) || matchesFileName(candidate.filename, preferredNames),
-    )
-  const selected = preferred ?? candidates[candidates.length - 1]
-
-  return { previewUrl: selected.url, previewFileIds }
-}
-
 export async function loadExistingFiles(
   content: { id: string; metadata?: WorkMetadataInput },
-  trpcClient: TRPCClient<AppRouter>,
-): Promise<{
-  files: ExistingFilesByBucket
-  allFiles: ExistingFilesByBucket
-  previewUrl: string | null
-  previewFileIds: string[]
-}> {
-  const existingFiles = emptyExistingFiles()
-  const allExistingFiles = emptyExistingFiles()
-  const previewCandidates: PreviewCandidate[] = []
-
-  if (!content.id) {
-    return { files: existingFiles, allFiles: allExistingFiles, previewUrl: null, previewFileIds: [] }
-  }
-
-  const allowedFileNames = Array.isArray(content.metadata?.files_name) ? new Set(content.metadata.files_name) : null
-  const previewFileName = content.metadata?.preview_file_name as string | undefined
-  const { files } = await trpcClient.contents.getContentAllFilesLink.query({ contentId: content.id })
-
-  for (const file of files ?? []) {
-    if (isPreviewBucket(file.bucket)) {
-      previewCandidates.push({ id: file.id, url: file.url, label: file.label, filename: file.filename })
-      continue
-    }
-
-    const existingFile = { id: file.id, name: file.label, url: file.url, key: file.key }
-    allExistingFiles.works.push(existingFile)
-    if (!allowedFileNames || matchesFileName(file.label, allowedFileNames)) {
-      existingFiles.works.push({ ...existingFile })
-    }
-  }
-
-  const { previewUrl, previewFileIds } = selectPreview(previewCandidates, previewFileName)
-
-  return { files: existingFiles, allFiles: allExistingFiles, previewUrl, previewFileIds }
+  trpcClient: Parameters<typeof loadFilesFromContent>[1],
+): Promise<PreloadedExistingFiles<WorkFileKey>> {
+  return loadFilesFromContent(content, trpcClient, 'works', emptyExistingFiles)
 }
 
 interface WorkState {

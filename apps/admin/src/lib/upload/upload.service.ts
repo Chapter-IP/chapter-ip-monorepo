@@ -372,7 +372,7 @@ export default class UploadService {
     })
   }
 
-  async uploadLocationPreviewImage({
+  async uploadPreviewImage({
     contentId,
     file,
     filename,

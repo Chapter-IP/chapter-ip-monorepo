@@ -259,7 +259,6 @@
         }
 
         await saveTokenMetadata(uploadSession, { ...savedContent, tokenId })
-        uploadSession.end()
         openSuccessModal()
       },
       'Error updating listing:',
