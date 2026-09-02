@@ -117,7 +117,7 @@
     <div class="flex justify-end gap-1.5 mt-12.5">
       {#if onSaveDraft}
         <button
-          class="text-sm font-medium rounded h-9.5 px-7.5 bg-primary disabled:bg-[#1A1A2E4D] text-cream cursor-pointer"
+          class="text-sm font-medium rounded-sm h-9.5 px-7.5 bg-primary disabled:bg-[#1A1A2E4D] text-cream cursor-pointer"
           onclick={onSaveDraft}
           disabled={$workStore.ui.loading || !$workStore.title}
         >
@@ -126,14 +126,17 @@
       {/if}
       {#if canContinueFromStepOne}
         <button
-          class="text-sm font-medium rounded h-9.5 px-7.5 bg-primary disabled:bg-[#1A1A2E4D] text-cream cursor-pointer"
+          class="text-sm font-medium rounded-sm h-9.5 px-7.5 bg-primary disabled:bg-[#1A1A2E4D] text-cream cursor-pointer"
           onclick={() => (currentStep = 2)}
           disabled={$workStore.ui.loading}
         >
           Save and Continue
         </button>
       {:else}
-        <button class="text-sm font-medium rounded h-9.5 px-7.5 bg-[#1A1A2E4D] text-cream cursor-not-allowed" disabled>
+        <button
+          class="text-sm font-medium rounded-sm h-9.5 px-7.5 bg-[#1A1A2E4D] text-cream cursor-not-allowed"
+          disabled
+        >
           Save and Continue
         </button>
       {/if}
