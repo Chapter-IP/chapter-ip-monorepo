@@ -227,7 +227,7 @@ function createWorkStore() {
       existingPreviewUrl: string | null = null,
     ) {
       const metadata = (content.metadata ?? {}) as Record<string, unknown>
-      const title = (metadata.title as string) ?? ''
+      const title = (metadata.name as string) ?? ''
       const contentType = (metadata.contentType as string) ?? ''
       const description = (metadata.description as string) ?? ''
       const genre = (metadata.genre as string[]) ?? []

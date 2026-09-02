@@ -10,7 +10,7 @@ export type WorkLicensingMetadata = {
 
 export type WorkMetadata = {
   type: 'works'
-  title: string
+  name: string
   contentType: string
   description: string
   genre?: string[]

@@ -81,7 +81,6 @@
   const writtenWorksCount = $derived(rows.filter((row) => row.fileType === 'Written works').length)
   const locationsCount = $derived(rows.filter((row) => row.fileType === 'Locations').length)
   const likenessCount = $derived(rows.filter((row) => row.fileType === 'Likeness').length)
-
   function openDeleteConfirm(rowId: string) {
     if (updatingId === rowId || deletedIds[rowId]) return
 

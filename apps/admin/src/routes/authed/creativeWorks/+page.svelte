@@ -43,7 +43,7 @@
     const previewFileName = previewImage ? appendOriginalExtension('preview', previewImage) : undefined
     const metadata: Record<string, unknown> = {
       type: 'works' as const,
-      title: $workStore.title,
+      name: $workStore.title,
       contentType: $workStore.contentType,
       description: $workStore.description,
       genre: $workStore.genre,

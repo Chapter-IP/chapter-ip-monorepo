@@ -57,7 +57,7 @@
     const filesName = [...existingNames, ...newNames]
     return {
       type: 'works' as const,
-      title: $workStore.title,
+      name: $workStore.title,
       contentType: $workStore.contentType,
       description: $workStore.description,
       genre: $workStore.genre,
