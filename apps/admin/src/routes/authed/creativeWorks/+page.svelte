@@ -56,6 +56,11 @@
     return { uploads, metadata, tags: [] as string[] }
   }
 
+  const goToFiles = async () => {
+    await goto('/authed/files')
+    workStore.reset()
+  }
+
   const onSaveDraftClick = async () => {
     const uploadSession = uploadSessions.begin()
     try {
@@ -87,8 +92,7 @@
       }
 
       notify('Draft saved', ToastType.SUCCESS)
-      await goto('/authed/files')
-      workStore.reset()
+      await goToFiles()
     } catch (error) {
       console.error('Error saving draft:', error)
       notify('Failed to save draft.', ToastType.FAIL)
@@ -149,13 +153,11 @@
         submitText: 'Go to Dashboard',
         secondaryText: 'Go to Marketplace',
         onSubmit: async () => {
-          await goto('/authed/files')
-          workStore.reset()
+          await goToFiles()
         },
         onSecondary: () => openMarketplaceAndGoToDashboard(goto, workStore.reset),
         onClose: async () => {
-          await goto('/authed/files')
-          workStore.reset()
+          await goToFiles()
         },
         withBackButton: false,
       })

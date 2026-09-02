@@ -1,9 +1,9 @@
 <script lang="ts">
   import { workStore } from '../stores/work-store'
-  import { LICENSE_TYPES, WORK_CONTENT_TYPES } from '../constants/constants'
+  import { LICENSE_TYPES } from '../constants/constants'
   import { modals, type ModalProps } from 'svelte-modals'
   import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
-  import FileImg from '$lib/assets/file_img.svg'
+  import WorkFileChip from './WorkFileChip.svelte'
 
   let {
     currentStep = $bindable(),
@@ -15,9 +15,6 @@
     onSaveDraft?: () => Promise<void>
   } = $props()
 
-  const contentTypeLabel = $derived(
-    WORK_CONTENT_TYPES.find((type) => type === $workStore.contentType) ?? $workStore.contentType,
-  )
   const enabledLicenseTypes = $derived(LICENSE_TYPES.filter((license) => $workStore.licensing.licenseTypes[license.id]))
   const workFileCount = $derived($workStore.existingFiles.works.length + $workStore.files.works.length)
   const onSubmit = () => {
@@ -59,11 +56,11 @@
     <div class="mb-8">
       <h1 class="text-2xl font-semibold text-dark font-heading mb-3">{$workStore.title || 'Untitled Work'}</h1>
 
-      {#if contentTypeLabel}
+      {#if $workStore.contentType}
         <span
           class="px-4 py-1.5 inline-block rounded-full bg-[#eae6e2] border border-[#ddd] text-sm font-semibold text-dark/50 mb-3"
         >
-          {contentTypeLabel}
+          {$workStore.contentType}
         </span>
       {/if}
 
@@ -106,20 +103,10 @@
         </span>
         <div class="flex flex-wrap gap-2">
           {#each $workStore.existingFiles.works as file (file.id)}
-            <div
-              class="rounded bg-[#eae6e2] flex justify-center items-center text-[12px] text-[#71707a] py-2 px-3 gap-2"
-            >
-              <img src={FileImg} alt="fileImg" class="h-4" />
-              <span class="truncate w-full max-w-24">{file.name}</span>
-            </div>
+            <WorkFileChip name={file.name} />
           {/each}
           {#each $workStore.files.works as file, i (file.name + i)}
-            <div
-              class="rounded bg-[#eae6e2] flex justify-center items-center text-[12px] text-[#71707a] py-2 px-3 gap-2"
-            >
-              <img src={FileImg} alt="fileImg" class="h-4" />
-              <span class="truncate w-full max-w-24">{file.name}</span>
-            </div>
+            <WorkFileChip name={file.name} />
           {/each}
         </div>
       </div>
