@@ -16,13 +16,16 @@
   const isScript = $derived($workStore.contentType === 'Script')
   const isLyrics = $derived($workStore.contentType === 'Lyrics')
   const isFileContentType = $derived(isScript || isLyrics)
+  const worksExistingFiles = $derived($workStore.existingFiles.works ?? [])
 
   const canContinueFromStepOne = $derived(
     Boolean(
       currentStep === 1 &&
       $workStore.title &&
       $workStore.contentType &&
-      (!isFileContentType || ($workStore.files.works.length > 0 && $workStore.confirmations.rightsConfirmed)),
+      (!isFileContentType ||
+        (($workStore.files.works.length > 0 || worksExistingFiles.length > 0) &&
+          $workStore.confirmations.rightsConfirmed)),
     ),
   )
 
@@ -65,6 +68,7 @@
   }
 
   let newGenre = $state('')
+  let authorInput = $state('')
   function addCustomGenre() {
     workStore.addGenre(newGenre)
     newGenre = ''
@@ -204,36 +208,44 @@
       <!-- Author(s) -->
       <div class="block space-y-3">
         <span class="mb-2 block text-sm text-[#72717b]">Author(s)</span>
-        <div class="relative">
+        <div class="w-full max-w-137.5">
           <input
             type="text"
-            bind:value={$workStore.author}
+            bind:value={authorInput}
             placeholder="Author"
-            class="w-full h-11.75 bg-white rounded border border-[#ddd] px-3.75 text-sm font-medium text-[#72717b]
-            focus:border-primary focus:outline-none transition-shadow"
+            class="w-full h-11.75 bg-white rounded-sm border border-[#ddd] px-3.75 text-sm font-medium text-[#71707a]
+              focus:border-primary focus:outline-none"
           />
-          <button
-            type="button"
-            onclick={() => workStore.addCoAuthor($workStore.author)}
-            disabled={!$workStore.author.trim()}
-            class="mt-2.5 block ml-auto text-[13px] font-medium text-primary hover:underline disabled:text-[#ddd] disabled:no-underline"
-          >
-            Add a co-author
-          </button>
         </div>
-        {#if $workStore.coAuthors.length}
-          <ul class="space-y-1.5 mt-2">
-            {#each $workStore.coAuthors as coAuthor, i (coAuthor + i)}
-              <li class="flex items-center text-sm text-[#72717b]">
-                {coAuthor}
+
+        <button
+          type="button"
+          onclick={() => {
+            workStore.addAuthor(authorInput)
+            authorInput = ''
+          }}
+          disabled={!authorInput.trim()}
+          class="mt-2.5 block ml-auto text-[13px] font-medium text-primary hover:underline disabled:text-[#ddd] disabled:no-underline"
+        >
+          Add a co-author
+        </button>
+
+        {#if $workStore.authors.length}
+          <div class="flex flex-wrap gap-2 mt-3.5">
+            {#each $workStore.authors as author, i (author + i)}
+              <span
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 h-7.25 rounded-full bg-[#eae6e2] border border-[#ddd] text-base font-semibold text-[#202225] opacity-50"
+              >
+                {author}
                 <button
                   type="button"
-                  onclick={() => workStore.removeCoAuthor(i)}
-                  class="pl-2 text-xs text-[#72717b] hover:text-red-500">✕</button
+                  onclick={() => workStore.removeAuthor(i)}
+                  class="text-[#d58b00] hover:text-red-500 transition-colors text-xs leading-none"
+                  aria-label="Remove author {author}">✕</button
                 >
-              </li>
+              </span>
             {/each}
-          </ul>
+          </div>
         {/if}
       </div>
 
@@ -259,20 +271,80 @@
             }
           }}
         >
-          {#if $workStore.files.works.length}
-            <div class="w-full flex flex-col items-center">
-              {#each $workStore.files.works as file, i (file.name + i)}
-                <div
-                  class="flex items-center justify-between w-full max-w-80 rounded-sm border border-[#ddd] bg-white px-3 py-2 text-sm text-[#72717b]"
-                >
-                  <span class="truncate">{file.name}</span>
+          {#if $workStore.files.works.length || worksExistingFiles.length}
+            <div class="w-full flex flex-wrap gap-2 justify-center py-2">
+              {#each worksExistingFiles as file, i (`existing-${file.id}`)}
+                <div class="relative">
+                  <div
+                    class="h-20 w-20 rounded bg-[#eae6e2] flex flex-col items-center justify-center text-[10px] text-[#71707a] leading-tight text-center py-1 px-2"
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="mb-1 shrink-0">
+                      <path
+                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
+                        stroke="#71707a"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M14 2v6h6M12 18v-6M9 15h6"
+                        stroke="#71707a"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    <span class="truncate w-full">{file.name}</span>
+                  </div>
                   <button
                     type="button"
-                    onclick={(e) => removeScriptFile(e, i)}
-                    class="ml-2 text-xs text-[#72717b] hover:text-red-500">✕</button
+                    onclick={(e) => {
+                      e.stopPropagation()
+                      workStore.removeExistingFile('works', i)
+                    }}
+                    class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-white border border-[#ddd] text-[#71707a] hover:text-red-500 flex items-center justify-center text-xs transition-colors"
+                    >✕</button
                   >
                 </div>
               {/each}
+              {#each $workStore.files.works as file, i (file.name + i)}
+                <div class="relative">
+                  <div
+                    class="h-20 w-20 rounded bg-[#eae6e2] flex flex-col items-center justify-center text-[10px] text-[#71707a] leading-tight text-center py-1 px-2"
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="mb-1 shrink-0">
+                      <path
+                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
+                        stroke="#71707a"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M14 2v6h6M12 18v-6M9 15h6"
+                        stroke="#71707a"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    <span class="truncate w-full">{file.name}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onclick={(e) => removeScriptFile(e, i)}
+                    class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-white border border-[#ddd] text-[#71707a] hover:text-red-500 flex items-center justify-center text-xs transition-colors"
+                    >✕</button
+                  >
+                </div>
+              {/each}
+
+              <button
+                type="button"
+                onclick={openScriptFilePicker}
+                class="h-20 w-20 rounded border-2 border-dashed border-[#1A1A2E33] flex items-center justify-center text-3xl text-[#aaa] hover:border-primary hover:text-primary transition-colors"
+                >+</button
+              >
             </div>
           {:else}
             <img src={UploadImg} alt="" />

@@ -13,6 +13,8 @@ export type WorkMetadata = {
   title: string
   contentType: string
   description: string
+  genre?: string[]
+  authors?: string[]
   files_name?: string[]
   preview_file_name?: string
   licensing: WorkLicensingMetadata
@@ -31,16 +33,11 @@ export type WorkContent = Content<WorkMetadataInput> & {
   contractAddress: string
 }
 
-export const LICENSE_TYPE_OPTIONS = [
-  { value: 'single-use', label: 'Single-use license' },
-  { value: 'perpetual', label: 'Perpetual license' },
-] as const
+export const LICENSE_TYPE_OPTIONS = [{ value: 'single-use', label: 'Single-use license' }] as const
 
 export const WORK_LICENSE_DESCRIPTIONS: Record<string, string> = {
   'single-use':
     'One approved use across a single project. The buyer cannot reuse the work for a separate project, extend the run, or sublicense without purchasing a new license.',
-  perpetual:
-    'Ongoing rights for buyers who want long-term use of your creative work. Priced as a recurring fee. End the license at any time to stop all future use.',
 }
 
 export type WorkLicense = {

@@ -60,6 +60,8 @@
       title: $workStore.title,
       contentType: $workStore.contentType,
       description: $workStore.description,
+      genre: $workStore.genre,
+      authors: $workStore.authors,
       files_name: filesName,
       preview_file_name: previewFileName,
       licensing: $workStore.licensing,
@@ -112,7 +114,6 @@
 
   const getLicensePrices = () => ({
     oneTimePrice: Number($workStore.licensing.licensePrices['single-use']),
-    lifetimePrice: Number($workStore.licensing.licensePrices['perpetual']),
   })
 
   const buildTokenMetadata = (keys: string[]) => {

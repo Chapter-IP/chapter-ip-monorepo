@@ -15,36 +15,11 @@
     onSaveDraft?: () => Promise<void>
   } = $props()
 
-  let mainPhoto: { src: string; name: string } | null = $state(null)
-  let currentBlobUrl: string | null = null
-
-  $effect(() => {
-    if (currentBlobUrl) {
-      URL.revokeObjectURL(currentBlobUrl)
-      currentBlobUrl = null
-    }
-
-    if ($workStore.previewImage) {
-      currentBlobUrl = URL.createObjectURL($workStore.previewImage)
-      mainPhoto = { src: currentBlobUrl, name: 'Preview image' }
-    } else if ($workStore.existingPreviewUrl) {
-      mainPhoto = { src: $workStore.existingPreviewUrl, name: 'Preview image' }
-    } else {
-      mainPhoto = null
-    }
-
-    return () => {
-      if (currentBlobUrl) {
-        URL.revokeObjectURL(currentBlobUrl)
-        currentBlobUrl = null
-      }
-    }
-  })
-
   const contentTypeLabel = $derived(
     WORK_CONTENT_TYPES.find((type) => type === $workStore.contentType) ?? $workStore.contentType,
   )
   const enabledLicenseTypes = $derived(LICENSE_TYPES.filter((license) => $workStore.licensing.licenseTypes[license.id]))
+  const workFileCount = $derived($workStore.existingFiles.works.length + $workStore.files.works.length)
   const onSubmit = () => {
     modals.open<ModalProps & TConfirmModalProps>(ConfirmModal, {
       title: 'Confirming your Creative Work',
@@ -97,51 +72,58 @@
       {/if}
     </div>
 
-    <!-- Preview Image + Work Files -->
-    <div class="flex flex-col md:flex-row md:gap-16 gap:8 mb-8">
-      <div class="shrink-0">
-        {#if mainPhoto}
-          <div class="relative inline-block">
-            <img
-              src={mainPhoto.src}
-              alt={mainPhoto.name}
-              class="w-full max-w-md rounded-lg object-cover"
-              style="max-height: 216px;"
-            />
-          </div>
-        {:else}
-          <div
-            class="w-full max-w-md h-48 bg-[#eae6e2] rounded-lg flex items-center justify-center text-sm text-[#747474]"
-          >
-            No image uploaded
-          </div>
-        {/if}
-
-        <!-- Uploaded Work Files -->
-        {#if $workStore.existingFiles.works.length > 0 || $workStore.files.works.length > 0}
-          <div class="mt-4">
-            <div class="flex flex-wrap gap-2">
-              {#each $workStore.existingFiles.works as file (file.id)}
-                <div
-                  class="rounded bg-[#eae6e2] flex justify-center items-center text-[12px] text-[#71707a] py-2 px-3 gap-2"
-                >
-                  <img src={FileImg} alt="fileImg" class="h-4" />
-                  <span class="truncate w-full max-w-24">{file.name}</span>
-                </div>
-              {/each}
-              {#each $workStore.files.works as file (file.name)}
-                <div
-                  class="rounded bg-[#eae6e2] flex justify-center items-center text-[12px] text-[#71707a] py-2 px-3 gap-2"
-                >
-                  <img src={FileImg} alt="fileImg" class="h-4" />
-                  <span class="truncate w-full max-w-24">{file.name}</span>
-                </div>
-              {/each}
-            </div>
-          </div>
-        {/if}
+    <!-- Genre -->
+    {#if $workStore.genre.length > 0}
+      <div class="flex flex-wrap gap-2 mb-8">
+        <span class="text-base font-semibold text-dark mb-1 w-full">Genre</span>
+        {#each $workStore.genre as g (g)}
+          <span class="px-4 py-1.5 rounded-full bg-[#eae6e2] border border-[#ddd] text-sm font-semibold text-dark/50">
+            {g}
+          </span>
+        {/each}
       </div>
-    </div>
+    {/if}
+
+    <!-- Author(s) -->
+    {#if $workStore.authors.length > 0}
+      <div class="flex flex-wrap gap-2 mb-8">
+        <span class="text-base font-semibold text-dark mb-1 w-full">
+          {$workStore.authors.length === 1 ? 'Author' : 'Authors'}
+        </span>
+        {#each $workStore.authors as author (author)}
+          <span class="px-4 py-1.5 rounded-full bg-[#eae6e2] border border-[#ddd] text-sm font-semibold text-dark/50">
+            {author}
+          </span>
+        {/each}
+      </div>
+    {/if}
+
+    <!-- Uploaded Work Files -->
+    {#if $workStore.existingFiles.works.length > 0 || $workStore.files.works.length > 0}
+      <div class="mb-8">
+        <span class="text-base font-semibold text-dark mb-1 w-full block">
+          {workFileCount === 1 ? 'Your Text File' : 'Your Text Files'}
+        </span>
+        <div class="flex flex-wrap gap-2">
+          {#each $workStore.existingFiles.works as file (file.id)}
+            <div
+              class="rounded bg-[#eae6e2] flex justify-center items-center text-[12px] text-[#71707a] py-2 px-3 gap-2"
+            >
+              <img src={FileImg} alt="fileImg" class="h-4" />
+              <span class="truncate w-full max-w-24">{file.name}</span>
+            </div>
+          {/each}
+          {#each $workStore.files.works as file, i (file.name + i)}
+            <div
+              class="rounded bg-[#eae6e2] flex justify-center items-center text-[12px] text-[#71707a] py-2 px-3 gap-2"
+            >
+              <img src={FileImg} alt="fileImg" class="h-4" />
+              <span class="truncate w-full max-w-24">{file.name}</span>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
 
     <!-- Licensing Types -->
     <div class="mb-6">
