@@ -1,9 +1,10 @@
 <script lang="ts">
   import { workStore } from '../stores/work-store'
-  import { WORK_CONTENT_TYPES, GENRE_OPTIONS, SCRIPT_FILE_EXTENSIONS } from '../constants/constants'
-  import UploadImg from '$lib/assets/upload-icon.svg'
-  import PlusIcon from '$lib/components/icons/PlusIcon.svelte'
+  import { WORK_CONTENT_TYPES } from '../constants/constants'
   import ChevronDownIcon from '$lib/components/icons/ChevronDownIcon.svelte'
+  import GenreField from './GenreField.svelte'
+  import AuthorsField from './AuthorsField.svelte'
+  import ScriptFileDropzone from './ScriptFileDropzone.svelte'
 
   let {
     currentStep = $bindable(),
@@ -16,7 +17,6 @@
   const isScript = $derived($workStore.contentType === 'Script')
   const isLyrics = $derived($workStore.contentType === 'Lyrics')
   const isFileContentType = $derived(isScript || isLyrics)
-  const worksExistingFiles = $derived($workStore.existingFiles.works ?? [])
 
   const canContinueFromStepOne = $derived(
     Boolean(
@@ -24,61 +24,10 @@
       $workStore.title &&
       $workStore.contentType &&
       (!isFileContentType ||
-        (($workStore.files.works.length > 0 || worksExistingFiles.length > 0) &&
+        (($workStore.files.works.length > 0 || ($workStore.existingFiles.works ?? []).length > 0) &&
           $workStore.confirmations.rightsConfirmed)),
     ),
   )
-
-  const scriptFileAccept = [
-    ...new Set(SCRIPT_FILE_EXTENSIONS.flatMap((ext) => [`.${ext}`, `.${ext.toUpperCase()}`])),
-  ].join(',')
-
-  let scriptFileInput: HTMLInputElement | null = $state(null)
-
-  function handleScriptFileInput(event: Event) {
-    const target = event?.target as HTMLInputElement
-    const files = Array.from(target?.files ?? [])
-    const accepted = files.filter((file) =>
-      SCRIPT_FILE_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(`.${ext}`)),
-    )
-    if (accepted.length) workStore.appendMediaFiles('works', accepted)
-    target.value = ''
-  }
-
-  function openScriptFilePicker(e: MouseEvent) {
-    e.stopPropagation()
-    scriptFileInput?.click()
-  }
-
-  function handleScriptDrop(event: DragEvent) {
-    event.preventDefault()
-    const files = Array.from(event.dataTransfer?.files ?? [])
-    const accepted = files.filter((file) =>
-      SCRIPT_FILE_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(`.${ext}`)),
-    )
-    if (accepted.length) workStore.appendMediaFiles('works', accepted)
-  }
-
-  function handleScriptDragOver(event: DragEvent) {
-    event.preventDefault()
-  }
-
-  function toggleRightsConfirmed() {
-    workStore.setRightsConfirmed(!$workStore.confirmations.rightsConfirmed)
-  }
-
-  let newGenre = $state('')
-  let authorInput = $state('')
-  function addCustomGenre() {
-    workStore.addGenre(newGenre)
-    newGenre = ''
-  }
-  let genreInputActive = $state(false)
-
-  function removeScriptFile(e: MouseEvent, index: number) {
-    e.stopPropagation()
-    workStore.removeMediaFile('works', index)
-  }
 </script>
 
 <div class="space-y-12 mt-7.25 text-dark">
@@ -144,258 +93,25 @@
 
       {#if isScript}
         <!-- Genre -->
-        <div class="block space-y-3">
-          <span class="mb-2 block text-sm text-[#72717b]">Genre</span>
-          <div class="flex flex-wrap gap-2">
-            {#each GENRE_OPTIONS as genre (genre)}
-              <button
-                type="button"
-                onclick={() => workStore.toggleGenre(genre)}
-                class="px-3.75 h-8.5 rounded-[14px] text-sm font-medium transition-colors border inline-flex items-center gap-1.5
-                {$workStore.genre.includes(genre)
-                  ? 'bg-primary border-primary text-cream'
-                  : 'bg-[#eae6e2] border-[#71707a]/25 text-dark opacity-60 hover:opacity-100'}"
-              >
-                {genre}
-                <PlusIcon class="shrink-0" />
-              </button>
-            {/each}
-            {#each $workStore.genre.filter((g): g is string => !(GENRE_OPTIONS as readonly string[]).includes(g)) as custom (custom)}
-              <button
-                type="button"
-                onclick={() => workStore.toggleGenre(custom)}
-                class="px-3.75 h-8.5 rounded-[14px] text-sm font-medium transition-colors border inline-flex items-center gap-1.5 bg-primary border-primary text-cream"
-              >
-                {custom}
-                <PlusIcon class="shrink-0" />
-              </button>
-            {/each}
-
-            {#if genreInputActive}
-              <div class="flex items-center gap-1">
-                <input
-                  type="text"
-                  bind:value={newGenre}
-                  placeholder="Add genre"
-                  onkeydown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      addCustomGenre()
-                    }
-                  }}
-                  class="w-32 h-8.5 rounded-[14px] border border-[#71707a]/25 bg-white px-3 text-sm text-dark outline-none focus:border-primary"
-                />
-                <button
-                  type="button"
-                  onclick={addCustomGenre}
-                  class="w-8.5 h-8.5 rounded-full bg-primary text-cream text-lg leading-none">+</button
-                >
-              </div>
-            {:else}
-              <button
-                type="button"
-                onclick={() => (genreInputActive = true)}
-                class="px-3.75 h-8.5 rounded-[14px] text-sm font-medium bg-[#eae6e2] border border-[#71707a]/25 text-dark opacity-60 hover:opacity-100 inline-flex items-center gap-1.5"
-              >
-                Add
-                <PlusIcon class="shrink-0" />
-              </button>
-            {/if}
-          </div>
-        </div>
+        <GenreField
+          value={$workStore.genre}
+          onToggle={(genre) => workStore.toggleGenre(genre)}
+          onAdd={(genre) => workStore.addGenre(genre)}
+        />
       {/if}
 
       <!-- Author(s) -->
-      <div class="block space-y-3">
-        <span class="mb-2 block text-sm text-[#72717b]">Author(s)</span>
-        <div class="w-full max-w-137.5">
-          <input
-            type="text"
-            bind:value={authorInput}
-            placeholder="Author"
-            class="w-full h-11.75 bg-white rounded-sm border border-[#ddd] px-3.75 text-sm font-medium text-[#71707a]
-              focus:border-primary focus:outline-none"
-          />
-        </div>
-
-        <button
-          type="button"
-          onclick={() => {
-            workStore.addAuthor(authorInput)
-            authorInput = ''
-          }}
-          disabled={!authorInput.trim()}
-          class="mt-2.5 block ml-auto text-[13px] font-medium text-primary hover:underline disabled:text-[#ddd] disabled:no-underline"
-        >
-          Add a co-author
-        </button>
-
-        {#if $workStore.authors.length}
-          <div class="flex flex-wrap gap-2 mt-3.5">
-            {#each $workStore.authors as author, i (author + i)}
-              <span
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 h-7.25 rounded-full bg-[#eae6e2] border border-[#ddd] text-base font-semibold text-[#202225] opacity-50"
-              >
-                {author}
-                <button
-                  type="button"
-                  onclick={() => workStore.removeAuthor(i)}
-                  class="text-[#d58b00] hover:text-red-500 transition-colors text-xs leading-none"
-                  aria-label="Remove author {author}">✕</button
-                >
-              </span>
-            {/each}
-          </div>
-        {/if}
-      </div>
+      <AuthorsField
+        authors={$workStore.authors}
+        onAdd={(name) => workStore.addAuthor(name)}
+        onRemove={(i) => workStore.removeAuthor(i)}
+      />
 
       <!-- Your Text File -->
-      <div class="block space-y-3">
-        <div class="flex justify-between">
-          <span class="block text-sm text-[#72717b]">Your Text File <span class="text-[#ff0000]">*</span></span>
-          <span class="text-sm text-[#f00]">* required</span>
-        </div>
-
-        <div
-          class="border border-dashed rounded-lg border-[#1A1A2E33] p-4 bg-cream flex flex-col items-center justify-center min-h-50"
-          role="button"
-          tabindex="0"
-          aria-label="Upload your text file"
-          ondragover={handleScriptDragOver}
-          ondrop={handleScriptDrop}
-          onclick={openScriptFilePicker}
-          onkeydown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              scriptFileInput?.click()
-            }
-          }}
-        >
-          {#if $workStore.files.works.length || worksExistingFiles.length}
-            <div class="w-full flex flex-wrap gap-2 justify-center py-2">
-              {#each worksExistingFiles as file, i (`existing-${file.id}`)}
-                <div class="relative">
-                  <div
-                    class="h-20 w-20 rounded bg-[#eae6e2] flex flex-col items-center justify-center text-[10px] text-[#71707a] leading-tight text-center py-1 px-2"
-                  >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="mb-1 shrink-0">
-                      <path
-                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
-                        stroke="#71707a"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                      <path
-                        d="M14 2v6h6M12 18v-6M9 15h6"
-                        stroke="#71707a"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                    </svg>
-                    <span class="truncate w-full">{file.name}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onclick={(e) => {
-                      e.stopPropagation()
-                      workStore.removeExistingFile('works', i)
-                    }}
-                    class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-white border border-[#ddd] text-[#71707a] hover:text-red-500 flex items-center justify-center text-xs transition-colors"
-                    >✕</button
-                  >
-                </div>
-              {/each}
-              {#each $workStore.files.works as file, i (file.name + i)}
-                <div class="relative">
-                  <div
-                    class="h-20 w-20 rounded bg-[#eae6e2] flex flex-col items-center justify-center text-[10px] text-[#71707a] leading-tight text-center py-1 px-2"
-                  >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="mb-1 shrink-0">
-                      <path
-                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
-                        stroke="#71707a"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                      <path
-                        d="M14 2v6h6M12 18v-6M9 15h6"
-                        stroke="#71707a"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                    </svg>
-                    <span class="truncate w-full">{file.name}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onclick={(e) => removeScriptFile(e, i)}
-                    class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-white border border-[#ddd] text-[#71707a] hover:text-red-500 flex items-center justify-center text-xs transition-colors"
-                    >✕</button
-                  >
-                </div>
-              {/each}
-
-              <button
-                type="button"
-                onclick={openScriptFilePicker}
-                class="h-20 w-20 rounded border-2 border-dashed border-[#1A1A2E33] flex items-center justify-center text-3xl text-[#aaa] hover:border-primary hover:text-primary transition-colors"
-                >+</button
-              >
-            </div>
-          {:else}
-            <img src={UploadImg} alt="" />
-            <p class="text-sm font-semibold text-dark mt-2.5">Upload or drag your text file</p>
-            <button
-              type="button"
-              onclick={openScriptFilePicker}
-              class="rounded-sm border border-[#ddd] bg-cream mt-10.25 px-5 py-1.5 text-sm font-medium text-dark/60 hover:text-dark transition-colors"
-            >
-              Upload your text file
-            </button>
-            <span class="text-[11px] text-center text-[#747474] w-full block">
-              PDF, DOCX, TXT, RTF, EPUB, MD files accepted
-            </span>
-          {/if}
-
-          <input
-            type="file"
-            class="hidden"
-            bind:this={scriptFileInput}
-            onchange={handleScriptFileInput}
-            accept={scriptFileAccept}
-            multiple
-          />
-        </div>
-
-        <label class="flex items-start gap-3 cursor-pointer">
-          <button
-            type="button"
-            onclick={toggleRightsConfirmed}
-            class="w-4 h-4 shrink-0 rounded-[3px] border flex items-center justify-center transition-colors mt-0.5
-              {$workStore.confirmations.rightsConfirmed ? 'bg-primary border-primary' : 'bg-[#eae6e2] border-[#ddd]'}"
-          >
-            {#if $workStore.confirmations.rightsConfirmed}
-              <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                <path
-                  d="M1 4L3.5 6.5L9 1"
-                  stroke="white"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            {/if}
-          </button>
-          <span class="text-xs font-medium leading-4.5 text-[#747474]">
-            <span class="text-[#ff0000]">*</span> By uploading this content, you confirm that you are the author or rights
-            holder and have the legal right to license it.
-          </span>
-        </label>
-      </div>
+      <ScriptFileDropzone
+        confirmed={$workStore.confirmations.rightsConfirmed}
+        onToggleConfirmed={() => workStore.setRightsConfirmed(!$workStore.confirmations.rightsConfirmed)}
+      />
     {/if}
 
     <div class="flex justify-end gap-1.5 mt-12.5">

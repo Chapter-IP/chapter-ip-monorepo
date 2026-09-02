@@ -1,7 +1,7 @@
 <script lang="ts">
   import { workStore, isFormValid } from '../stores/work-store'
   import { LICENSE_TYPES } from '../constants/constants'
-  import LicenseTypeRow from './LicenseTypeRow.svelte'
+  import LicenseTypeRow from '$lib/components/LicenseTypeRow.svelte'
 
   let {
     currentStep = $bindable(),
@@ -33,7 +33,7 @@
 
     <div class="space-y-6">
       {#each LICENSE_TYPES as license (license.id)}
-        <LicenseTypeRow {license} />
+        <LicenseTypeRow {license} store={workStore} />
       {/each}
     </div>
   </div>
