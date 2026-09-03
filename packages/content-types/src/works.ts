@@ -24,6 +24,7 @@ export type WorkMetadataInput = Partial<Omit<WorkMetadata, 'type' | 'licensing'>
   type?: string
   licensing?: Partial<WorkLicensingMetadata>
 }
+export type WorkLicensingMetadataInput = Partial<WorkLicensingMetadata>
 
 export type WorkContent = Content<WorkMetadataInput> & {
   sub: string
@@ -33,13 +34,23 @@ export type WorkContent = Content<WorkMetadataInput> & {
 
 export const WORK_CONTENT_TYPES = ['Script', 'Lyrics'] as const
 export const LICENSE_TYPE_OPTIONS = [{ value: 'single-use', label: 'Single-use license' }] as const
+
 export const WORK_LICENSE_DESCRIPTIONS: Record<string, string> = {
   'single-use':
     'One approved use across a single project. The buyer cannot reuse the work for a separate project, extend the run, or sublicense without purchasing a new license.',
 }
 
-export type WorkLicense = { id: string; name: string; price: string; description: string }
-export type WorkImage = { src: string; alt: string }
+export type WorkLicense = {
+  id: string
+  name: string
+  price: string
+  description: string
+}
+
+export type WorkImage = {
+  src: string
+  alt: string
+}
 
 export type WorkDetails = {
   id: string

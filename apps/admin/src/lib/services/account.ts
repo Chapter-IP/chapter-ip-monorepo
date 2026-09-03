@@ -29,7 +29,7 @@ export function getUserBySub(sub: string) {
 
   const promise = fetchAccount(sub)
     .then((data) => ({ name: data.name ?? '', email: data.email ?? '' }))
-    .catch((err) => {
+    .catch((err: unknown) => {
       cache.delete(sub)
       throw err
     })

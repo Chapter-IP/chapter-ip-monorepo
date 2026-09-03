@@ -19,7 +19,7 @@ export async function uploadPreviewIfNeeded({
   trpcClient: TRPCClient<AppRouter>
 }): Promise<void> {
   if (!previewImage) return
-  await uploadService.uploadLocationPreviewImage({
+  await uploadService.uploadPreviewImage({
     contentId,
     file: previewImage,
     filename: 'preview',

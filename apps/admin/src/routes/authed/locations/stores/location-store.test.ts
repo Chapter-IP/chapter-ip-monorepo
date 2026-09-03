@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { loadExistingFiles } from './location-store'
-import { appendOriginalExtension, uploadPreviewIfNeeded } from '../utils'
+import { appendOriginalExtension, uploadPreviewIfNeeded } from '$lib/helpers/work-upload'
 
 type LoadExistingFilesContent = Parameters<typeof loadExistingFiles>[0]
 type LoadExistingFilesClient = Parameters<typeof loadExistingFiles>[1]
@@ -269,9 +269,9 @@ describe('loadExistingFiles', () => {
 })
 
 describe('uploadPreviewIfNeeded', () => {
-  it('delegates to uploadService.uploadLocationPreviewImage when previewImage is provided', async () => {
+  it('delegates to uploadService.uploadPreviewImage when previewImage is provided', async () => {
     const previewImage = new File(['bytes'], 'preview.jpg', { type: 'image/jpeg' })
-    const uploadService = { uploadLocationPreviewImage: vi.fn().mockResolvedValue(undefined) }
+    const uploadService = { uploadPreviewImage: vi.fn().mockResolvedValue(undefined) }
     const trpcClient = {} as never
 
     await uploadPreviewIfNeeded({
@@ -281,7 +281,7 @@ describe('uploadPreviewIfNeeded', () => {
       trpcClient,
     })
 
-    expect(uploadService.uploadLocationPreviewImage).toHaveBeenCalledWith({
+    expect(uploadService.uploadPreviewImage).toHaveBeenCalledWith({
       contentId: 'content-1',
       file: previewImage,
       filename: 'preview',
@@ -290,7 +290,7 @@ describe('uploadPreviewIfNeeded', () => {
   })
 
   it('does nothing when previewImage is null', async () => {
-    const uploadService = { uploadLocationPreviewImage: vi.fn() }
+    const uploadService = { uploadPreviewImage: vi.fn() }
 
     await uploadPreviewIfNeeded({
       previewImage: null,
@@ -299,12 +299,12 @@ describe('uploadPreviewIfNeeded', () => {
       trpcClient: {} as never,
     })
 
-    expect(uploadService.uploadLocationPreviewImage).not.toHaveBeenCalled()
+    expect(uploadService.uploadPreviewImage).not.toHaveBeenCalled()
   })
 
-  it('propagates errors from uploadService.uploadLocationPreviewImage', async () => {
+  it('propagates errors from uploadService.uploadPreviewImage', async () => {
     const uploadService = {
-      uploadLocationPreviewImage: vi.fn().mockRejectedValue(new Error('network failure')),
+      uploadPreviewImage: vi.fn().mockRejectedValue(new Error('network failure')),
     }
 
     await expect(
