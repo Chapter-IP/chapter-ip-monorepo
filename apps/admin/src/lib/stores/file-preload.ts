@@ -1,4 +1,18 @@
 import type { AppRouter, TRPCClient } from '@repo/trpc/client'
+import type {
+  ExistingFilesContent,
+  ExistingFilesByBucket,
+  PreloadedExistingFiles,
+  PreviewCandidate,
+} from '../types/files'
+
+export type {
+  ExistingFilesContent,
+  ExistingFile,
+  ExistingFilesByBucket,
+  PreloadedExistingFiles,
+  PreviewCandidate,
+} from '../types/files'
 
 export const isPreviewBucket = (bucket?: string) => Boolean(bucket?.includes('preview'))
 
@@ -15,8 +29,6 @@ export const matchesFileName = (label: string, allowedFileNames: Set<string>) =>
   }
   return false
 }
-
-export type PreviewCandidate = { id: string; url: string; label: string; filename: string }
 
 export const selectPreview = (
   candidates: PreviewCandidate[],
@@ -35,18 +47,6 @@ export const selectPreview = (
   const selected = preferred ?? candidates[candidates.length - 1]
 
   return { previewUrl: selected.url, previewFileIds }
-}
-
-export type ExistingFile = { id: string; name: string; url: string; key: string }
-export type ExistingFilesByBucket<Key extends string> = Record<Key, ExistingFile[]>
-
-type ExistingFilesContent = { id: string; metadata?: { files_name?: unknown; preview_file_name?: unknown } }
-
-export type PreloadedExistingFiles<Key extends string> = {
-  files: ExistingFilesByBucket<Key>
-  allFiles: ExistingFilesByBucket<Key>
-  previewUrl: string | null
-  previewFileIds: string[]
 }
 
 export async function loadExistingFiles<Key extends string>(

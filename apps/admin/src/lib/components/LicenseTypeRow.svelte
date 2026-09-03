@@ -1,26 +1,8 @@
 <script lang="ts">
   import Toggle from './Toggle.svelte'
-  import type { Readable } from 'svelte/store'
+  import type { LicenseType, LicensingStore } from '../types/licensing'
 
   const MIN_PRICE = 0.5
-
-  type LicenseType = {
-    id: string
-    label: string
-    description: string
-  }
-
-  type LicenseState = {
-    licensing: {
-      licenseTypes: Record<string, boolean>
-      licensePrices: Record<string, string>
-    }
-  }
-
-  type LicensingStore = Readable<LicenseState> & {
-    setLicenseTypeEnabled: (id: string, value: boolean) => void
-    setLicenseTypePrice: (id: string, value: string) => void
-  }
 
   let { license, store }: { license: LicenseType; store: LicensingStore } = $props()
 

@@ -18,13 +18,9 @@
   import { onDestroy, onMount } from 'svelte'
   import { openMarketplaceAndGoToDashboard } from '$lib/helpers/marketplace'
   import { STATUS, type StatusValue } from '../constants/constants'
+  import type { ExistingContentFile } from '../types/work-store.types'
 
   let { data } = $props()
-
-  type ExistingContentFile = {
-    id: string
-    key: string
-  }
 
   let initialPreviewFileIds = $state<string[]>([])
 

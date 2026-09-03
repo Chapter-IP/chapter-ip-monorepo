@@ -1,12 +1,13 @@
 import { writable, derived } from 'svelte/store'
 import type { UploadProgressEvent } from '$lib/upload/upload.service'
 import { type WorkFileKey } from '$lib/constants/workFileBuckets'
-import type { WorkLicensingMetadata, WorkMetadataInput } from '@repo/content-types/works'
+import type { WorkMetadataInput, WorkLicensingMetadata } from '@repo/content-types/works'
 import {
   type ExistingFilesByBucket as ExistingFilesByBucketGeneric,
   type PreloadedExistingFiles,
   loadExistingFiles as loadFilesFromContent,
 } from '$lib/stores/file-preload'
+import type { WorkState } from '../types/work-store.types'
 
 export { isPreviewBucket } from '$lib/stores/file-preload'
 
@@ -21,29 +22,6 @@ export async function loadExistingFiles(
   trpcClient: Parameters<typeof loadFilesFromContent>[1],
 ): Promise<PreloadedExistingFiles<WorkFileKey>> {
   return loadFilesFromContent(content, trpcClient, 'works', emptyExistingFiles)
-}
-
-interface WorkState {
-  files: {
-    works: File[]
-  }
-  previewImage: File | null
-  existingPreviewUrl: string | null
-  title: string
-  contentType: string
-  description: string
-  genre: string[]
-  authors: string[]
-  licensing: WorkLicensingMetadata
-  confirmations: {
-    rightsConfirmed: boolean
-  }
-  existingFiles: ExistingFilesByBucket
-  isEditing: boolean
-  ui: {
-    loading: boolean
-    uploadProgress: UploadProgressEvent | null
-  }
 }
 
 function createWorkStore() {
