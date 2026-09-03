@@ -1,27 +1,20 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate, goto } from '$app/navigation'
+  import { afterNavigate, beforeNavigate } from '$app/navigation'
   import { workStore } from './stores/work-store'
   import UploadStepHeader from './components/UploadStepHeader.svelte'
   import UploadWorkStep from './components/UploadWorkStep.svelte'
   import UploadLicensingStep from './components/UploadLicensingStep.svelte'
   import ConfirmWorkStep from './components/ConfirmWorkStep.svelte'
-  import { authStore } from '$lib'
-  import UploadService from '$lib/upload/upload.service'
-  import { createUploadSessionController, startUploadingPhase } from '$lib/upload/upload-session'
-  import BlockchainService from '$lib/upload/blockchain.service'
+  import { startUploadingPhase } from '$lib/upload/upload-session'
   import UploadProgressModal from '$lib/components/UploadProgressModal.svelte'
   import { notify, ToastType } from '@repo/ui-components'
-  import { modals, type ModalProps } from 'svelte-modals'
-  import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
   import { createWorkFileNames } from '$lib/constants/workFileBuckets'
-  import { openMarketplaceAndGoToDashboard } from '$lib/helpers/marketplace'
   import { appendOriginalExtension, uploadPreviewIfNeeded } from './utils'
+  import { createWorkUploadServices, getLicensePrices, goToFiles, openSuccessModal } from './service/work.helpers'
   import { onDestroy } from 'svelte'
 
   let currentStep = $state(1)
-  const blockchainService = new BlockchainService(authStore.state.accessToken!)
-  const uploadService = new UploadService(blockchainService)
-  const uploadSessions = createUploadSessionController(workStore)
+  const { uploadService, uploadSessions } = createWorkUploadServices()
 
   beforeNavigate(() => workStore.setLoading(true))
   afterNavigate(() => workStore.setLoading(false))
@@ -54,11 +47,6 @@
     }
 
     return { uploads, metadata, tags: [] as string[] }
-  }
-
-  const goToFiles = async () => {
-    await goto('/authed/files')
-    workStore.reset()
   }
 
   const onSaveDraftClick = async () => {
@@ -101,10 +89,6 @@
     }
   }
 
-  const getLicensePrices = () => ({
-    oneTimePrice: Number($workStore.licensing.licensePrices['single-use']),
-  })
-
   const onSubmitClick = async () => {
     const uploadSession = uploadSessions.begin()
     try {
@@ -131,7 +115,7 @@
       })
 
       uploadSession.setProgress({ phase: 'minting', overallProgress: 1 })
-      const tokenId = await uploadService.mintContent(getLicensePrices())
+      const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing.licensePrices))
       uploadSession.setProgress({ phase: 'finalizing', overallProgress: 1 })
       await uploadService.finalizeContent({ trpcClient, contentId, metadata, tokenId, tags })
 
@@ -146,21 +130,7 @@
 
       uploadSession.end()
 
-      modals.open<ModalProps & TConfirmModalProps>(ConfirmModal, {
-        title: 'Congratulations!',
-        description:
-          "Your creative work has been added to Chapter IP. By completing this step, you've transformed your written work into a secure, licensable digital asset that can be discovered, verified, and managed for future opportunities.",
-        submitText: 'Go to Dashboard',
-        secondaryText: 'Go to Marketplace',
-        onSubmit: async () => {
-          await goToFiles()
-        },
-        onSecondary: () => openMarketplaceAndGoToDashboard(goto, workStore.reset),
-        onClose: async () => {
-          await goToFiles()
-        },
-        withBackButton: false,
-      })
+      openSuccessModal()
     } catch (error) {
       console.error('Error uploading file:', error)
       let errorMessage = 'Failed to upload file.'

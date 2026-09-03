@@ -1,33 +1,28 @@
 <script lang="ts">
   import { WORK_FILE_BUCKETS, createWorkFileNames } from '$lib/constants/workFileBuckets'
   import { appendOriginalExtension, uploadPreviewIfNeeded } from '../utils'
-  import { afterNavigate, beforeNavigate, goto } from '$app/navigation'
+  import { afterNavigate, beforeNavigate } from '$app/navigation'
   import { workStore } from '../stores/work-store'
   import UploadStepHeader from '../components/UploadStepHeader.svelte'
   import UploadWorkStep from '../components/UploadWorkStep.svelte'
   import UploadLicensingStep from '../components/UploadLicensingStep.svelte'
   import ConfirmWorkStep from '../components/ConfirmWorkStep.svelte'
 
-  import { authStore } from '$lib'
-  import UploadService, { type NamedUpload } from '$lib/upload/upload.service'
-  import { createUploadSessionController, startUploadingPhase, type UploadSession } from '$lib/upload/upload-session'
-  import BlockchainService from '$lib/upload/blockchain.service'
+  import type { NamedUpload } from '$lib/upload/upload.service'
+  import { startUploadingPhase, type UploadSession } from '$lib/upload/upload-session'
   import UploadProgressModal from '$lib/components/UploadProgressModal.svelte'
-  import { notify, ToastType, ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
-  import { modals, type ModalProps } from 'svelte-modals'
+  import { notify, ToastType } from '@repo/ui-components'
   import { onDestroy, onMount } from 'svelte'
-  import { openMarketplaceAndGoToDashboard } from '$lib/helpers/marketplace'
   import { STATUS, type StatusValue } from '../constants/constants'
   import type { ExistingContentFile } from '../types/work-store.types'
+  import { createWorkUploadServices, getLicensePrices, goToFiles, openSuccessModal } from '../service/work.helpers'
 
   let { data } = $props()
 
   let initialPreviewFileIds = $state<string[]>([])
 
   let currentStep = $state(1)
-  const blockchainService = new BlockchainService(authStore.state.accessToken!)
-  const uploadService = new UploadService(blockchainService)
-  const uploadSessions = createUploadSessionController(workStore)
+  const { uploadService, uploadSessions } = createWorkUploadServices()
 
   onMount(() => {
     initialPreviewFileIds = data.existingPreviewFileIds ?? []
@@ -108,10 +103,6 @@
     }
   }
 
-  const getLicensePrices = () => ({
-    oneTimePrice: Number($workStore.licensing.licensePrices['single-use']),
-  })
-
   const buildTokenMetadata = (keys: string[]) => {
     return {
       keys,
@@ -181,11 +172,6 @@
     return { contentId, keys, metadata: metadataToSave, trpcClient, tags }
   }
 
-  const goToFiles = async () => {
-    await goto('/authed/files')
-    workStore.reset()
-  }
-
   const withWorkLoading = async (
     action: (uploadSession: UploadSession) => Promise<void>,
     logMessage: string,
@@ -220,7 +206,7 @@
     { contentId, metadata, trpcClient, tags }: Awaited<ReturnType<typeof saveCurrentContent>>,
   ) => {
     uploadSession.setProgress({ phase: 'minting', overallProgress: 1 })
-    const tokenId = await uploadService.mintContent(getLicensePrices())
+    const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing.licensePrices))
 
     uploadSession.setProgress({ phase: 'finalizing', overallProgress: 1 })
     await uploadService.finalizeContent({
@@ -250,24 +236,6 @@
     })
   }
 
-  const openSuccessModal = () => {
-    modals.open<ModalProps & TConfirmModalProps>(ConfirmModal, {
-      title: 'Congratulations!',
-      description:
-        "Your creative work has been added to Chapter IP. By completing this step, you've transformed your written work into a secure, licensable digital asset that can be discovered, verified, and managed for future opportunities.",
-      submitText: 'Go to Dashboard',
-      secondaryText: 'Go to Marketplace',
-      onSubmit: async () => {
-        await goToFiles()
-      },
-      onSecondary: () => openMarketplaceAndGoToDashboard(goto, workStore.reset),
-      onClose: async () => {
-        await goToFiles()
-      },
-      withBackButton: false,
-    })
-  }
-
   const onSubmitClick = async () => {
     await withWorkLoading(
       async (uploadSession) => {
@@ -276,7 +244,10 @@
 
         if (data.tokenId) {
           uploadSession.setProgress({ phase: 'updating-prices', overallProgress: 1 })
-          await uploadService.updateContentPrices({ tokenId, prices: getLicensePrices() })
+          await uploadService.updateContentPrices({
+            tokenId,
+            prices: getLicensePrices($workStore.licensing.licensePrices),
+          })
         }
 
         await saveTokenMetadata(uploadSession, { ...savedContent, tokenId })
