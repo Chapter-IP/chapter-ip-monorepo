@@ -18,6 +18,11 @@
       "types": "./src/location.ts",
       "import": "./src/location.ts",
       "default": "./src/location.ts"
+    },
+    "./works": {
+      "types": "./src/works.ts",
+      "import": "./src/works.ts",
+      "default": "./src/works.ts"
     }
   },
   "scripts": {

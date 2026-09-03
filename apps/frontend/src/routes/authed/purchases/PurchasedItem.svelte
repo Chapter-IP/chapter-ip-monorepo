@@ -9,6 +9,7 @@
   import { BLOCK_GRACE_MS } from './helper'
   import LikenessLicenseModal from './LikenessLicenseModal.svelte'
   import LocationLicenseModal from './LocationLicenseModal.svelte'
+  import WorkLicenseModal from './WorkLicenseModal.svelte'
   import type {
     ContentFilesLinkClient,
     DownloadableContentFile,
@@ -360,8 +361,10 @@
 {#if isModalOpen}
   {#if item.type === 'likeness'}
     <LikenessLicenseModal likeness={item.likeness} byline={item.byline} titleId={modalTitleId} onClose={closeModal} />
-  {:else}
+  {:else if item.type === 'location'}
     <LocationLicenseModal location={item.location} byline={item.byline} titleId={modalTitleId} onClose={closeModal} />
+  {:else}
+    <WorkLicenseModal work={item.work} titleId={modalTitleId} onClose={closeModal} />
   {/if}
 {/if}
 
