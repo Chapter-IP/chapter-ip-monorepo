@@ -199,10 +199,6 @@ export const isFormValid = derived(workStore, ($s) => {
   const enabledLicenseTypes = Object.entries($s.licensing.licenseTypes).filter(([, enabled]) => enabled)
   const hasLicenseType = enabledLicenseTypes.length > 0
 
-  if ($s.isEditing) {
-    return hasLicenseType && $s.licensing.agreedToFee
-  }
-
   const hasValidLicensePrice = enabledLicenseTypes.every(([id]) => Number($s.licensing.licensePrices[id] || 0) >= 0.5)
 
   return hasLicenseType && hasValidLicensePrice && $s.licensing.agreedToFee

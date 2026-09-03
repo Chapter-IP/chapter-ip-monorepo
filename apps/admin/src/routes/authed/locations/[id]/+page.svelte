@@ -1,6 +1,6 @@
 <script lang="ts">
   import { LOCATION_FILE_BUCKETS, createLocationFileNames } from '$lib/constants/locationFileBuckets'
-  import { appendOriginalExtension, uploadPreviewIfNeeded } from '../utils'
+  import { appendOriginalExtension, uploadPreviewIfNeeded } from '$lib/helpers/work-upload'
   import { afterNavigate, beforeNavigate, goto } from '$app/navigation'
   import { locationStore } from '../stores/location-store'
   import UploadStepHeader from '../components/UploadStepHeader.svelte'

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { WORK_FILE_BUCKETS, createWorkFileNames } from '$lib/constants/workFileBuckets'
-  import { appendOriginalExtension, uploadPreviewIfNeeded } from '../utils'
+  import { appendOriginalExtension, uploadPreviewIfNeeded } from '$lib/helpers/work-upload'
   import { afterNavigate, beforeNavigate } from '$app/navigation'
   import { workStore } from '../stores/work-store'
   import UploadStepHeader from '../components/UploadStepHeader.svelte'

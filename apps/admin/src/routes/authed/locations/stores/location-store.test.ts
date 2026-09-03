@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { loadExistingFiles } from './location-store'
-import { appendOriginalExtension, uploadPreviewIfNeeded } from '../utils'
+import { appendOriginalExtension, uploadPreviewIfNeeded } from '$lib/helpers/work-upload'
 
 type LoadExistingFilesContent = Parameters<typeof loadExistingFiles>[0]
 type LoadExistingFilesClient = Parameters<typeof loadExistingFiles>[1]
