@@ -1,61 +1,41 @@
 import { writable, derived } from 'svelte/store'
 import type { UploadProgressEvent } from '$lib/upload/upload.service'
-import { type LocationFileKey } from '$lib/constants/locationFileBuckets'
-import type { LocationAddress, LocationLicensingMetadata, LocationMetadataInput } from '@repo/content-types/location'
+import { type WorkFileKey } from '$lib/constants/workFileBuckets'
+import type { WorkMetadataInput, WorkLicensingMetadata } from '@repo/content-types/works'
 import {
   type ExistingFilesByBucket as ExistingFilesByBucketGeneric,
   type PreloadedExistingFiles,
   loadExistingFiles as loadFilesFromContent,
 } from '$lib/stores/file-preload'
+import type { WorkState } from '../types/work-store.types'
 
 export { isPreviewBucket } from '$lib/stores/file-preload'
 
-type ExistingFilesByBucket = ExistingFilesByBucketGeneric<LocationFileKey>
+type ExistingFilesByBucket = ExistingFilesByBucketGeneric<WorkFileKey>
 
 const emptyExistingFiles = (): ExistingFilesByBucket => ({
-  locations: [],
+  works: [],
 })
 
 export async function loadExistingFiles(
-  content: { id: string; metadata?: LocationMetadataInput },
+  content: { id: string; metadata?: WorkMetadataInput },
   trpcClient: Parameters<typeof loadFilesFromContent>[1],
-): Promise<PreloadedExistingFiles<LocationFileKey>> {
-  return loadFilesFromContent(content, trpcClient, 'locations', emptyExistingFiles)
+): Promise<PreloadedExistingFiles<WorkFileKey>> {
+  return loadFilesFromContent(content, trpcClient, 'works', emptyExistingFiles)
 }
 
-interface LocationState {
-  files: {
-    locations: File[]
-  }
-  previewImage: File | null
-  existingPreviewUrl: string | null
-  name: string
-  description: string
-  tags: string[]
-  address: LocationAddress
-  licensing: LocationLicensingMetadata
-  confirmations: {
-    rightsConfirmed: boolean
-  }
-  existingFiles: ExistingFilesByBucket
-  isEditing: boolean
-  ui: {
-    loading: boolean
-    uploadProgress: UploadProgressEvent | null
-  }
-}
-
-function createLocationStore() {
-  const { subscribe, set, update } = writable<LocationState>({
+function createWorkStore() {
+  const { subscribe, set, update } = writable<WorkState>({
     files: {
-      locations: [],
+      works: [],
     },
     previewImage: null,
     existingPreviewUrl: null,
-    name: '',
+    title: '',
+    contentType: '',
     description: '',
-    tags: [],
-    address: { street: '', apt: '', city: '', state: '', zip: '' },
+    genre: [],
+    authors: [],
     licensing: {
       licenseTypes: {
         'single-use': true,
@@ -79,7 +59,7 @@ function createLocationStore() {
   return {
     subscribe,
     set,
-    appendMediaFiles(key: LocationFileKey, newFiles: File[]) {
+    appendMediaFiles(key: WorkFileKey, newFiles: File[]) {
       update((s) => ({
         ...s,
         files: {
@@ -88,7 +68,7 @@ function createLocationStore() {
         },
       }))
     },
-    removeMediaFile(key: LocationFileKey, index: number) {
+    removeMediaFile(key: WorkFileKey, index: number) {
       update((s) => ({
         ...s,
         files: {
@@ -97,7 +77,7 @@ function createLocationStore() {
         },
       }))
     },
-    removeExistingFile(key: LocationFileKey, index: number) {
+    removeExistingFile(key: WorkFileKey, index: number) {
       update((s) => ({
         ...s,
         existingFiles: {
@@ -106,10 +86,27 @@ function createLocationStore() {
         },
       }))
     },
-    setTags: (value: string[]) => update((s) => ({ ...s, tags: value })),
+    toggleGenre(genre: string) {
+      update((s) => ({
+        ...s,
+        genre: s.genre.includes(genre) ? s.genre.filter((g) => g !== genre) : [...s.genre, genre],
+      }))
+    },
+    addGenre(genre: string) {
+      const trimmed = genre.trim()
+      if (!trimmed) return
+      update((s) => (s.genre.includes(trimmed) ? s : { ...s, genre: [...s.genre, trimmed] }))
+    },
+    addAuthor(name: string) {
+      const trimmed = name.trim()
+      if (!trimmed) return
+      update((s) => (s.authors.includes(trimmed) ? s : { ...s, authors: [...s.authors, trimmed] }))
+    },
+    removeAuthor(index: number) {
+      update((s) => ({ ...s, authors: s.authors.filter((_, i) => i !== index) }))
+    },
     setPreviewImage: (file: File | null) => update((s) => ({ ...s, previewImage: file })),
     setExistingPreviewUrl: (url: string | null) => update((s) => ({ ...s, existingPreviewUrl: url })),
-    setAddress: (value: LocationAddress) => update((s) => ({ ...s, address: value })),
     setLicenseTypeEnabled: (id: string, value: boolean) =>
       update((s) => {
         const nextLicensing = {
@@ -136,29 +133,25 @@ function createLocationStore() {
       update((s) => ({ ...s, ui: { ...s.ui, uploadProgress } })),
     clearUploadProgress: () => update((s) => ({ ...s, ui: { ...s.ui, uploadProgress: null } })),
     hydrateFromContent(
-      content: { metadata?: LocationMetadataInput; tags?: string[] },
+      content: { metadata?: WorkMetadataInput; tags?: string[] },
       existingFiles: ExistingFilesByBucket = emptyExistingFiles(),
       existingPreviewUrl: string | null = null,
     ) {
       const metadata = (content.metadata ?? {}) as Record<string, unknown>
-      const name = (metadata.name as string) ?? ''
+      const title = (metadata.name as string) ?? ''
+      const contentType = (metadata.contentType as string) ?? ''
       const description = (metadata.description as string) ?? ''
-      const address = (metadata.address as LocationAddress) ?? { street: '', apt: '', city: '', state: '', zip: '' }
-      const tags = content.tags ?? (metadata.tags as string[] | undefined) ?? []
-      const licensing = (metadata.licensing ?? {}) as Partial<LocationLicensingMetadata>
+      const genre = (metadata.genre as string[]) ?? []
+      const author = (metadata.authors as string[]) ?? []
+      const licensing = (metadata.licensing ?? {}) as Partial<WorkLicensingMetadata>
 
       update((s) => ({
         ...s,
-        name: name ?? '',
+        title: title ?? '',
+        contentType: contentType ?? '',
         description: description ?? '',
-        tags: tags ?? [],
-        address: {
-          street: address?.street ?? '',
-          apt: address?.apt ?? '',
-          city: address?.city ?? '',
-          state: address?.state ?? '',
-          zip: address?.zip ?? '',
-        },
+        genre: Array.isArray(genre) ? genre : [],
+        authors: Array.isArray(author) ? author : [],
         licensing: {
           ...s.licensing,
           ...licensing,
@@ -174,14 +167,15 @@ function createLocationStore() {
     reset: () =>
       set({
         files: {
-          locations: [],
+          works: [],
         },
         previewImage: null,
         existingPreviewUrl: null,
-        name: '',
+        title: '',
+        contentType: '',
         description: '',
-        tags: [],
-        address: { street: '', apt: '', city: '', state: '', zip: '' },
+        genre: [],
+        authors: [],
         licensing: {
           licenseTypes: {
             'single-use': true,
@@ -199,15 +193,11 @@ function createLocationStore() {
   }
 }
 
-export const locationStore = createLocationStore()
+export const workStore = createWorkStore()
 
-export const isFormValid = derived(locationStore, ($s) => {
+export const isFormValid = derived(workStore, ($s) => {
   const enabledLicenseTypes = Object.entries($s.licensing.licenseTypes).filter(([, enabled]) => enabled)
   const hasLicenseType = enabledLicenseTypes.length > 0
-
-  if ($s.isEditing) {
-    return hasLicenseType && $s.licensing.agreedToFee
-  }
 
   const hasValidLicensePrice = enabledLicenseTypes.every(([id]) => Number($s.licensing.licensePrices[id] || 0) >= 0.5)
 

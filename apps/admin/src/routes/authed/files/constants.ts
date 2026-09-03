@@ -6,7 +6,9 @@ export function getMenuItems(contentId: string, contentType?: string, status?: S
     ? `/authed/likeness/${contentId}`
     : type.includes('location')
       ? `/authed/locations/${contentId}`
-      : `/authed/files/${contentId}`
+      : type.includes('works')
+        ? `/authed/creativeWorks/${contentId}`
+        : `/authed/files/${contentId}`
 
   return [
     {

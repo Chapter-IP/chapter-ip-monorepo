@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { locationStore, isFormValid } from '../stores/location-store'
+  import { workStore, isFormValid } from '../stores/work-store'
   import { LICENSE_TYPES } from '../constants/constants'
   import LicenseTypeRow from '$lib/components/LicenseTypeRow.svelte'
 
@@ -11,13 +11,11 @@
     onSaveDraft?: () => Promise<void>
   } = $props()
 
-  const primaryLocationFile = $derived($locationStore.files.locations)
-
   function toggleAgreement() {
-    locationStore.setAgreedToFee(!$locationStore.licensing.agreedToFee)
+    workStore.setAgreedToFee(!$workStore.licensing.agreedToFee)
   }
 
-  const canContinue = $derived(Boolean($isFormValid && !$locationStore.ui.loading))
+  const canContinue = $derived(Boolean($isFormValid && !$workStore.ui.loading))
 </script>
 
 <div class="space-y-12 mt-7.25 text-dark">
@@ -25,7 +23,7 @@
   <div>
     <h2 class="mb-2 text-[28px] font-medium text-left text-dark font-heading">Licensing</h2>
     <p class="mt-3 text-base text-[#72717b]">
-      Set how creators can license this location. Pick at least one and name your price. Royalties route to you.
+      Set how creators can license this written work. Pick at least one and name your price. Royalties route to you.
     </p>
   </div>
 
@@ -35,7 +33,7 @@
 
     <div class="space-y-6">
       {#each LICENSE_TYPES as license (license.id)}
-        <LicenseTypeRow {license} store={locationStore} />
+        <LicenseTypeRow {license} store={workStore} />
       {/each}
     </div>
   </div>
@@ -47,9 +45,9 @@
         type="button"
         onclick={toggleAgreement}
         class="w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors
-          {$locationStore.licensing.agreedToFee ? 'bg-primary border-primary' : 'border-[#ddd] bg-white'}"
+          {$workStore.licensing.agreedToFee ? 'bg-primary border-primary' : 'border-[#ddd] bg-white'}"
       >
-        {#if $locationStore.licensing.agreedToFee}
+        {#if $workStore.licensing.agreedToFee}
           <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
             <path
               d="M1 4L3.5 6.5L9 1"
@@ -75,7 +73,7 @@
     <button
       class="text-sm font-medium rounded-sm h-9.5 px-7.5 bg-cream border border-[#ddd] disabled:bg-[#e1dddb] text-dark cursor-pointer"
       onclick={onSaveDraft}
-      disabled={$locationStore.ui.loading}
+      disabled={$workStore.ui.loading}
     >
       Save as Draft
     </button>
@@ -83,7 +81,7 @@
   <button
     class="text-sm font-medium rounded-sm h-9.5 px-7.5 bg-primary disabled:bg-[#e1dddb] text-cream cursor-pointer"
     onclick={() => (currentStep = 1)}
-    disabled={$locationStore.ui.loading}
+    disabled={$workStore.ui.loading}
   >
     Go back
   </button>

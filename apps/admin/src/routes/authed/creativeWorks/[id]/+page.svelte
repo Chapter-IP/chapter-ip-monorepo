@@ -1,97 +1,85 @@
 <script lang="ts">
-  import { LOCATION_FILE_BUCKETS, createLocationFileNames } from '$lib/constants/locationFileBuckets'
+  import { WORK_FILE_BUCKETS, createWorkFileNames } from '$lib/constants/workFileBuckets'
   import { appendOriginalExtension, uploadPreviewIfNeeded } from '$lib/helpers/work-upload'
-  import { afterNavigate, beforeNavigate, goto } from '$app/navigation'
-  import { locationStore } from '../stores/location-store'
+  import { afterNavigate, beforeNavigate } from '$app/navigation'
+  import { workStore } from '../stores/work-store'
   import UploadStepHeader from '../components/UploadStepHeader.svelte'
-  import UploadLocationStep from '../components/UploadLocationStep.svelte'
+  import UploadWorkStep from '../components/UploadWorkStep.svelte'
   import UploadLicensingStep from '../components/UploadLicensingStep.svelte'
-  import ConfirmLocationStep from '../components/ConfirmLocationStep.svelte'
+  import ConfirmWorkStep from '../components/ConfirmWorkStep.svelte'
 
-  import { authStore } from '$lib'
-  import UploadService, { type NamedUpload } from '$lib/upload/upload.service'
-  import { createUploadSessionController, startUploadingPhase, type UploadSession } from '$lib/upload/upload-session'
-  import BlockchainService from '$lib/upload/blockchain.service'
+  import type { NamedUpload } from '$lib/upload/upload.service'
+  import { startUploadingPhase, type UploadSession } from '$lib/upload/upload-session'
   import UploadProgressModal from '$lib/components/UploadProgressModal.svelte'
-  import { notify, ToastType, ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
-  import { modals, type ModalProps } from 'svelte-modals'
+  import { notify, ToastType } from '@repo/ui-components'
   import { onDestroy, onMount } from 'svelte'
-  import { openMarketplaceAndGoToDashboard } from '$lib/helpers/marketplace'
   import { STATUS, type StatusValue } from '../constants/constants'
+  import type { ExistingContentFile } from '../types/work-store.types'
+  import { createWorkUploadServices, getLicensePrices, goToFiles, openSuccessModal } from '../service/work.helpers'
 
   let { data } = $props()
-
-  type ExistingContentFile = {
-    id: string
-    key: string
-  }
 
   let initialPreviewFileIds = $state<string[]>([])
 
   let currentStep = $state(1)
-  const blockchainService = new BlockchainService(authStore.state.accessToken!)
-  const uploadService = new UploadService(blockchainService)
-  const uploadSessions = createUploadSessionController(locationStore)
+  const { uploadService, uploadSessions } = createWorkUploadServices()
 
   onMount(() => {
     initialPreviewFileIds = data.existingPreviewFileIds ?? []
-    locationStore.hydrateFromContent(data, data.existingFiles, data.existingPreviewUrl)
+    workStore.hydrateFromContent(data, data.existingFiles, data.existingPreviewUrl)
   })
   onDestroy(() => {
     uploadSessions.invalidate()
-    locationStore.reset()
+    workStore.reset()
   })
 
-  beforeNavigate(() => locationStore.setLoading(true))
-  afterNavigate(() => locationStore.setLoading(false))
+  beforeNavigate(() => workStore.setLoading(true))
+  afterNavigate(() => workStore.setLoading(false))
 
-  const buildLocationMetadata = (uploadNames: string[]) => {
-    const { street, apt, city, state, zip } = $locationStore.address
-    const address = street || city || state || zip ? { street, apt, city, state, zip } : undefined
-    const previewImage = $locationStore.previewImage
+  const buildWorkMetadata = (uploadNames: string[]) => {
+    const previewImage = $workStore.previewImage
     const previewFileName = previewImage
       ? appendOriginalExtension('preview', previewImage)
-      : $locationStore.existingPreviewUrl
+      : $workStore.existingPreviewUrl
         ? (data.metadata?.preview_file_name as string | undefined)
         : undefined
-    const existingNames = $locationStore.existingFiles.locations.map((file) => file.name)
-    const newNames = $locationStore.files.locations.map((file, index) =>
-      appendOriginalExtension(uploadNames[index], file),
-    )
+    const existingNames = $workStore.existingFiles.works.map((file) => file.name)
+    const newNames = $workStore.files.works.map((file, index) => appendOriginalExtension(uploadNames[index], file))
     const filesName = [...existingNames, ...newNames]
     return {
-      type: 'location' as const,
-      name: $locationStore.name,
-      description: $locationStore.description,
+      type: 'works' as const,
+      name: $workStore.title,
+      contentType: $workStore.contentType,
+      description: $workStore.description,
+      genre: $workStore.genre,
+      authors: $workStore.authors,
       files_name: filesName,
       preview_file_name: previewFileName,
-      licensing: $locationStore.licensing,
-      ...(address && { address }),
+      licensing: $workStore.licensing,
     }
   }
 
   const buildUploadNames = () => {
-    const existingNames = $locationStore.existingFiles.locations.map((file) => file.name)
-    return createLocationFileNames('locations', $locationStore.files.locations.length, existingNames)
+    const existingNames = $workStore.existingFiles.works.map((file) => file.name)
+    return createWorkFileNames('works', $workStore.files.works.length, existingNames)
   }
 
   const buildNamedUploads = (uploadNames: string[]): NamedUpload[] => {
-    return $locationStore.files.locations.map((file, index) => ({
+    return $workStore.files.works.map((file, index) => ({
       file,
       name: uploadNames[index],
     }))
   }
 
   const getKeptFileIds = () =>
-    new Set(LOCATION_FILE_BUCKETS.flatMap((bucket) => $locationStore.existingFiles[bucket].map((file) => file.id)))
+    new Set(WORK_FILE_BUCKETS.flatMap((bucket) => $workStore.existingFiles[bucket].map((file) => file.id)))
 
   const getCurrentFiles = () =>
-    (data.allExistingFiles?.locations ?? data.existingFiles?.locations ?? data.files ?? []) as ExistingContentFile[]
+    (data.allExistingFiles?.works ?? data.existingFiles?.works ?? data.files ?? []) as ExistingContentFile[]
 
   const removeOldPreviewFiles = async (trpcClient: ReturnType<typeof uploadService.createTrpcClient>) => {
     const shouldRemove =
-      $locationStore.previewImage !== null ||
-      ($locationStore.existingPreviewUrl === null && initialPreviewFileIds.length > 0)
+      $workStore.previewImage !== null || ($workStore.existingPreviewUrl === null && initialPreviewFileIds.length > 0)
 
     if (!shouldRemove) return
 
@@ -104,26 +92,22 @@
     }
   }
 
-  const buildLocationPayload = () => {
+  const buildWorkPayload = () => {
     const uploadNames = buildUploadNames()
 
     return {
       keptFileIds: getKeptFileIds(),
-      metadata: buildLocationMetadata(uploadNames),
+      metadata: buildWorkMetadata(uploadNames),
       uploads: buildNamedUploads(uploadNames),
-      tags: $locationStore.tags,
+      tags: (data.tags ?? []) as string[],
     }
   }
-
-  const getLicensePrices = () => ({
-    oneTimePrice: Number($locationStore.licensing.licensePrices['single-use']),
-  })
 
   const buildTokenMetadata = (keys: string[]) => {
     return {
       keys,
-      title: $locationStore.name,
-      description: $locationStore.description,
+      title: $workStore.title,
+      description: $workStore.description,
     }
   }
 
@@ -139,7 +123,7 @@
   ) => {
     const trpcClient = uploadService.createTrpcClient()
     const contentId = data.id
-    const { keptFileIds, metadata, uploads, tags } = buildLocationPayload()
+    const { keptFileIds, metadata, uploads, tags } = buildWorkPayload()
 
     startUploadingPhase(uploadSession.setProgress, uploads, false)
 
@@ -157,7 +141,7 @@
     let previewUploadFailed = false
     try {
       await uploadPreviewIfNeeded({
-        previewImage: $locationStore.previewImage,
+        previewImage: $workStore.previewImage,
         contentId,
         uploadService,
         trpcClient,
@@ -169,7 +153,7 @@
     }
 
     const metadataToSave =
-      previewUploadFailed && $locationStore.previewImage
+      previewUploadFailed && $workStore.previewImage
         ? {
             ...metadata,
             preview_file_name: data.metadata?.preview_file_name as string | undefined,
@@ -188,19 +172,14 @@
     return { contentId, keys, metadata: metadataToSave, trpcClient, tags }
   }
 
-  const goToFiles = async () => {
-    await goto('/authed/files')
-    locationStore.reset()
-  }
-
-  const withLocationLoading = async (
+  const withWorkLoading = async (
     action: (uploadSession: UploadSession) => Promise<void>,
     logMessage: string,
     userMessage: string,
   ) => {
     const uploadSession = uploadSessions.begin()
     try {
-      locationStore.setLoading(true)
+      workStore.setLoading(true)
       await action(uploadSession)
     } catch (error) {
       console.error(logMessage, error)
@@ -211,7 +190,7 @@
   }
 
   const onSaveDraftClick = async () => {
-    await withLocationLoading(
+    await withWorkLoading(
       async (uploadSession) => {
         await saveCurrentContent(uploadSession, { status: STATUS.DRAFT })
         notify('Draft saved', ToastType.SUCCESS)
@@ -227,7 +206,7 @@
     { contentId, metadata, trpcClient, tags }: Awaited<ReturnType<typeof saveCurrentContent>>,
   ) => {
     uploadSession.setProgress({ phase: 'minting', overallProgress: 1 })
-    const tokenId = await uploadService.mintContent(getLicensePrices())
+    const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing.licensePrices))
 
     uploadSession.setProgress({ phase: 'finalizing', overallProgress: 1 })
     await uploadService.finalizeContent({
@@ -257,33 +236,18 @@
     })
   }
 
-  const openSuccessModal = () => {
-    modals.open<ModalProps & TConfirmModalProps>(ConfirmModal, {
-      title: 'Congratulations!',
-      description:
-        "Your location has been added to Chapter IP. By completing this step, you've transformed your location into a secure, licensable digital asset that can be discovered, verified, and managed for future opportunities.",
-      submitText: 'Go to Dashboard',
-      secondaryText: 'Go to Marketplace',
-      onSubmit: async () => {
-        await goToFiles()
-      },
-      onSecondary: () => openMarketplaceAndGoToDashboard(goto, locationStore.reset),
-      onClose: async () => {
-        await goToFiles()
-      },
-      withBackButton: false,
-    })
-  }
-
   const onSubmitClick = async () => {
-    await withLocationLoading(
+    await withWorkLoading(
       async (uploadSession) => {
         const savedContent = await saveCurrentContent(uploadSession)
         const tokenId = data.tokenId ?? (await activateContent(uploadSession, savedContent))
 
         if (data.tokenId) {
           uploadSession.setProgress({ phase: 'updating-prices', overallProgress: 1 })
-          await uploadService.updateContentPrices({ tokenId, prices: getLicensePrices() })
+          await uploadService.updateContentPrices({
+            tokenId,
+            prices: getLicensePrices($workStore.licensing.licensePrices),
+          })
         }
 
         await saveTokenMetadata(uploadSession, { ...savedContent, tokenId })
@@ -299,11 +263,11 @@
   <UploadStepHeader {currentStep} />
 
   {#if currentStep === 1}
-    <UploadLocationStep bind:currentStep onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined} />
+    <UploadWorkStep bind:currentStep onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined} />
   {:else if currentStep === 2}
     <UploadLicensingStep bind:currentStep onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined} />
   {:else}
-    <ConfirmLocationStep
+    <ConfirmWorkStep
       bind:currentStep
       onFormSubmit={onSubmitClick}
       onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined}
@@ -311,6 +275,6 @@
   {/if}
 </div>
 
-{#if $locationStore.ui.uploadProgress}
-  <UploadProgressModal progress={$locationStore.ui.uploadProgress} />
+{#if $workStore.ui.uploadProgress}
+  <UploadProgressModal progress={$workStore.ui.uploadProgress} />
 {/if}

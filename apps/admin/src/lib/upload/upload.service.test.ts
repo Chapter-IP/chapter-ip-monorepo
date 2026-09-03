@@ -509,7 +509,7 @@ describe('UploadService', () => {
     })
   })
 
-  describe('uploadLocationPreviewImage', () => {
+  describe('uploadPreviewImage', () => {
     it('uploads a watermarked preview file and registers it with the preview bucket', async () => {
       const file = new File(['data'], 'photo.png', { type: 'image/png' })
       const watermarked = new File(['watermarked'], 'photo.png', { type: 'image/png' })
@@ -517,7 +517,7 @@ describe('UploadService', () => {
       const { client, createContentFileUploadUrl, registerContentFile } = createTrpcClient()
       const service = new UploadService({ mintWithPrices: vi.fn() } as never)
 
-      await service.uploadLocationPreviewImage({
+      await service.uploadPreviewImage({
         contentId: 'content-id',
         file,
         filename: 'preview',
@@ -552,7 +552,7 @@ describe('UploadService', () => {
       const service = new UploadService({ mintWithPrices: vi.fn() } as never)
 
       await expect(
-        service.uploadLocationPreviewImage({
+        service.uploadPreviewImage({
           contentId: 'content-id',
           file,
           filename: 'preview',
@@ -568,7 +568,7 @@ describe('UploadService', () => {
       const service = new UploadService({ mintWithPrices: vi.fn() } as never)
 
       await expect(
-        service.uploadLocationPreviewImage({
+        service.uploadPreviewImage({
           contentId: 'content-id',
           file,
           filename: 'preview',
@@ -588,7 +588,7 @@ describe('UploadService', () => {
       const { client, createContentFileUploadUrl, registerContentFile } = createTrpcClient()
       const service = new UploadService({ mintWithPrices: vi.fn() } as never)
 
-      await service.uploadLocationPreviewImage({
+      await service.uploadPreviewImage({
         contentId: 'content-id',
         file,
         filename: 'preview.gif',
@@ -619,7 +619,7 @@ describe('UploadService', () => {
       const { client, registerContentFile } = createTrpcClient()
       const service = new UploadService({ mintWithPrices: vi.fn() } as never)
 
-      await service.uploadLocationPreviewImage({
+      await service.uploadPreviewImage({
         contentId: 'content-id',
         file,
         filename: 'preview',
@@ -643,7 +643,7 @@ describe('UploadService', () => {
       const { client, createContentFileUploadUrl, registerContentFile } = createTrpcClient()
       const service = new UploadService({ mintWithPrices: vi.fn() } as never)
 
-      await service.uploadLocationPreviewImage({
+      await service.uploadPreviewImage({
         contentId: 'content-id',
         file,
         filename: 'preview',

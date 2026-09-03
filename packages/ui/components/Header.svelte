@@ -25,10 +25,10 @@
   let headerRef: HTMLElement
 
   const NewBrowseAndPurchaseItems = [
-    // {
-    //   text: 'New Written Works',
-    //   href: '/authed/',
-    // },
+    {
+      text: 'New Written Works',
+      href: '/authed/creativeWorks',
+    },
     {
       text: 'New Location',
       href: '/authed/locations',

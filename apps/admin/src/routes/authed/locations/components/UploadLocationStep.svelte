@@ -1,5 +1,7 @@
 <script lang="ts">
   import { locationStore } from '../stores/location-store'
+  import { US_STATES } from '../constants/constants'
+  import FileTile from '$lib/components/FileTile.svelte'
 
   let {
     currentStep = $bindable(),
@@ -23,59 +25,6 @@
   let imageInput: HTMLInputElement | null = $state(null)
   let previewInput: HTMLInputElement | null = $state(null)
   let showAddress = $state(false)
-
-  const US_STATES = [
-    'AL',
-    'AK',
-    'AZ',
-    'AR',
-    'CA',
-    'CO',
-    'CT',
-    'DE',
-    'FL',
-    'GA',
-    'HI',
-    'ID',
-    'IL',
-    'IN',
-    'IA',
-    'KS',
-    'KY',
-    'LA',
-    'ME',
-    'MD',
-    'MA',
-    'MI',
-    'MN',
-    'MS',
-    'MO',
-    'MT',
-    'NE',
-    'NV',
-    'NH',
-    'NJ',
-    'NM',
-    'NY',
-    'NC',
-    'ND',
-    'OH',
-    'OK',
-    'OR',
-    'PA',
-    'RI',
-    'SC',
-    'SD',
-    'TN',
-    'TX',
-    'UT',
-    'VT',
-    'VA',
-    'WA',
-    'WV',
-    'WI',
-    'WY',
-  ]
 
   function addTag() {
     const tag = tagInput.trim()
@@ -438,66 +387,10 @@
         {#if hasMedia}
           <div class="w-full flex flex-wrap gap-2 justify-center py-2">
             {#each existingFiles as file, i (`existing-${file.id}`)}
-              <div class="relative">
-                <div
-                  class="h-20 w-20 rounded bg-[#eae6e2] flex flex-col items-center justify-center text-[10px] text-[#71707a] leading-tight text-center py-1 px-2"
-                >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="mb-1 shrink-0">
-                    <path
-                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
-                      stroke="#71707a"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M14 2v6h6M12 18v-6M9 15h6"
-                      stroke="#71707a"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                  <span class="truncate w-full">{file.name}</span>
-                </div>
-                <button
-                  type="button"
-                  onclick={(e) => removeExisting(e, i)}
-                  class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-white border border-[#ddd] text-[#71707a] hover:text-red-500 flex items-center justify-center text-xs transition-colors"
-                  >✕</button
-                >
-              </div>
+              <FileTile name={file.name} onRemove={(e) => removeExisting(e, i)} />
             {/each}
             {#each selectedFiles as file, i (file.name + i)}
-              <div class="relative">
-                <div
-                  class="h-20 w-20 rounded bg-[#eae6e2] flex flex-col items-center justify-center text-[10px] text-[#71707a] leading-tight text-center py-1 px-2"
-                >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="mb-1 shrink-0">
-                    <path
-                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
-                      stroke="#71707a"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <path
-                      d="M14 2v6h6M12 18v-6M9 15h6"
-                      stroke="#71707a"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                  <span class="truncate w-full">{file.name}</span>
-                </div>
-                <button
-                  type="button"
-                  onclick={(e) => removeFile(e, i)}
-                  class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-white border border-[#ddd] text-[#71707a] hover:text-red-500 flex items-center justify-center text-xs transition-colors"
-                  >✕</button
-                >
-              </div>
+              <FileTile name={file.name} onRemove={(e) => removeFile(e, i)} />
             {/each}
 
             <button
