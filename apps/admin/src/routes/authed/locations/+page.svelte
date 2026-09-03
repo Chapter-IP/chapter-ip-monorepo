@@ -15,7 +15,7 @@
   import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
   import { createLocationFileNames } from '$lib/constants/locationFileBuckets'
   import { openMarketplaceAndGoToDashboard } from '$lib/helpers/marketplace'
-  import { appendOriginalExtension, uploadPreviewIfNeeded } from './utils'
+  import { appendOriginalExtension, uploadPreviewIfNeeded } from '$lib/helpers/work-upload'
   import { onDestroy } from 'svelte'
 
   let currentStep = $state(1)
