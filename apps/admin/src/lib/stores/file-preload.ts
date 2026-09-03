@@ -6,22 +6,16 @@ import type {
   PreviewCandidate,
 } from '../types/files'
 
-export type {
-  ExistingFilesContent,
-  ExistingFile,
-  ExistingFilesByBucket,
-  PreloadedExistingFiles,
-  PreviewCandidate,
-} from '../types/files'
+export type { ExistingFilesByBucket, PreloadedExistingFiles } from '../types/files'
 
 export const isPreviewBucket = (bucket?: string) => Boolean(bucket?.includes('preview'))
 
-export const stripExtension = (name: string) => {
+const stripExtension = (name: string) => {
   const lastDot = name.lastIndexOf('.')
   return lastDot === -1 ? name : name.slice(0, lastDot)
 }
 
-export const matchesFileName = (label: string, allowedFileNames: Set<string>) => {
+const matchesFileName = (label: string, allowedFileNames: Set<string>) => {
   if (allowedFileNames.has(label)) return true
   const labelBase = stripExtension(label)
   for (const allowed of allowedFileNames) {
@@ -30,7 +24,7 @@ export const matchesFileName = (label: string, allowedFileNames: Set<string>) =>
   return false
 }
 
-export const selectPreview = (
+const selectPreview = (
   candidates: PreviewCandidate[],
   previewFileName: string | undefined,
 ): { previewUrl: string | null; previewFileIds: string[] } => {

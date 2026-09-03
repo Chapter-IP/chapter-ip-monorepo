@@ -6,7 +6,7 @@ export type LicenseType = {
   description: string
 }
 
-export type LicenseState = {
+type LicenseState = {
   licensing: {
     licenseTypes: Record<string, boolean>
     licensePrices: Record<string, string>

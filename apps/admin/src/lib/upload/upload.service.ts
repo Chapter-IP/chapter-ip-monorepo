@@ -102,7 +102,7 @@ export default class UploadService {
     return count
   }
 
-  async registerDraftContent({
+  private async registerDraftContent({
     metadata,
     tags,
     trpcClient,
@@ -337,7 +337,7 @@ export default class UploadService {
     await trpcClient.contents.updateContentMetadata.mutate(input)
   }
 
-  async uploadTokenMetadata({
+  private async uploadTokenMetadata({
     tokenId,
     metadata,
     trpcClient,

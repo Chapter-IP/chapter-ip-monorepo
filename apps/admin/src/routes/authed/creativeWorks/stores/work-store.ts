@@ -86,9 +86,6 @@ function createWorkStore() {
         },
       }))
     },
-    setTitle: (value: string) => update((s) => ({ ...s, title: value })),
-    setContentType: (value: string) => update((s) => ({ ...s, contentType: value })),
-    setDescription: (value: string) => update((s) => ({ ...s, description: value })),
     toggleGenre(genre: string) {
       update((s) => ({
         ...s,
