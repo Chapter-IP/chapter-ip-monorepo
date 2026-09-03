@@ -1,9 +1,20 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument, Document, ObjectId, Schema as Mongooseschema } from 'mongoose'
+import type { HydratedDocument } from 'mongoose'
 
+import { createMongooseSchema, z } from '../../mongoose/zod-mongoose.js'
+
+export const BlockedLicenseSchemaDefinition = z.object({
+  tokenId: z.string(),
+  subEvmAddress: z.string(),
+  sub: z.string(),
+})
+export type BlockedLicense = z.infer<typeof BlockedLicenseSchemaDefinition> & {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
 export type TFileDocument = HydratedDocument<BlockedLicense>
-
-@Schema({
+export const BlockedLicenseModelName = 'BlockedLicense'
+export const BlockedLicenseSchema = createMongooseSchema(BlockedLicenseSchemaDefinition, {
   timestamps: {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
@@ -16,23 +27,6 @@ export type TFileDocument = HydratedDocument<BlockedLicense>
     virtuals: true,
   },
 })
-export class BlockedLicense extends Document<ObjectId> {
-  declare id: string
-
-  @Prop({ required: true })
-  declare tokenId: string
-
-  @Prop({ required: true })
-  declare subEvmAddress: string
-
-  @Prop({ required: true })
-  declare sub: string
-
-  declare createdAt: Date
-  declare updatedAt: Date
-}
-
-export const BlockedLicenseSchema: Mongooseschema = SchemaFactory.createForClass(BlockedLicense)
 BlockedLicenseSchema.index({ tokenId: 1 })
 BlockedLicenseSchema.index({ subEvmAddress: 1 })
 BlockedLicenseSchema.index({ sub: 1 })

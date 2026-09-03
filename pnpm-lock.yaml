@@ -159,6 +159,9 @@ importers:
       '@nestjs/throttler':
         specifier: ^6.5.0
         version: 6.5.0(@nestjs/common@12.0.1(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2))(@nestjs/core@12.0.1)(reflect-metadata@0.2.2)
+      '@nullix/zod-mongoose':
+        specifier: ^3.0.0
+        version: 3.0.0(mongoose@9.9.4)(zod@4.5.4)
       '@repo/notifications':
         specifier: workspace:*
         version: link:../../packages/notifications
@@ -1310,6 +1313,16 @@ packages:
   '@noble/hashes@1.8.0':
     resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
     engines: {node: ^14.21.3 || >=16}
+
+  '@nullix/zod-mongoose@3.0.0':
+    resolution: {integrity: sha512-KTw5gCoQ5O1rCI83ok68dr2X9oApXD5u5lceuMMvoZ3hI3KcGSpkrFX7DRAd8szl9t2tCYt/dC0o3MfgEUqnTw==}
+    engines: {node: '>=24'}
+    peerDependencies:
+      mongoose: ^9.x
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      mongoose:
+        optional: true
 
   '@opengsn/contracts@3.0.0-beta.6':
     resolution: {integrity: sha512-zqd7BG339Uq5bfx40CwKXr2waaJqLN9qBVllcWhKBGnkZPKR59wVIPh2zTNzvLorndMRWB3TnOQxAr6tZKjwGQ==}
@@ -3524,6 +3537,9 @@ packages:
 
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
+
+  hookable@6.1.1:
+    resolution: {integrity: sha512-U9LYDy1CwhMCnprUfeAZWZGByVbhd54hwepegYTK7Pi5NvqEj63ifz5z+xukznehT7i6NIZRu89Ay1AZmRsLEQ==}
 
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
@@ -6792,6 +6808,13 @@ snapshots:
 
   '@noble/hashes@1.8.0': {}
 
+  '@nullix/zod-mongoose@3.0.0(mongoose@9.9.4)(zod@4.5.4)':
+    dependencies:
+      hookable: 6.1.1
+      zod: 4.5.4
+    optionalDependencies:
+      mongoose: 9.9.4
+
   '@opengsn/contracts@3.0.0-beta.6':
     dependencies:
       '@openzeppelin/contracts': 4.9.6
@@ -8786,6 +8809,8 @@ snapshots:
   hoist-non-react-statics@3.3.2:
     dependencies:
       react-is: 16.13.1
+
+  hookable@6.1.1: {}
 
   html-escaper@2.0.2: {}
 

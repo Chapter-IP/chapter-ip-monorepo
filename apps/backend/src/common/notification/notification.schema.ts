@@ -1,12 +1,27 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument, Document, ObjectId, Schema as Mongooseschema } from 'mongoose'
+import type { HydratedDocument } from 'mongoose'
 import { DateTime } from 'luxon'
 
-import { NOTIFICATION_TYPE_VALUES, type TNotificationType } from '@repo/notifications'
+import { NOTIFICATION_TYPE_VALUES } from '@repo/notifications'
 
+import { createMongooseSchema, withMongoose, z } from '../mongoose/zod-mongoose.js'
+
+export const CommonNotificationSchemaDefinition = z.object({
+  type: z.enum(NOTIFICATION_TYPE_VALUES),
+  sub: z.string(),
+  title: z.string().optional(),
+  message: z.string().optional(),
+  payload: withMongoose(z.custom<Record<string, unknown>>(), { type: 'Mixed', required: false }),
+  readAt: withMongoose(z.date().nullable().default(null), { required: false }),
+  expiresAt: withMongoose(z.date().default(DateTime.utc().plus({ days: 90 }).toJSDate()), { required: false }),
+})
+export type CommonNotification = z.infer<typeof CommonNotificationSchemaDefinition> & {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
 export type TCommonNotificationDocument = HydratedDocument<CommonNotification>
-
-@Schema({
+export const CommonNotificationModelName = 'CommonNotification'
+export const CommonNotificationSchema = createMongooseSchema(CommonNotificationSchemaDefinition, {
   timestamps: {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
@@ -19,35 +34,6 @@ export type TCommonNotificationDocument = HydratedDocument<CommonNotification>
     virtuals: true,
   },
 })
-export class CommonNotification extends Document<ObjectId> {
-  declare id: string
-
-  @Prop({ required: true, enum: NOTIFICATION_TYPE_VALUES as readonly TNotificationType[] })
-  declare type: TNotificationType
-
-  @Prop({ required: true })
-  declare sub: string
-
-  @Prop({ required: false })
-  declare title: string
-
-  @Prop({ required: false })
-  declare message: string
-
-  @Prop({ required: false, type: Mongooseschema.Types.Mixed })
-  declare payload: Record<string, unknown>
-
-  @Prop({ required: false, default: null, type: Date })
-  declare readAt: Date | null
-
-  @Prop({ required: false, default: DateTime.utc().plus({ days: 90 }).toJSDate() })
-  declare expiresAt: Date
-
-  declare createdAt: Date
-  declare updatedAt: Date
-}
-
-export const CommonNotificationSchema: Mongooseschema = SchemaFactory.createForClass(CommonNotification)
 CommonNotificationSchema.index({ sub: 1 })
 CommonNotificationSchema.index({ type: 1 })
 CommonNotificationSchema.index({ readAt: 1 })

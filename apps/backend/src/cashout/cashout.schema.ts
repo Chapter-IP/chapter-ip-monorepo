@@ -1,5 +1,6 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument, Document, ObjectId, Schema as Mongooseschema } from 'mongoose'
+import type { HydratedDocument } from 'mongoose'
+
+import { createMongooseSchema, z } from '../common/mongoose/zod-mongoose.js'
 
 export enum CashoutStatus {
   PENDING = 'pending',
@@ -13,9 +14,22 @@ export enum CashoutPlatform {
   CASHAPP = 'cashapp',
 }
 
+export const CashoutSchemaDefinition = z.object({
+  sub: z.string(),
+  amount: z.number().min(1),
+  username: z.string(),
+  platform: z.enum(CashoutPlatform),
+  status: z.enum(CashoutStatus).default(CashoutStatus.PENDING),
+  reason: z.string().optional(),
+})
+export type Cashout = z.infer<typeof CashoutSchemaDefinition> & {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
 export type TCashoutDocument = HydratedDocument<Cashout>
-
-@Schema({
+export const CashoutModelName = 'Cashout'
+export const CashoutSchema = createMongooseSchema(CashoutSchemaDefinition, {
   timestamps: {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
@@ -28,32 +42,6 @@ export type TCashoutDocument = HydratedDocument<Cashout>
     virtuals: true,
   },
 })
-export class Cashout extends Document<ObjectId> {
-  declare id: string
-
-  @Prop({ required: true })
-  declare sub: string
-
-  @Prop({ required: true, min: 1 })
-  declare amount: number
-
-  @Prop({ required: true })
-  declare username: string
-
-  @Prop({ required: true, enum: CashoutPlatform })
-  declare platform: CashoutPlatform
-
-  @Prop({ required: true, enum: CashoutStatus, default: CashoutStatus.PENDING })
-  declare status: CashoutStatus
-
-  @Prop({ required: false })
-  declare reason?: string
-
-  declare createdAt: Date
-  declare updatedAt: Date
-}
-
-export const CashoutSchema: Mongooseschema = SchemaFactory.createForClass(Cashout)
 CashoutSchema.index({ sub: 1 })
 CashoutSchema.index({ status: 1 })
 CashoutSchema.index({ sub: 1, status: 1 })

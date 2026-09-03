@@ -8,7 +8,7 @@ import type { TNotification } from '@repo/notifications'
 import { CommonModelService } from '../model/model.service.js'
 import type { TBuiltPaginationOptions } from '../model/model.dto.js'
 
-import { CommonNotification } from './notification.schema.js'
+import { CommonNotificationModelName, type CommonNotification } from './notification.schema.js'
 import type { TFindCommonNotificationsInput } from './notification.dto.js'
 
 @Injectable()
@@ -18,7 +18,7 @@ export class CommonNotificationService extends CommonModelService<CommonNotifica
   private changeStream!: mongo.ChangeStream<CommonNotification>
   private changeStreamResumeToken: mongo.ResumeToken = undefined
 
-  constructor(@InjectModel(CommonNotification.name) private commonNotificationModel: Model<CommonNotification>) {
+  constructor(@InjectModel(CommonNotificationModelName) private commonNotificationModel: Model<CommonNotification>) {
     super(commonNotificationModel)
   }
 

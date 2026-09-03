@@ -24,10 +24,10 @@
     "start:prod": "node dist/src/main.js",
     "lint": "oxlint --type-aware --deny-warnings .",
     "lint:fix": "oxlint --type-aware --fix --deny-warnings .",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:cov": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "test:debug": "node --inspect-brk --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "trpc:chmod": "chmod +x node_modules/nestjs-trpc/native/**/*",
     "trpc:generate": "cd ../.. && nestjs-trpc generate --output packages/trpc/src/server/server.ts --entrypoint apps/backend/src/main.ts",
@@ -46,6 +46,7 @@
     "@nestjs/mongoose": "^12.0.0",
     "@nestjs/platform-express": "^12.0.1",
     "@nestjs/throttler": "^6.5.0",
+    "@nullix/zod-mongoose": "^3.0.0",
     "@repo/notifications": "workspace:*",
     "@trpc/server": "^11.18.0",
     "body-parser": "^2.3.0",
@@ -88,16 +89,28 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
+    "extensionsToTreatAsEsm": [
+      ".ts"
+    ],
     "moduleFileExtensions": [
       "js",
       "json",
       "ts"
     ],
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
     "rootDir": "src",
     "testEnvironment": "node",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.ts$": [
+        "ts-jest",
+        {
+          "useESM": true,
+          "tsconfig": "tsconfig.json"
+        }
+      ]
     }
   }
 }

@@ -9,7 +9,7 @@ import licenseNftContract from '@credenza3/contracts/artifacts/LicenseNftContrac
 import { CommonEvmService } from '../common/evm/evm.service.js'
 
 import { EvmEventService } from './evm-event.service.js'
-import { EvmSyncState } from './evm-sync-state.schema.js'
+import { EvmSyncStateModelName, type EvmSyncState } from './evm-sync-state.schema.js'
 
 const POLL_INTERVAL_MS = 10_000
 const RETRY_BASE_DELAY_MS = 2_000
@@ -40,7 +40,7 @@ export class EvmListenerService implements OnModuleInit, OnModuleDestroy {
     private readonly configService: ConfigService,
     private readonly evmEventService: EvmEventService,
     private readonly commonEvmService: CommonEvmService,
-    @InjectModel(EvmSyncState.name) private readonly syncStateModel: Model<EvmSyncState>,
+    @InjectModel(EvmSyncStateModelName) private readonly syncStateModel: Model<EvmSyncState>,
   ) {}
 
   async onModuleInit() {
