@@ -1,5 +1,5 @@
-import type { TAppContext } from '#backend/app.context.js'
-import type { TAppContextWithClientInfo } from '#backend/common/client/client.types.js'
+import type { TAppContext } from '../../app.context.js'
+import type { TAppContextWithClientInfo } from '../client/client.types.js'
 
 import { CLAIMS, TOKEN_USE } from './auth.constants.js'
 

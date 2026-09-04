@@ -12,7 +12,7 @@ import {
 } from './purchase-history/purchase-history-item.schema.js'
 import { PurchaseHistoryService } from './purchase-history/purchase-history.service.js'
 import { ContentService } from './content.service.js'
-import { EvmListenerModule } from '#backend/evm-listener/evm-listener.module.js'
+import { EvmListenerModule } from '../evm-listener/evm-listener.module.js'
 
 @Module({
   imports: [

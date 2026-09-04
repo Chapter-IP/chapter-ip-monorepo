@@ -3,7 +3,7 @@ import { DateTime } from 'luxon'
 
 import { NOTIFICATION_TYPE_VALUES } from '@repo/notifications'
 
-import { createMongooseSchema, withMongoose, z } from '#backend/common/mongoose/zod-mongoose.js'
+import { createMongooseSchema, withMongoose, z } from '../mongoose/zod-mongoose.js'
 
 const createNotificationExpiresAt = () => DateTime.utc().plus({ days: 90 }).toJSDate()
 

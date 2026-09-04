@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { Contract } from 'ethers'
 import licenseNftContract from '@credenza3/contracts/artifacts/LicenseNftContract.json' with { type: 'json' }
 
-import { CommonEvmService } from '#backend/common/evm/evm.service.js'
+import { CommonEvmService } from '../evm/evm.service.js'
 
 import { BlockedLicenseService } from './blocked-license/blocked-license.service.js'
 

@@ -1,18 +1,15 @@
 import { model } from 'mongoose'
 import { describe, expect, it, vi } from 'vitest'
 
-import { CashoutSchema, CashoutStatus } from '#backend/cashout/cashout.schema.js'
-import { BlockedLicenseSchema } from '#backend/common/license/blocked-license/blocked-license.schema.js'
-import {
-  CommonNotificationSchema,
-  CommonNotificationSchemaDefinition,
-} from '#backend/common/notification/notification.schema.js'
-import { ContentFileSchema } from '#backend/content/file/file.schema.js'
-import { PurchaseHistoryItemSchema } from '#backend/content/purchase-history/purchase-history-item.schema.js'
-import { ContentSchema, ContentSchemaDefinition, ContentStatus } from '#backend/content/content.schema.js'
-import { EvmEventSchema, EvmEventSchemaDefinition } from '#backend/evm-listener/evm-event.schema.js'
-import { EvmSyncStateSchema } from '#backend/evm-listener/evm-sync-state.schema.js'
-import { PublisherSchema } from '#backend/publisher/publisher.schema.js'
+import { CashoutSchema, CashoutStatus } from '../../cashout/cashout.schema.js'
+import { BlockedLicenseSchema } from '../license/blocked-license/blocked-license.schema.js'
+import { CommonNotificationSchema, CommonNotificationSchemaDefinition } from '../notification/notification.schema.js'
+import { ContentFileSchema } from '../../content/file/file.schema.js'
+import { PurchaseHistoryItemSchema } from '../../content/purchase-history/purchase-history-item.schema.js'
+import { ContentSchema, ContentSchemaDefinition, ContentStatus } from '../../content/content.schema.js'
+import { EvmEventSchema, EvmEventSchemaDefinition } from '../../evm-listener/evm-event.schema.js'
+import { EvmSyncStateSchema } from '../../evm-listener/evm-sync-state.schema.js'
+import { PublisherSchema } from '../../publisher/publisher.schema.js'
 
 describe('Zod-generated Mongoose schemas', () => {
   it.each([

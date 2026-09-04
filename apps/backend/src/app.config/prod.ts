@@ -1,4 +1,4 @@
-import { withEnvOverrides } from '#backend/common/utils/utils.js'
+import { withEnvOverrides } from '../common/utils/utils.js'
 
 const config = {
   credenza: {

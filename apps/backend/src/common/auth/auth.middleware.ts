@@ -2,7 +2,7 @@ import { MiddlewareOptions, MiddlewareResponse, TRPCMiddleware } from 'nestjs-tr
 import { TRPCError } from '@trpc/server'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 
-import { CommonClientService } from '#backend/common/client/client.service.js'
+import { CommonClientService } from '../client/client.service.js'
 
 import { CommonAuthService } from './auth.service.js'
 import type { TAppContextWithTokenPayload, TAppContextClientAdmin } from './auth.types.js'

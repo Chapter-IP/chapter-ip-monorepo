@@ -6,13 +6,6 @@
   "license": "UNLICENSED",
   "author": "",
   "type": "module",
-  "imports": {
-    "#backend/*": {
-      "types": "./src/*",
-      "development": "./src/*",
-      "default": "./dist/src/*"
-    }
-  },
   "exports": {
     "./content-status": {
       "types": "./src/content/content.schema.ts",

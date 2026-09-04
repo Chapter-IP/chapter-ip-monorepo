@@ -1,6 +1,6 @@
 import type { HydratedDocument } from 'mongoose'
 
-import { createMongooseSchema, withMongoose, z } from '#backend/common/mongoose/zod-mongoose.js'
+import { createMongooseSchema, withMongoose, z } from '../common/mongoose/zod-mongoose.js'
 
 export enum ContentStatus {
   DRAFT = 'DRAFT',

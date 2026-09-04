@@ -1,6 +1,6 @@
 import type { HydratedDocument } from 'mongoose'
 
-import { createMongooseSchema, withMongoose, z } from '#backend/common/mongoose/zod-mongoose.js'
+import { createMongooseSchema, withMongoose, z } from '../common/mongoose/zod-mongoose.js'
 
 export const PublisherFiatBalanceSchemaDefinition = z.object({
   available: z.number().min(0).default(0),

@@ -1,4 +1,4 @@
-import type { TAppContext } from '#backend/app.context.js'
+import type { TAppContext } from '../../app.context.js'
 
 export type TClientInfo = {
   id: string
