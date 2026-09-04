@@ -5,6 +5,8 @@ import { NOTIFICATION_TYPE_VALUES } from '@repo/notifications'
 
 import { createMongooseSchema, withMongoose, z } from '../mongoose/zod-mongoose.js'
 
+const createNotificationExpiresAt = () => DateTime.utc().plus({ days: 90 }).toJSDate()
+
 export const CommonNotificationSchemaDefinition = z.object({
   type: z.enum(NOTIFICATION_TYPE_VALUES),
   sub: z.string(),
@@ -12,7 +14,7 @@ export const CommonNotificationSchemaDefinition = z.object({
   message: z.string().optional(),
   payload: withMongoose(z.custom<Record<string, unknown>>(), { type: 'Mixed', required: false }),
   readAt: withMongoose(z.date().nullable().default(null), { required: false }),
-  expiresAt: withMongoose(z.date().default(DateTime.utc().plus({ days: 90 }).toJSDate()), { required: false }),
+  expiresAt: withMongoose(z.date().default(createNotificationExpiresAt), { required: false }),
 })
 export type CommonNotification = z.infer<typeof CommonNotificationSchemaDefinition> & {
   id: string
@@ -34,6 +36,8 @@ export const CommonNotificationSchema = createMongooseSchema(CommonNotificationS
     virtuals: true,
   },
 })
+// zod-mongoose evaluates Zod default factories while generating the schema; restore a per-document default.
+CommonNotificationSchema.path('expiresAt').default(createNotificationExpiresAt)
 CommonNotificationSchema.index({ sub: 1 })
 CommonNotificationSchema.index({ type: 1 })
 CommonNotificationSchema.index({ readAt: 1 })

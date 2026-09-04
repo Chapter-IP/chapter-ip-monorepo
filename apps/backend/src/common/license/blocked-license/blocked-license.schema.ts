@@ -12,7 +12,7 @@ export type BlockedLicense = z.infer<typeof BlockedLicenseSchemaDefinition> & {
   createdAt: Date
   updatedAt: Date
 }
-export type TFileDocument = HydratedDocument<BlockedLicense>
+export type TBlockedLicenseDocument = HydratedDocument<BlockedLicense>
 export const BlockedLicenseModelName = 'BlockedLicense'
 export const BlockedLicenseSchema = createMongooseSchema(BlockedLicenseSchemaDefinition, {
   timestamps: {

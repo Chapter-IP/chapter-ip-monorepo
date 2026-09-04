@@ -1,9 +1,9 @@
 import { model } from 'mongoose'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { CashoutSchema, CashoutStatus } from '../../cashout/cashout.schema.js'
 import { BlockedLicenseSchema } from '../license/blocked-license/blocked-license.schema.js'
-import { CommonNotificationSchema } from '../notification/notification.schema.js'
+import { CommonNotificationSchema, CommonNotificationSchemaDefinition } from '../notification/notification.schema.js'
 import { ContentFileSchema } from '../../content/file/file.schema.js'
 import { PurchaseHistoryItemSchema } from '../../content/purchase-history/purchase-history-item.schema.js'
 import { ContentSchema, ContentSchemaDefinition, ContentStatus } from '../../content/content.schema.js'
@@ -100,8 +100,32 @@ describe('Zod-generated Mongoose schemas', () => {
   it('keeps notification defaults and TTL behavior', () => {
     expect(CommonNotificationSchema.path('payload').instance).toBe('Mixed')
     expect(CommonNotificationSchema.path('readAt').options).toMatchObject({ required: false, default: null })
-    expect(CommonNotificationSchema.path('expiresAt').options.default).toBeInstanceOf(Date)
     expect(CommonNotificationSchema.indexes()).toContainEqual([{ expiresAt: 1 }, { expireAfterSeconds: 0 }])
+  })
+
+  it('calculates notification expiration relative to each document creation time', () => {
+    const dayInMilliseconds = 24 * 60 * 60 * 1000
+    const firstCreationTime = new Date('2026-01-01T00:00:00.000Z')
+    const secondCreationTime = new Date('2026-02-01T00:00:00.000Z')
+    const NotificationModel = model('NotificationExpiryDefault', CommonNotificationSchema)
+
+    vi.useFakeTimers()
+    try {
+      vi.setSystemTime(firstCreationTime)
+      const firstDefinition = CommonNotificationSchemaDefinition.parse({ type: 'OTHER', sub: 'first', payload: {} })
+      const firstDocument = new NotificationModel({ type: 'OTHER', sub: 'first' })
+
+      vi.setSystemTime(secondCreationTime)
+      const secondDefinition = CommonNotificationSchemaDefinition.parse({ type: 'OTHER', sub: 'second', payload: {} })
+      const secondDocument = new NotificationModel({ type: 'OTHER', sub: 'second' })
+
+      expect(firstDefinition.expiresAt.getTime()).toBe(firstCreationTime.getTime() + 90 * dayInMilliseconds)
+      expect(firstDocument.expiresAt.getTime()).toBe(firstCreationTime.getTime() + 90 * dayInMilliseconds)
+      expect(secondDefinition.expiresAt.getTime()).toBe(secondCreationTime.getTime() + 90 * dayInMilliseconds)
+      expect(secondDocument.expiresAt.getTime()).toBe(secondCreationTime.getTime() + 90 * dayInMilliseconds)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('applies generated Mongoose transforms and defaults', async () => {
