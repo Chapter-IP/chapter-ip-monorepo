@@ -1,16 +1,28 @@
 <script lang="ts">
   import chapterLogoUrl from '@repo/ui-components/assets/chapter-new-logo.png'
   import { useDefaultImage } from '$lib/content/image'
-  import { toDashboardCards, toLocationDashboardCards, type DashboardSection } from './dashboard'
+  import { toDashboardCards, toLocationDashboardCards, toWorkDashboardCards, type DashboardSection } from './dashboard'
   import type { LikenessItem } from './likeness/likeness'
   import type { LocationItem } from './location/location'
+  import type { WorkItem } from './creative-works/works'
 
-  let { likenessItems, locationItems } = $props<{
+  let {
+    workItems = [],
+    likenessItems,
+    locationItems,
+  } = $props<{
+    workItems?: WorkItem[]
     likenessItems: LikenessItem[]
     locationItems: LocationItem[]
   }>()
 
   const sections = $derived<DashboardSection[]>([
+    {
+      title: 'Creative Works',
+      ctaLabel: 'View all Creative Works',
+      href: '/authed/creative-works',
+      items: toWorkDashboardCards(workItems),
+    },
     {
       title: 'Likeness',
       ctaLabel: 'View all Likenesses',

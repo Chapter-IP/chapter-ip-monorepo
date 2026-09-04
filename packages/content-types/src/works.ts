@@ -20,12 +20,11 @@ export type WorkMetadata = {
   licensing: WorkLicensingMetadata
 }
 
-export type WorkLicensingMetadataInput = Partial<WorkLicensingMetadata>
-
 export type WorkMetadataInput = Partial<Omit<WorkMetadata, 'type' | 'licensing'>> & {
   type?: string
-  licensing?: WorkLicensingMetadataInput
+  licensing?: Partial<WorkLicensingMetadata>
 }
+export type WorkLicensingMetadataInput = Partial<WorkLicensingMetadata>
 
 export type WorkContent = Content<WorkMetadataInput> & {
   sub: string
@@ -33,6 +32,7 @@ export type WorkContent = Content<WorkMetadataInput> & {
   contractAddress: string
 }
 
+export const WORK_CONTENT_TYPES = ['Script', 'Lyrics'] as const
 export const LICENSE_TYPE_OPTIONS = [{ value: 'single-use', label: 'Single-use license' }] as const
 
 export const WORK_LICENSE_DESCRIPTIONS: Record<string, string> = {
@@ -58,7 +58,8 @@ export type WorkDetails = {
   title: string
   contentType: string
   description: string
-  authorName: string
+  authors: string[]
+  genres: string[]
   licenses: WorkLicense[]
   image: WorkImage
   files: string[]

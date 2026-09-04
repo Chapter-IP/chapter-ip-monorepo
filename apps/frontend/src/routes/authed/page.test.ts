@@ -10,10 +10,23 @@ vi.mock('$lib/stores/config.svelte', () => ({
 }))
 
 describe('catalog page load', () => {
-  it('loads likeness and location catalog items with separate metadata filters', async () => {
+  it('loads creative work, likeness, and location catalog items with separate metadata filters', async () => {
     const { load } = await import('./+page')
     const query = vi
       .fn()
+      .mockResolvedValueOnce({
+        items: [
+          {
+            id: 'work-1',
+            metadata: {
+              type: 'works',
+              name: 'Pendulum',
+              contentType: 'Script',
+              description: 'A thriller.',
+            },
+          },
+        ],
+      })
       .mockResolvedValueOnce({
         items: [
           {
@@ -50,21 +63,29 @@ describe('catalog page load', () => {
 
     const data = await load(event)
 
-    expect(query).toHaveBeenCalledTimes(2)
+    expect(query).toHaveBeenCalledTimes(3)
     expect(query).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
         limit: '100',
-        metadata: { and: [{ field: 'type', op: 'eq', val: 'likeness' }] },
+        metadata: { and: [{ field: 'type', op: 'eq', val: 'works' }] },
       }),
     )
     expect(query).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
         limit: '100',
+        metadata: { and: [{ field: 'type', op: 'eq', val: 'likeness' }] },
+      }),
+    )
+    expect(query).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        limit: '100',
         metadata: { and: [{ field: 'type', op: 'eq', val: 'location' }] },
       }),
     )
+    expect(data.workItems).toMatchObject([{ id: 'work-1', title: 'Pendulum' }])
     expect(data.likenessItems).toMatchObject([{ id: 'likeness-1', name: 'Avery Stone' }])
     expect(data.locationItems).toMatchObject([{ id: 'location-1', name: 'Madison Square Garden' }])
   })

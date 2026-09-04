@@ -54,6 +54,29 @@ const locationPurchase: PurchasedContentToken = {
   blockedGraceEndsAt: null,
 }
 
+const workPurchase: PurchasedContentToken = {
+  ...locationPurchase,
+  id: 'work-1',
+  tokenId: '303',
+  contentTokenId: 303,
+  sub: 'publisher-3',
+  licenseTokenId: '66',
+  metadata: {
+    type: 'works',
+    name: 'Pendulum',
+    contentType: 'Script',
+    description: 'A thriller.',
+    authors: ['Chadwick Bowser'],
+    genre: ['Thriller'],
+    files_name: ['pendulum.pdf'],
+    licensing: {
+      licenseTypes: { 'single-use': true },
+      licensePrices: { 'single-use': '25' },
+      agreedToFee: true,
+    },
+  },
+}
+
 describe('purchase rows', () => {
   it('maps likeness and location purchases into unified rows', () => {
     const rows = toPurchaseRows([likenessPurchase, locationPurchase], CONTRACT_ADDRESS, {
@@ -90,5 +113,24 @@ describe('purchase rows', () => {
         CONTRACT_ADDRESS,
       ),
     ).toEqual([])
+  })
+
+  it('maps creative work purchases for license details and downloads', () => {
+    const [row] = toPurchaseRow(workPurchase, CONTRACT_ADDRESS)
+    expect(row).toMatchObject({
+      item: {
+        type: 'works',
+        categoryLabel: 'Creative Work',
+        name: 'Pendulum',
+        byline: 'by Chadwick Bowser',
+        downloadName: 'Pendulum',
+        work: {
+          contentType: 'Script',
+          authors: ['Chadwick Bowser'],
+          genres: ['Thriller'],
+          files: ['pendulum.pdf'],
+        },
+      },
+    })
   })
 })

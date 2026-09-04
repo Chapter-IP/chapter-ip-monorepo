@@ -1,5 +1,6 @@
 import type { LikenessDetails } from '@repo/content-types/likeness'
 import type { LocationDetails } from '@repo/content-types/location'
+import type { WorkDetails } from '@repo/content-types/works'
 import type { AppRouter, TRPCClient } from '@repo/trpc/client'
 
 type ContentTokenMetadata = Record<string, unknown> & { type?: string }
@@ -54,6 +55,15 @@ export type PurchasedItemView =
       image: { src: string; alt: string }
       downloadName: string
       location: LocationDetails
+    }
+  | {
+      type: 'works'
+      categoryLabel: 'Creative Work'
+      name: string
+      byline: string
+      image: { src: string; alt: string }
+      downloadName: string
+      work: WorkDetails
     }
 
 export type PurchaseRow = {

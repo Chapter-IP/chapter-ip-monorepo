@@ -4,4 +4,4 @@
   let { data } = $props()
 </script>
 
-<CatalogDashboard likenessItems={data.likenessItems} locationItems={data.locationItems} />
+<CatalogDashboard workItems={data.workItems} likenessItems={data.likenessItems} locationItems={data.locationItems} />

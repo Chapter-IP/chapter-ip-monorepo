@@ -10,7 +10,7 @@
   }
 
   const defaultSearchTargets: SearchTarget[] = [
-    { label: 'Creative Works', disabled: true },
+    { label: 'Creative Works', href: '/authed/creative-works' },
     { label: 'Likeness', href: '/authed/likeness' },
     { label: 'Location', href: '/authed/location' },
     { label: 'Publishers', href: '/authed/publishers' },

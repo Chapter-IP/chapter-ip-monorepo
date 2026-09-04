@@ -1,8 +1,10 @@
 import { DEFAULT_IMAGE_URL } from '$lib/content/image'
 import type { LikenessDetails, LikenessContent } from '@repo/content-types/likeness'
 import type { LocationContent, LocationDetails } from '@repo/content-types/location'
+import type { WorkContent, WorkDetails } from '@repo/content-types/works'
 import { normalizeLikeness } from '../likeness/[id]/likenessDetails'
 import { normalizeLocation } from '../location/[id]/locationDetails'
+import { normalizeWork } from '../creative-works/[id]/workDetails'
 import type { PurchaseRow, PurchasedContentToken } from './types'
 
 function toLikenessRow(purchase: PurchasedContentToken, contractAddress: string): PurchaseRow[] {
@@ -69,6 +71,37 @@ function toLocationRow(purchase: PurchasedContentToken, contractAddress: string,
   ]
 }
 
+function toWorkRow(purchase: PurchasedContentToken, contractAddress: string): PurchaseRow[] {
+  const work = normalizeWork(
+    {
+      id: purchase.id,
+      tokenId: purchase.tokenId,
+      sub: purchase.sub ?? '',
+      status: 'ACTIVE',
+      contractAddress,
+      metadata: purchase.metadata as WorkContent['metadata'],
+    },
+    contractAddress,
+  )
+
+  if (!work) return []
+
+  return [
+    {
+      purchase,
+      item: {
+        type: 'works',
+        categoryLabel: 'Creative Work',
+        name: work.title,
+        byline: work.authors.length ? `by ${work.authors.join(', ')}` : '',
+        image: work.image,
+        downloadName: work.title,
+        work,
+      },
+    },
+  ]
+}
+
 export function toPurchaseRow(
   purchase: PurchasedContentToken,
   contractAddress: string,
@@ -78,6 +111,7 @@ export function toPurchaseRow(
 
   if (metadataType === 'likeness') return toLikenessRow(purchase, contractAddress)
   if (metadataType === 'location') return toLocationRow(purchase, contractAddress, authorName)
+  if (metadataType === 'works') return toWorkRow(purchase, contractAddress)
 
   return []
 }
@@ -92,4 +126,4 @@ export function toPurchaseRows(
   )
 }
 
-export type { LikenessDetails, LocationDetails }
+export type { LikenessDetails, LocationDetails, WorkDetails }
