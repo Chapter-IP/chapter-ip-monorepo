@@ -1,7 +1,7 @@
 import type { HydratedDocument } from 'mongoose'
 
-import { createMongooseSchema, withMongoose, z } from '../../common/mongoose/zod-mongoose.js'
-import { ContentModelName } from '../content.schema.js'
+import { createMongooseSchema, withMongoose, z } from '#backend/common/mongoose/zod-mongoose.js'
+import { ContentModelName } from '#backend/content/content.schema.js'
 
 export const ContentFileSchemaDefinition = z.object({
   contentId: withMongoose(z.string(), { type: 'ObjectId', ref: ContentModelName }),

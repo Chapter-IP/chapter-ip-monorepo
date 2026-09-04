@@ -3,11 +3,11 @@ import { ConfigService } from '@nestjs/config'
 import { Contract } from 'ethers'
 import contentNftContract from '@credenza3/contracts/artifacts/ContentNftContract.json' with { type: 'json' }
 import chapterIpMembershipContract from '@credenza3/contracts/artifacts/ChapterIpMembershipContract.json' with { type: 'json' }
-import { CommonEvmService } from '../common/evm/evm.service.js'
-import { CommonLicenseService } from '../common/license/license.service.js'
+import { CommonEvmService } from '#backend/common/evm/evm.service.js'
+import { CommonLicenseService } from '#backend/common/license/license.service.js'
 import { ContentModelService } from './content-model.service.js'
 import { FileService } from './file/file.service.js'
-import { EvmEventService } from '../evm-listener/evm-event.service.js'
+import { EvmEventService } from '#backend/evm-listener/evm-event.service.js'
 import type { TGetContentStatisticOutput } from './content.dto.js'
 
 const CONTENT_NFT_VOUCHER_EIP712_TYPE: Record<string, Array<{ name: string; type: string }>> = {

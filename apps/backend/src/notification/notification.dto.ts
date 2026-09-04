@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import { notificationSchema, NOTIFICATION_TYPE_VALUES } from '@repo/notifications'
 
-import { paginatedRequestWithCursorSchema, createPaginatedResponseSchema } from '../common/model/model.dto.js'
+import { paginatedRequestWithCursorSchema, createPaginatedResponseSchema } from '#backend/common/model/model.dto.js'
 
 export const findNotificationsInputSchema = paginatedRequestWithCursorSchema.extend({
   type: z.enum(NOTIFICATION_TYPE_VALUES).optional(),

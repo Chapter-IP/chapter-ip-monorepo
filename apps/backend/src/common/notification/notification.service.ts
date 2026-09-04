@@ -5,8 +5,8 @@ import { mongo, Model } from 'mongoose'
 
 import type { TNotification } from '@repo/notifications'
 
-import { CommonModelService } from '../model/model.service.js'
-import type { TBuiltPaginationOptions } from '../model/model.dto.js'
+import { CommonModelService } from '#backend/common/model/model.service.js'
+import type { TBuiltPaginationOptions } from '#backend/common/model/model.dto.js'
 
 import { CommonNotificationModelName, type CommonNotification } from './notification.schema.js'
 import type { TFindCommonNotificationsInput } from './notification.dto.js'

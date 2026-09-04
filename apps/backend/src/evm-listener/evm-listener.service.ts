@@ -6,7 +6,7 @@ import { Model } from 'mongoose'
 import contentNftContract from '@credenza3/contracts/artifacts/ContentNftContract.json' with { type: 'json' }
 import licenseNftContract from '@credenza3/contracts/artifacts/LicenseNftContract.json' with { type: 'json' }
 
-import { CommonEvmService } from '../common/evm/evm.service.js'
+import { CommonEvmService } from '#backend/common/evm/evm.service.js'
 
 import { EvmEventService } from './evm-event.service.js'
 import { EvmSyncStateModelName, type EvmSyncState } from './evm-sync-state.schema.js'

@@ -1,7 +1,7 @@
 import { Router, Mutation, Query, Input, Ctx, UseMiddlewares } from 'nestjs-trpc'
 
-import { AuthMiddleware, AdminAuthMiddleware } from '../common/auth/auth.middleware.js'
-import type { TAppContextWithTokenPayload } from '../common/auth/auth.types.js'
+import { AuthMiddleware, AdminAuthMiddleware } from '#backend/common/auth/auth.middleware.js'
+import type { TAppContextWithTokenPayload } from '#backend/common/auth/auth.types.js'
 
 import { CashoutService } from './cashout.service.js'
 import {

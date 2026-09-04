@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 
-import { CommonModelService } from '../common/model/model.service.js'
+import { CommonModelService } from '#backend/common/model/model.service.js'
 
 import { ContentModelName, type Content } from './content.schema.js'
-import type { TBuiltPaginationOptions } from '../common/model/model.dto.js'
+import type { TBuiltPaginationOptions } from '#backend/common/model/model.dto.js'
 import { TFindContentInput, TFilterNode, TFilterCondition } from './content.dto.js'
 
 const METADATA_FIELD_PREFIX = 'metadata.'

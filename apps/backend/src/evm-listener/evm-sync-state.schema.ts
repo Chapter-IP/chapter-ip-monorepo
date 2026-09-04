@@ -1,4 +1,4 @@
-import { createMongooseSchema, withMongoose, z } from '../common/mongoose/zod-mongoose.js'
+import { createMongooseSchema, withMongoose, z } from '#backend/common/mongoose/zod-mongoose.js'
 
 export const EvmSyncStateSchemaDefinition = z.object({
   name: withMongoose(z.string(), { unique: true }),

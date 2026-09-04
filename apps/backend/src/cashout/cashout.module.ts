@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
 
-import { PublisherModule } from '../publisher/publisher.module.js'
+import { PublisherModule } from '#backend/publisher/publisher.module.js'
 
 import { CashoutModelName, CashoutSchema } from './cashout.schema.js'
 import { CashoutService } from './cashout.service.js'

@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
-import { CommonModelService } from '../common/model/model.service.js'
-import type { TBuiltPaginationOptions } from '../common/model/model.dto.js'
+import { CommonModelService } from '#backend/common/model/model.service.js'
+import type { TBuiltPaginationOptions } from '#backend/common/model/model.dto.js'
 
 import { PublisherModelName, type Publisher } from './publisher.schema.js'
 import type { TFindPublishersInput } from './publisher.dto.js'

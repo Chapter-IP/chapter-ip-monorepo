@@ -1,6 +1,6 @@
 import type { HydratedDocument } from 'mongoose'
 
-import { createMongooseSchema, z } from '../common/mongoose/zod-mongoose.js'
+import { createMongooseSchema, z } from '#backend/common/mongoose/zod-mongoose.js'
 
 export enum CashoutStatus {
   PENDING = 'pending',

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 
-import { CommonClientService } from '../common/client/client.service.js'
+import { CommonClientService } from '#backend/common/client/client.service.js'
 
 import type { TExchangeCodeInput, TRefreshTokenInput, TAuthTokenOutput } from './auth.dto.js'
 
