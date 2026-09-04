@@ -9,7 +9,19 @@
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
     "lint": "oxlint --deny-warnings .",
-    "lint:fix": "oxlint --fix --deny-warnings ."
+    "lint:fix": "oxlint --fix --deny-warnings .",
+    "test": "vitest --run"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "^0.9.12",
+    "fflate": "^0.8.3",
+    "mammoth": "^1.12.2",
+    "pdfjs-dist": "^4.10.38",
+    "remove-markdown": "^0.7.0"
+  },
+  "devDependencies": {
+    "@types/remove-markdown": "^0.3.4",
+    "vitest": "^4.1.11"
   },
   "peerDependencies": {
     "@credenza3/evm-provider": "^0.0.2",
