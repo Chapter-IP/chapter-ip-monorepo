@@ -5,12 +5,12 @@ import { Model } from 'mongoose'
 import { CommonModelService } from '../common/model/model.service.js'
 import type { TBuiltPaginationOptions } from '../common/model/model.dto.js'
 
-import { Publisher } from './publisher.schema.js'
+import { PublisherModelName, type Publisher } from './publisher.schema.js'
 import type { TFindPublishersInput } from './publisher.dto.js'
 
 @Injectable()
 export class PublisherService extends CommonModelService<Publisher> {
-  constructor(@InjectModel(Publisher.name) private publisherModel: Model<Publisher>) {
+  constructor(@InjectModel(PublisherModelName) private publisherModel: Model<Publisher>) {
     super(publisherModel)
   }
 

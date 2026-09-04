@@ -7,7 +7,7 @@ import { CommonModelService } from '../common/model/model.service.js'
 import type { TBuiltPaginationOptions } from '../common/model/model.dto.js'
 import { PublisherService } from '../publisher/publisher.service.js'
 
-import { Cashout, CashoutStatus } from './cashout.schema.js'
+import { CashoutModelName, CashoutStatus, type Cashout, type TCashoutDocument } from './cashout.schema.js'
 import type {
   TCancelCashoutInput,
   TCreateCashoutInput,
@@ -18,7 +18,7 @@ import type {
 @Injectable()
 export class CashoutService extends CommonModelService<Cashout> {
   constructor(
-    @InjectModel(Cashout.name) private readonly cashoutModel: Model<Cashout>,
+    @InjectModel(CashoutModelName) private readonly cashoutModel: Model<Cashout>,
     private readonly publisherService: PublisherService,
   ) {
     super(cashoutModel)
@@ -38,7 +38,7 @@ export class CashoutService extends CommonModelService<Cashout> {
     return await this.cashoutModel.countDocuments(query)
   }
 
-  async createCashout(sub: string, input: TCreateCashoutInput): Promise<Cashout> {
+  async createCashout(sub: string, input: TCreateCashoutInput): Promise<TCashoutDocument> {
     const publisher = await this.publisherService.findOne({ sub })
     if (!publisher) {
       throw new TRPCError({ message: 'Publisher not found', code: 'NOT_FOUND' })
@@ -67,7 +67,7 @@ export class CashoutService extends CommonModelService<Cashout> {
     }
   }
 
-  async cancelCashout(sub: string, input: TCancelCashoutInput): Promise<Cashout> {
+  async cancelCashout(sub: string, input: TCancelCashoutInput): Promise<TCashoutDocument> {
     const cashout = await this.cashoutModel.findOneAndUpdate(
       { _id: input.id, sub, status: CashoutStatus.PENDING } as Record<string, unknown>,
       { $set: { status: CashoutStatus.CANCELLED, ...(input.reason ? { reason: input.reason } : {}) } },
@@ -86,7 +86,7 @@ export class CashoutService extends CommonModelService<Cashout> {
     return cashout
   }
 
-  async updateCashoutStatus(input: TUpdateCashoutStatusInput): Promise<Cashout> {
+  async updateCashoutStatus(input: TUpdateCashoutStatusInput): Promise<TCashoutDocument> {
     const cashout = await this.cashoutModel.findOneAndUpdate(
       { _id: input.id, status: CashoutStatus.PENDING } as Record<string, unknown>,
       {

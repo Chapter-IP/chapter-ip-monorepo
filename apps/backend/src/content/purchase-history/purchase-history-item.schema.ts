@@ -1,11 +1,30 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument, Document, ObjectId, Schema as Mongooseschema, Types } from 'mongoose'
+import type { HydratedDocument } from 'mongoose'
 
-import { Content } from '../content.schema.js'
+import { createMongooseSchema, withMongoose, z } from '../../common/mongoose/zod-mongoose.js'
+import { ContentModelName } from '../content.schema.js'
 
+export const PurchaseHistoryItemSchemaDefinition = z.object({
+  buyerAddress: z.string().trim().toLowerCase(),
+  contentId: withMongoose(z.string(), { type: 'ObjectId', ref: ContentModelName }),
+  licenseType: z.number(),
+  priceFiat: z.string().optional(),
+  txHash: z.string(),
+  priceToken: z.string().optional(),
+  priceEther: z.string().optional(),
+  currencyTokenContract: z.string().trim().toLowerCase().optional(),
+  platformFeeAmount: z.string().optional(),
+  agencyFeeAmount: z.string().optional(),
+  metadata: withMongoose(z.custom<Record<string, unknown>>().optional(), { type: 'Mixed' }),
+  ownerId: z.string(),
+})
+export type PurchaseHistoryItem = z.infer<typeof PurchaseHistoryItemSchemaDefinition> & {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
 export type TPurchaseHistoryItemDocument = HydratedDocument<PurchaseHistoryItem>
-
-@Schema({
+export const PurchaseHistoryItemModelName = 'PurchaseHistoryItem'
+export const PurchaseHistoryItemSchema = createMongooseSchema(PurchaseHistoryItemSchemaDefinition, {
   timestamps: {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
@@ -18,50 +37,6 @@ export type TPurchaseHistoryItemDocument = HydratedDocument<PurchaseHistoryItem>
     virtuals: true,
   },
 })
-export class PurchaseHistoryItem extends Document<ObjectId> {
-  declare id: string
-
-  @Prop({ required: true, lowercase: true, trim: true })
-  declare buyerAddress: string
-
-  @Prop({ type: Types.ObjectId, ref: Content.name, required: true })
-  declare contentId: string
-
-  @Prop({ required: true })
-  declare licenseType: number
-
-  @Prop({ required: false })
-  declare priceFiat: string
-
-  @Prop({ required: true })
-  declare txHash: string
-
-  @Prop({ required: false })
-  declare priceToken: string
-
-  @Prop({ required: false })
-  declare priceEther: string
-
-  @Prop({ required: false, lowercase: true, trim: true })
-  declare currencyTokenContract: string
-
-  @Prop({ required: false })
-  declare platformFeeAmount: string
-
-  @Prop({ required: false })
-  declare agencyFeeAmount: string
-
-  @Prop({ type: Mongooseschema.Types.Mixed, required: false })
-  declare metadata: Record<string, unknown>
-
-  @Prop({ required: true })
-  declare ownerId: string
-
-  declare createdAt: Date
-  declare updatedAt: Date
-}
-
-export const PurchaseHistoryItemSchema: Mongooseschema = SchemaFactory.createForClass(PurchaseHistoryItem)
 PurchaseHistoryItemSchema.index({ buyerAddress: 1 })
 PurchaseHistoryItemSchema.index({ contentId: 1 })
 PurchaseHistoryItemSchema.index({ ownerId: 1 })

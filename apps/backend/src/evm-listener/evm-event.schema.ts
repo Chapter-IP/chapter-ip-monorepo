@@ -1,37 +1,35 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { Document, HydratedDocument, Schema as MongooseSchema } from 'mongoose'
+import type { HydratedDocument, Types } from 'mongoose'
 
+import { createMongooseSchema, withMongoose, z } from '../common/mongoose/zod-mongoose.js'
+
+export const EvmEventSchemaDefinition = z.object({
+  contractAddress: z.string(),
+  eventName: z.string(),
+  blockNumber: z.number(),
+  transactionHash: z.string(),
+  logIndex: z.number(),
+  args: withMongoose(
+    z.custom<unknown>((value) => value !== undefined),
+    { type: 'Mixed', required: true },
+  ),
+  raw: withMongoose(
+    z.custom<unknown>((value) => value !== undefined),
+    { type: 'Mixed', required: true },
+  ),
+})
+export type EvmEvent = z.infer<typeof EvmEventSchemaDefinition> & { _id: Types.ObjectId }
 export type TEvmEventDocument = HydratedDocument<EvmEvent>
-
-@Schema({
+export const EvmEventModelName = 'EvmEvent'
+export const EvmEventSchema = createMongooseSchema(EvmEventSchemaDefinition, {
   timestamps: {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
   },
   collection: 'evm_events',
 })
-export class EvmEvent extends Document {
-  @Prop({ required: true, index: true })
-  contractAddress!: string
-
-  @Prop({ required: true, index: true })
-  eventName!: string
-
-  @Prop({ required: true, index: true })
-  blockNumber!: number
-
-  @Prop({ required: true, index: true })
-  transactionHash!: string
-
-  @Prop({ required: true, index: true })
-  logIndex!: number
-
-  @Prop({ type: MongooseSchema.Types.Mixed, required: true })
-  args!: unknown
-
-  @Prop({ type: MongooseSchema.Types.Mixed, required: true })
-  raw!: unknown
-}
-
-export const EvmEventSchema = SchemaFactory.createForClass(EvmEvent)
+EvmEventSchema.index({ contractAddress: 1 })
+EvmEventSchema.index({ eventName: 1 })
+EvmEventSchema.index({ blockNumber: 1 })
+EvmEventSchema.index({ transactionHash: 1 })
+EvmEventSchema.index({ logIndex: 1 })
 EvmEventSchema.index({ transactionHash: 1, logIndex: 1 }, { unique: true })

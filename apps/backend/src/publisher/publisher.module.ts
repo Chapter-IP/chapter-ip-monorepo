@@ -3,10 +3,10 @@ import { MongooseModule } from '@nestjs/mongoose'
 
 import { PublisherService } from './publisher.service.js'
 import { PublisherRouter } from './publisher.router.js'
-import { PublisherSchema, Publisher } from './publisher.schema.js'
+import { PublisherModelName, PublisherSchema } from './publisher.schema.js'
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Publisher.name, schema: PublisherSchema }])],
+  imports: [MongooseModule.forFeature([{ name: PublisherModelName, schema: PublisherSchema }])],
   controllers: [],
   providers: [PublisherService, PublisherRouter],
   exports: [PublisherService],

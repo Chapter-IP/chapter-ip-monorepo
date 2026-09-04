@@ -4,7 +4,7 @@ import { Model, Types } from 'mongoose'
 
 import { CommonModelService } from '../common/model/model.service.js'
 
-import { Content } from './content.schema.js'
+import { ContentModelName, type Content } from './content.schema.js'
 import type { TBuiltPaginationOptions } from '../common/model/model.dto.js'
 import { TFindContentInput, TFilterNode, TFilterCondition } from './content.dto.js'
 
@@ -12,7 +12,7 @@ const METADATA_FIELD_PREFIX = 'metadata.'
 
 @Injectable()
 export class ContentModelService extends CommonModelService<Content> {
-  constructor(@InjectModel(Content.name) private contentModel: Model<Content>) {
+  constructor(@InjectModel(ContentModelName) private contentModel: Model<Content>) {
     super(contentModel)
   }
 

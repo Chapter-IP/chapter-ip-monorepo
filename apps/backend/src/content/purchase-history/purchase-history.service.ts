@@ -6,11 +6,11 @@ import { CommonModelService } from '../../common/model/model.service.js'
 import type { TBuiltPaginationOptions } from '../../common/model/model.dto.js'
 import type { TFindPurchaseHistoryInput } from '../content.dto.js'
 
-import { PurchaseHistoryItem } from './purchase-history-item.schema.js'
+import { PurchaseHistoryItemModelName, type PurchaseHistoryItem } from './purchase-history-item.schema.js'
 
 @Injectable()
 export class PurchaseHistoryService extends CommonModelService<PurchaseHistoryItem> {
-  constructor(@InjectModel(PurchaseHistoryItem.name) private purchaseHistoryItemModel: Model<PurchaseHistoryItem>) {
+  constructor(@InjectModel(PurchaseHistoryItemModelName) private purchaseHistoryItemModel: Model<PurchaseHistoryItem>) {
     super(purchaseHistoryItemModel)
   }
 

@@ -4,7 +4,7 @@ import { mongo } from 'mongoose'
 import { NOTIFICATION_TYPE } from '@repo/notifications'
 
 import { EvmEventService } from '../evm-listener/evm-event.service.js'
-import { EvmEvent } from '../evm-listener/evm-event.schema.js'
+import type { EvmEvent } from '../evm-listener/evm-event.schema.js'
 import { ContentModelService } from '../content/content-model.service.js'
 import { ContentService } from '../content/content.service.js'
 import { PurchaseHistoryService } from '../content/purchase-history/purchase-history.service.js'

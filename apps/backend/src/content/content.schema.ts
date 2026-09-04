@@ -1,5 +1,6 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument, Document, ObjectId, Schema as Mongooseschema } from 'mongoose'
+import type { HydratedDocument } from 'mongoose'
+
+import { createMongooseSchema, withMongoose, z } from '../common/mongoose/zod-mongoose.js'
 
 export enum ContentStatus {
   DRAFT = 'DRAFT',
@@ -7,9 +8,23 @@ export enum ContentStatus {
   SALE_DISABLED = 'SALE_DISABLED',
 }
 
-export type TContentDocument = HydratedDocument<Content>
+export const ContentSchemaDefinition = z.object({
+  sub: z.string(),
+  tokenId: z.string().optional(),
+  contractAddress: z.string().trim().toLowerCase(),
+  metadata: withMongoose(z.custom<Record<string, unknown>>().default({}), { type: 'Mixed' }),
+  tags: withMongoose(z.array(z.string()).default([]), { required: false }),
+  status: z.enum(ContentStatus).default(ContentStatus.ACTIVE),
+})
 
-@Schema({
+export type Content = z.infer<typeof ContentSchemaDefinition> & {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
+export type TContentDocument = HydratedDocument<Content>
+export const ContentModelName = 'Content'
+export const ContentSchema = createMongooseSchema(ContentSchemaDefinition, {
   timestamps: {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
@@ -22,32 +37,8 @@ export type TContentDocument = HydratedDocument<Content>
     virtuals: true,
   },
 })
-export class Content extends Document<ObjectId> {
-  declare id: string
-
-  @Prop({ required: true })
-  declare sub: string
-
-  @Prop({ required: false })
-  declare tokenId?: string
-
-  @Prop({ required: true, lowercase: true, trim: true })
-  declare contractAddress: string
-
-  @Prop({ type: Mongooseschema.Types.Mixed, default: {} })
-  declare metadata: Record<string, unknown>
-
-  @Prop({ type: [String], default: [] })
-  declare tags: string[]
-
-  @Prop({ required: true, enum: ContentStatus, default: ContentStatus.ACTIVE })
-  declare status: ContentStatus
-
-  declare createdAt: Date
-  declare updatedAt: Date
-}
-
-export const ContentSchema: Mongooseschema = SchemaFactory.createForClass(Content)
+// zod-mongoose currently marks every array as required; preserve the previous optional Mongoose path.
+ContentSchema.path('tags').required(false)
 ContentSchema.index({ sub: 1 })
 ContentSchema.index(
   { contractAddress: 1, tokenId: 1 },

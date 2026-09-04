@@ -5,12 +5,12 @@ import { Model } from 'mongoose'
 import { CommonModelService } from '../../model/model.service.js'
 import type { TBuiltPaginationOptions } from '../../model/model.dto.js'
 
-import { BlockedLicense } from './blocked-license.schema.js'
+import { BlockedLicenseModelName, type BlockedLicense } from './blocked-license.schema.js'
 import { TFindBlockedLicensesInput } from './blocked-license.dto.js'
 
 @Injectable()
 export class BlockedLicenseService extends CommonModelService<BlockedLicense> {
-  constructor(@InjectModel(BlockedLicense.name) private blockedLicenseModel: Model<BlockedLicense>) {
+  constructor(@InjectModel(BlockedLicenseModelName) private blockedLicenseModel: Model<BlockedLicense>) {
     super(blockedLicenseModel)
   }
 

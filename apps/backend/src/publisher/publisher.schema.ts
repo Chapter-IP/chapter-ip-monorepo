@@ -1,20 +1,32 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument, Document, ObjectId, Schema as Mongooseschema } from 'mongoose'
+import type { HydratedDocument } from 'mongoose'
 
-export type TPublisherDocument = HydratedDocument<Publisher>
+import { createMongooseSchema, withMongoose, z } from '../common/mongoose/zod-mongoose.js'
 
-@Schema({ _id: false })
-export class PublisherFiatBalance {
-  @Prop({ required: true, default: 0, min: 0 })
-  declare available: number
+export const PublisherFiatBalanceSchemaDefinition = z.object({
+  available: z.number().min(0).default(0),
+  pending: z.number().min(0).default(0),
+})
+export type PublisherFiatBalance = z.infer<typeof PublisherFiatBalanceSchemaDefinition>
+export const PublisherFiatBalanceSchema = createMongooseSchema(PublisherFiatBalanceSchemaDefinition, { _id: false })
 
-  @Prop({ required: true, default: 0, min: 0 })
-  declare pending: number
+export const PublisherSchemaDefinition = z.object({
+  sub: z.string(),
+  title: z.string(),
+  evmAddress: z.string().optional(),
+  avatarUrl: z.string().optional(),
+  fiatBalance: withMongoose(PublisherFiatBalanceSchemaDefinition.default({ available: 0, pending: 0 }), {
+    type: PublisherFiatBalanceSchema,
+    required: true,
+  }),
+})
+export type Publisher = z.infer<typeof PublisherSchemaDefinition> & {
+  id: string
+  createdAt: Date
+  updatedAt: Date
 }
-
-export const PublisherFiatBalanceSchema = SchemaFactory.createForClass(PublisherFiatBalance)
-
-@Schema({
+export type TPublisherDocument = HydratedDocument<Publisher>
+export const PublisherModelName = 'Publisher'
+export const PublisherSchema = createMongooseSchema(PublisherSchemaDefinition, {
   timestamps: {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
@@ -27,29 +39,6 @@ export const PublisherFiatBalanceSchema = SchemaFactory.createForClass(Publisher
     virtuals: true,
   },
 })
-export class Publisher extends Document<ObjectId> {
-  declare id: string
-
-  @Prop({ required: true })
-  declare sub: string
-
-  @Prop({ required: true })
-  declare title: string
-
-  @Prop({ required: false })
-  declare evmAddress: string
-
-  @Prop({ required: false })
-  declare avatarUrl?: string
-
-  @Prop({ type: PublisherFiatBalanceSchema, required: true, default: () => ({ available: 0, pending: 0 }) })
-  declare fiatBalance: PublisherFiatBalance
-
-  declare createdAt: Date
-  declare updatedAt: Date
-}
-
-export const PublisherSchema: Mongooseschema = SchemaFactory.createForClass(Publisher)
 PublisherSchema.index({ sub: 1 }, { unique: true })
 PublisherSchema.index({ createdAt: 1 })
 PublisherSchema.index({ updatedAt: 1 })

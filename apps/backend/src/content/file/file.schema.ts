@@ -1,11 +1,24 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument, Document, ObjectId, Schema as Mongooseschema, Types } from 'mongoose'
+import type { HydratedDocument } from 'mongoose'
 
-import { Content } from '../content.schema.js'
+import { createMongooseSchema, withMongoose, z } from '../../common/mongoose/zod-mongoose.js'
+import { ContentModelName } from '../content.schema.js'
 
+export const ContentFileSchemaDefinition = z.object({
+  contentId: withMongoose(z.string(), { type: 'ObjectId', ref: ContentModelName }),
+  label: z.string().default(''),
+  filename: z.string(),
+  mimetype: z.string(),
+  bucket: z.string(),
+  key: z.string(),
+})
+export type ContentFile = z.infer<typeof ContentFileSchemaDefinition> & {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
 export type TContentFileDocument = HydratedDocument<ContentFile>
-
-@Schema({
+export const ContentFileModelName = 'ContentFile'
+export const ContentFileSchema = createMongooseSchema(ContentFileSchemaDefinition, {
   timestamps: {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
@@ -18,32 +31,6 @@ export type TContentFileDocument = HydratedDocument<ContentFile>
     virtuals: true,
   },
 })
-export class ContentFile extends Document<ObjectId> {
-  declare id: string
-
-  @Prop({ type: Types.ObjectId, ref: Content.name, required: true })
-  declare contentId: string
-
-  @Prop({ required: true, default: '' })
-  declare label: string
-
-  @Prop({ required: true })
-  declare filename: string
-
-  @Prop({ required: true })
-  declare mimetype: string
-
-  @Prop({ required: true })
-  declare bucket: string
-
-  @Prop({ required: true })
-  declare key: string
-
-  declare createdAt: Date
-  declare updatedAt: Date
-}
-
-export const ContentFileSchema: Mongooseschema = SchemaFactory.createForClass(ContentFile)
 ContentFileSchema.index({ key: 1, bucket: 1 }, { unique: true })
 ContentFileSchema.index({ contentId: 1 })
 ContentFileSchema.index({ createdAt: 1 })
