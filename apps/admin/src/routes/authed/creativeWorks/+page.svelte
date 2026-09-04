@@ -9,7 +9,7 @@
   import UploadProgressModal from '$lib/components/UploadProgressModal.svelte'
   import { notify, ToastType } from '@repo/ui-components'
   import { createWorkFileNames } from '$lib/constants/workFileBuckets'
-  import { appendOriginalExtension, uploadPreviewIfNeeded } from '$lib/helpers/work-upload'
+  import { appendOriginalExtension } from '$lib/helpers/work-upload'
   import { createWorkUploadServices, getLicensePrices, goToFiles, openSuccessModal } from './service/work.helpers'
   import { onDestroy } from 'svelte'
 
@@ -32,8 +32,6 @@
     }))
     const { licenseTypes, licensePrices, agreedToFee } = $workStore.licensing
     const filesName = $workStore.files.works.map((file, index) => appendOriginalExtension(uploadNames[index], file))
-    const previewImage = $workStore.previewImage
-    const previewFileName = previewImage ? appendOriginalExtension('preview', previewImage) : undefined
     const metadata: Record<string, unknown> = {
       type: 'works' as const,
       name: $workStore.title,
@@ -42,7 +40,6 @@
       genre: $workStore.genre,
       authors: $workStore.authors,
       files_name: filesName,
-      preview_file_name: previewFileName,
       licensing: { licenseTypes, licensePrices, agreedToFee },
     }
 
@@ -58,7 +55,7 @@
 
       startUploadingPhase(uploadSession.setProgress, uploads)
 
-      const { contentId } = await uploadService.saveDraftContent({
+      await uploadService.saveDraftContent({
         trpcClient,
         uploads,
         metadata,
@@ -66,18 +63,6 @@
         withWatermark: false,
         onUploadProgress: uploadSession.setProgress,
       })
-
-      try {
-        await uploadPreviewIfNeeded({
-          previewImage: $workStore.previewImage,
-          contentId,
-          uploadService,
-          trpcClient,
-        })
-      } catch (previewError) {
-        console.error('Error uploading preview image:', previewError)
-        notify('Draft saved, but preview upload failed.', ToastType.FAIL)
-      }
 
       notify('Draft saved', ToastType.SUCCESS)
       await goToFiles()
@@ -105,13 +90,6 @@
         tags,
         withWatermark: false,
         onUploadProgress: uploadSession.setProgress,
-      })
-
-      await uploadPreviewIfNeeded({
-        previewImage: $workStore.previewImage,
-        contentId,
-        uploadService,
-        trpcClient,
       })
 
       uploadSession.setProgress({ phase: 'minting', overallProgress: 1 })

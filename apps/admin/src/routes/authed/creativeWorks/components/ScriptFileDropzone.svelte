@@ -106,9 +106,7 @@
       >
         Upload your text file
       </button>
-      <span class="text-[11px] text-center text-[#747474] w-full block">
-        PDF, DOCX, TXT, RTF, EPUB, MD files accepted
-      </span>
+      <span class="text-[11px] text-center text-[#747474] w-full block"> PDF, DOCX, TXT, EPUB, MD files accepted </span>
     {/if}
 
     <input type="file" class="hidden" bind:this={fileInput} onchange={handleFileInput} {accept} multiple />

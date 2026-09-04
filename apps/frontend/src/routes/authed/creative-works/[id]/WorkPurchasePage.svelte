@@ -1,18 +1,56 @@
 <script lang="ts">
   import { canPurchaseLicense, purchaseLicense } from '$lib/content/purchaseLicense'
   import FileImg from '$lib/assets/file_img.svg'
+  import { extractTextFromFile } from '@repo/fe-services'
   import type { WorkDetails } from '@repo/content-types/works'
   import type { WorkItem } from '../works'
+  import { truncateSamplePreview } from './samplePreview'
 
   let { workDetails, similarWorks = [] }: { workDetails: WorkDetails; similarWorks?: WorkItem[] } = $props()
   let selectedLicenseId = $state('')
   let purchasePending = $state(false)
+  let samplePreview = $state('')
+  let sampleLoading = $state(false)
+  let sampleError = $state(false)
   const selectedLicense = $derived(workDetails.licenses.find(({ id }) => id === selectedLicenseId))
   const purchase = $derived({ contentTokenId: workDetails.contentTokenId, name: workDetails.title })
   const purchaseDisabled = $derived(purchasePending || !canPurchaseLicense(purchase, selectedLicense))
 
   $effect(() => {
     if (!selectedLicenseId && workDetails.licenses[0]) selectedLicenseId = workDetails.licenses[0].id
+  })
+
+  $effect(() => {
+    const sample = workDetails.sample
+    let cancelled = false
+    samplePreview = ''
+    sampleError = false
+
+    if (!sample) {
+      sampleLoading = false
+      return
+    }
+
+    sampleLoading = true
+    ;(async () => {
+      try {
+        const response = await fetch(sample.url)
+        if (!response.ok) throw new Error(`Sample request failed with status ${response.status}`)
+        const blob = await response.blob()
+        const file = new File([blob], sample.filename, { type: blob.type })
+        const text = await extractTextFromFile(file)
+        if (!cancelled) samplePreview = truncateSamplePreview(text)
+      } catch (error) {
+        console.error('Failed to load creative work sample:', error)
+        if (!cancelled) sampleError = true
+      } finally {
+        if (!cancelled) sampleLoading = false
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
   })
 
   async function handlePurchase() {
@@ -39,6 +77,25 @@
       {workDetails.description || 'No description provided.'}
     </p>
   </header>
+
+  {#if workDetails.sample}
+    <section class="mt-10" aria-labelledby="sample-heading" aria-busy={sampleLoading}>
+      <h2 id="sample-heading" class="font-semibold text-dark">Sample</h2>
+      {#if sampleLoading}
+        <p class="mt-3 text-sm text-[#747474]">Loading sample…</p>
+      {:else if samplePreview}
+        <p class="mt-3 whitespace-pre-line text-base leading-7 text-[#72717b]">{samplePreview}</p>
+      {:else if sampleError}
+        <p class="mt-3 text-sm text-[#747474]">The sample preview could not be displayed.</p>
+      {/if}
+      <a
+        class="mt-4 inline-block text-sm font-medium text-primary hover:underline"
+        href={workDetails.sample.url}
+        target="_blank"
+        rel="noreferrer">Read full sample ↗</a
+      >
+    </section>
+  {/if}
 
   <div class="mt-10 grid gap-12 lg:grid-cols-[400px_minmax(0,515px)] lg:gap-9">
     <div class="min-w-0">

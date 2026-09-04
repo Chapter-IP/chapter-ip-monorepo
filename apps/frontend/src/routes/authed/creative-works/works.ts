@@ -82,11 +82,10 @@ function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.map((item) => String(item).trim()).filter(Boolean) : []
 }
 
-export function toWorkItems(contentItems: ContentItem[], contractAddress: string): WorkItem[] {
+export function toWorkItems(contentItems: ContentItem[], _contractAddress: string): WorkItem[] {
   return contentItems.flatMap((item) => {
     const metadata = item.metadata
     if (metadata?.type !== 'works') return []
-    const preview = metadata.preview_file_name?.trim()
     return [
       {
         id: item.id,
@@ -95,7 +94,7 @@ export function toWorkItems(contentItems: ContentItem[], contractAddress: string
         description: metadata.description?.trim() ?? '',
         authors: stringArray(metadata.authors),
         genres: stringArray(metadata.genre),
-        imageUrl: preview ? getWorkPreviewUrl(contractAddress, item.id, preview) : WORK_PLACEHOLDER_URL,
+        imageUrl: WORK_PLACEHOLDER_URL,
         metadata,
       },
     ]

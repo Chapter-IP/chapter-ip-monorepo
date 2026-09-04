@@ -1,6 +1,6 @@
 <script lang="ts">
   import { WORK_FILE_BUCKETS, createWorkFileNames } from '$lib/constants/workFileBuckets'
-  import { appendOriginalExtension, uploadPreviewIfNeeded } from '$lib/helpers/work-upload'
+  import { appendOriginalExtension } from '$lib/helpers/work-upload'
   import { afterNavigate, beforeNavigate } from '$app/navigation'
   import { workStore } from '../stores/work-store'
   import UploadStepHeader from '../components/UploadStepHeader.svelte'
@@ -19,14 +19,11 @@
 
   let { data } = $props()
 
-  let initialPreviewFileIds = $state<string[]>([])
-
   let currentStep = $state(1)
   const { uploadService, uploadSessions } = createWorkUploadServices()
 
   onMount(() => {
-    initialPreviewFileIds = data.existingPreviewFileIds ?? []
-    workStore.hydrateFromContent(data, data.existingFiles, data.existingPreviewUrl)
+    workStore.hydrateFromContent(data, data.existingFiles)
   })
   onDestroy(() => {
     uploadSessions.invalidate()
@@ -37,12 +34,6 @@
   afterNavigate(() => workStore.setLoading(false))
 
   const buildWorkMetadata = (uploadNames: string[]) => {
-    const previewImage = $workStore.previewImage
-    const previewFileName = previewImage
-      ? appendOriginalExtension('preview', previewImage)
-      : $workStore.existingPreviewUrl
-        ? (data.metadata?.preview_file_name as string | undefined)
-        : undefined
     const existingNames = $workStore.existingFiles.works.map((file) => file.name)
     const newNames = $workStore.files.works.map((file, index) => appendOriginalExtension(uploadNames[index], file))
     const filesName = [...existingNames, ...newNames]
@@ -54,7 +45,7 @@
       genre: $workStore.genre,
       authors: $workStore.authors,
       files_name: filesName,
-      preview_file_name: previewFileName,
+      sample_file_name: data.metadata?.sample_file_name as string | undefined,
       licensing: $workStore.licensing,
     }
   }
@@ -76,21 +67,6 @@
 
   const getCurrentFiles = () =>
     (data.allExistingFiles?.works ?? data.existingFiles?.works ?? data.files ?? []) as ExistingContentFile[]
-
-  const removeOldPreviewFiles = async (trpcClient: ReturnType<typeof uploadService.createTrpcClient>) => {
-    const shouldRemove =
-      $workStore.previewImage !== null || ($workStore.existingPreviewUrl === null && initialPreviewFileIds.length > 0)
-
-    if (!shouldRemove) return
-
-    for (const fileId of initialPreviewFileIds) {
-      try {
-        await trpcClient.contents.removeContentFile.mutate({ fileId })
-      } catch (error) {
-        console.error(`Failed to remove preview file ${fileId}:`, error)
-      }
-    }
-  }
 
   const buildWorkPayload = () => {
     const uploadNames = buildUploadNames()
@@ -136,40 +112,16 @@
       onUploadProgress: uploadSession.setProgress,
     })
 
-    await removeOldPreviewFiles(trpcClient)
-
-    let previewUploadFailed = false
-    try {
-      await uploadPreviewIfNeeded({
-        previewImage: $workStore.previewImage,
-        contentId,
-        uploadService,
-        trpcClient,
-      })
-    } catch (previewError) {
-      previewUploadFailed = true
-      console.error('Error uploading preview image:', previewError)
-      notify('Preview upload failed.', ToastType.FAIL)
-    }
-
-    const metadataToSave =
-      previewUploadFailed && $workStore.previewImage
-        ? {
-            ...metadata,
-            preview_file_name: data.metadata?.preview_file_name as string | undefined,
-          }
-        : metadata
-
     await uploadService.updateContentMetadata({
       contentId,
       trpcClient,
-      metadata: metadataToSave,
+      metadata,
       tags,
       tokenId,
       status,
     })
 
-    return { contentId, keys, metadata: metadataToSave, trpcClient, tags }
+    return { contentId, keys, metadata, trpcClient, tags }
   }
 
   const withWorkLoading = async (

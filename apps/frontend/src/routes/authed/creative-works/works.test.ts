@@ -24,7 +24,6 @@ describe('creative work data helpers', () => {
               description: 'A thriller.',
               authors: [' Chadwick Bowser ', ''],
               genre: ['Thriller'],
-              preview_file_name: 'preview.png',
             },
           },
           { id: 'location-1', metadata: { type: 'location' } },
@@ -38,7 +37,7 @@ describe('creative work data helpers', () => {
         contentType: 'Script',
         authors: ['Chadwick Bowser'],
         genres: ['Thriller'],
-        imageUrl: getWorkPreviewUrl(CONTRACT, 'work-1', 'preview.png'),
+        imageUrl: WORK_PLACEHOLDER_URL,
       },
     ])
   })

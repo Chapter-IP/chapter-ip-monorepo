@@ -12,12 +12,7 @@ export const load: PageLoad = async ({ params, parent }) => {
   const content = await trpcClient.contents.getContentById.query({
     id: params.id,
   })
-  const {
-    files: existingFiles,
-    allFiles: allExistingFiles,
-    previewUrl: existingPreviewUrl,
-    previewFileIds: existingPreviewFileIds,
-  } = await loadExistingFiles(content, trpcClient)
+  const { files: existingFiles, allFiles: allExistingFiles } = await loadExistingFiles(content, trpcClient)
 
-  return { ...content, existingFiles, allExistingFiles, existingPreviewUrl, existingPreviewFileIds }
+  return { ...content, existingFiles, allExistingFiles }
 }

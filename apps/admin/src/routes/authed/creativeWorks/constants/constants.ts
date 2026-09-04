@@ -23,4 +23,4 @@ export const GENRE_OPTIONS = [
   'Young Adult',
 ] as const
 
-export const SCRIPT_FILE_EXTENSIONS = ['pdf', 'docx', 'txt', 'rtf', 'epub', 'md'] as const
+export const SCRIPT_FILE_EXTENSIONS = ['pdf', 'docx', 'txt', 'epub', 'md'] as const

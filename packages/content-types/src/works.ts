@@ -16,7 +16,7 @@ export type WorkMetadata = {
   genre?: string[]
   authors?: string[]
   files_name?: string[]
-  preview_file_name?: string
+  sample_file_name?: string
   licensing: WorkLicensingMetadata
 }
 
@@ -62,6 +62,10 @@ export type WorkDetails = {
   genres: string[]
   licenses: WorkLicense[]
   image: WorkImage
+  sample?: {
+    filename: string
+    url: string
+  }
   files: string[]
 }
 
