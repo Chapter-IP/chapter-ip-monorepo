@@ -1,6 +1,5 @@
-/// <reference types="jest" />
-
 import { model } from 'mongoose'
+import { describe, expect, it } from 'vitest'
 
 import { CashoutSchema, CashoutStatus } from '../../cashout/cashout.schema.js'
 import { BlockedLicenseSchema } from '../license/blocked-license/blocked-license.schema.js'
