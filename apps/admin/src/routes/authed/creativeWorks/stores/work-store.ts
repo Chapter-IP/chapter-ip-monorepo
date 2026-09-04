@@ -29,8 +29,6 @@ function createWorkStore() {
     files: {
       works: [],
     },
-    previewImage: null,
-    existingPreviewUrl: null,
     title: '',
     contentType: '',
     description: '',
@@ -105,8 +103,6 @@ function createWorkStore() {
     removeAuthor(index: number) {
       update((s) => ({ ...s, authors: s.authors.filter((_, i) => i !== index) }))
     },
-    setPreviewImage: (file: File | null) => update((s) => ({ ...s, previewImage: file })),
-    setExistingPreviewUrl: (url: string | null) => update((s) => ({ ...s, existingPreviewUrl: url })),
     setLicenseTypeEnabled: (id: string, value: boolean) =>
       update((s) => {
         const nextLicensing = {
@@ -135,7 +131,6 @@ function createWorkStore() {
     hydrateFromContent(
       content: { metadata?: WorkMetadataInput; tags?: string[] },
       existingFiles: ExistingFilesByBucket = emptyExistingFiles(),
-      existingPreviewUrl: string | null = null,
     ) {
       const metadata = (content.metadata ?? {}) as Record<string, unknown>
       const title = (metadata.name as string) ?? ''
@@ -160,7 +155,6 @@ function createWorkStore() {
         },
         confirmations: { rightsConfirmed: true },
         existingFiles,
-        existingPreviewUrl,
         isEditing: Object.values(existingFiles).some((files) => files.length > 0),
       }))
     },
@@ -169,8 +163,6 @@ function createWorkStore() {
         files: {
           works: [],
         },
-        previewImage: null,
-        existingPreviewUrl: null,
         title: '',
         contentType: '',
         description: '',

@@ -7,8 +7,6 @@ export type WorkState = {
   files: {
     works: File[]
   }
-  previewImage: File | null
-  existingPreviewUrl: string | null
   title: string
   contentType: string
   description: string

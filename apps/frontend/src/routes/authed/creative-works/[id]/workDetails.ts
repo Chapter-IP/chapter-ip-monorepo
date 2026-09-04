@@ -14,7 +14,7 @@ export function normalizeWork(content: WorkContent, contractAddress: string): Wo
   const metadata = content.metadata
   if (metadata?.type !== 'works') return null
   const title = trimString(metadata.name) || 'Untitled work'
-  const preview = trimString(metadata.preview_file_name)
+  const sample = trimString(metadata.sample_file_name)
 
   return {
     id: content.id,
@@ -30,9 +30,15 @@ export function normalizeWork(content: WorkContent, contractAddress: string): Wo
       allowedIds: ['single-use'],
     }),
     image: {
-      src: preview ? getWorkPreviewUrl(contractAddress, content.id, preview) : WORK_PLACEHOLDER_URL,
+      src: WORK_PLACEHOLDER_URL,
       alt: title,
     },
+    sample: sample
+      ? {
+          filename: sample,
+          url: getWorkPreviewUrl(contractAddress, content.id, sample),
+        }
+      : undefined,
     files: stringArray(metadata.files_name),
   }
 }
