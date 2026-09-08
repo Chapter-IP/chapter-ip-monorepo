@@ -9,7 +9,7 @@
   const isEnabled = $derived($store.licensing.licenseTypes[license.id])
   const isPriceTooLow = (value: string) => value !== '' && Number(value) < MIN_PRICE
 
-  const [labelTitle, labelSubtitle] = $derived(license.label.split(' - '))
+  const [labelTitle, labelSubtitle = ''] = $derived(license.label.split(' - '))
 </script>
 
 <div class="flex items-start gap-4">

@@ -15,7 +15,7 @@ const stripExtension = (name: string) => {
   return lastDot === -1 ? name : name.slice(0, lastDot)
 }
 
-const matchesFileName = (label: string, allowedFileNames: Set<string>) => {
+export const matchesFileName = (label: string, allowedFileNames: Set<string>) => {
   if (allowedFileNames.has(label)) return true
   const labelBase = stripExtension(label)
   for (const allowed of allowedFileNames) {

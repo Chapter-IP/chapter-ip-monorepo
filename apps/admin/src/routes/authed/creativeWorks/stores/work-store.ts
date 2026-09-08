@@ -6,6 +6,7 @@ import {
   type PreloadedExistingFiles,
   isPreviewBucket,
   loadExistingFiles as loadFilesFromContent,
+  matchesFileName,
 } from '$lib/stores/file-preload'
 import type { ExistingFile, ExistingFilesByBucket as ExistingFilesByBucketGeneric } from '$lib/types/files'
 import type { WorkState } from '../types/work-store.types'
@@ -19,15 +20,6 @@ const emptyExistingFiles = (): ExistingFilesByBucket => ({
   'preview-files': [],
 })
 
-const matchesPreviewFileName = (label: string, allowedNames: Set<string>) => {
-  if (allowedNames.has(label)) return true
-  const labelBase = label.replace(/\.[^.]+$/, '')
-  for (const allowed of allowedNames) {
-    if (allowed === labelBase || allowed.replace(/\.[^.]+$/, '') === labelBase) return true
-  }
-  return false
-}
-
 const loadPreviewFiles = async (
   content: { id: string; metadata?: WorkMetadataInput },
   trpcClient: Parameters<typeof loadFilesFromContent>[1],
@@ -38,7 +30,7 @@ const loadPreviewFiles = async (
   if (!previewNames || !content.id) return []
   const { files } = await trpcClient.contents.getContentAllFilesLink.query({ contentId: content.id })
   return (files ?? [])
-    .filter((file) => isPreviewBucket(file.bucket) && matchesPreviewFileName(file.label, previewNames))
+    .filter((file) => isPreviewBucket(file.bucket) && matchesFileName(file.label, previewNames))
     .map((file) => ({ id: file.id, name: file.label, url: file.url, key: file.key }))
 }
 
