@@ -372,6 +372,43 @@ export default class UploadService {
     })
   }
 
+  async uploadPreviewFiles({
+    contentId,
+    uploads,
+    trpcClient,
+  }: {
+    contentId: string
+    uploads: NamedUpload[]
+    trpcClient: TRPCClient<AppRouter>
+  }): Promise<{ keys: string[] }> {
+    if (uploads.length === 0) return { keys: [] }
+    const keys: string[] = []
+    for (const { file, name } of uploads) {
+      const ext = file.name.split('.').pop() || ''
+      const registeredName = ext ? `${name}.${ext}` : name
+
+      const { url, key } = await trpcClient.contents.createContentFileUploadUrl.mutate({
+        contentId,
+        mimetype: file.type,
+        bucket: 'preview',
+        filename: name,
+        extension: ext,
+      })
+      keys.push(key)
+      await uploadFileToBucket(file, url)
+      await registerContentFile({
+        contentId,
+        key,
+        bucket: 'preview',
+        filename: registeredName,
+        mimetype: file.type,
+        trpcClient,
+      })
+    }
+
+    return { keys }
+  }
+
   async uploadPreviewImage({
     contentId,
     file,

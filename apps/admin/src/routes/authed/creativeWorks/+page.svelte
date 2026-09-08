@@ -30,8 +30,16 @@
       file,
       name: uploadNames[index],
     }))
+    const previewUploadNames = createWorkFileNames('preview-files', $workStore.files['preview-files'].length)
+    const previewUploads = $workStore.files['preview-files'].map((file, index) => ({
+      file,
+      name: previewUploadNames[index],
+    }))
     const { licenseTypes, licensePrices, agreedToFee } = $workStore.licensing
     const filesName = $workStore.files.works.map((file, index) => appendOriginalExtension(uploadNames[index], file))
+    const previewFilesName = $workStore.files['preview-files'].map((file, index) =>
+      appendOriginalExtension(previewUploadNames[index], file),
+    )
     const previewImage = $workStore.previewImage
     const previewFileName = previewImage ? appendOriginalExtension('preview', previewImage) : undefined
     const metadata: Record<string, unknown> = {
@@ -43,10 +51,11 @@
       authors: $workStore.authors,
       files_name: filesName,
       preview_file_name: previewFileName,
+      preview_files_name: previewFilesName.length > 0 ? previewFilesName : undefined,
       licensing: { licenseTypes, licensePrices, agreedToFee },
     }
 
-    return { uploads, metadata, tags: [] as string[] }
+    return { uploads, previewUploads, metadata, tags: [] as string[] }
   }
 
   const onSaveDraftClick = async () => {
@@ -54,7 +63,7 @@
     try {
       workStore.setLoading(true)
       const trpcClient = uploadService.createTrpcClient()
-      const { uploads, metadata, tags } = buildWorkPayload()
+      const { uploads, previewUploads, metadata, tags } = buildWorkPayload()
 
       startUploadingPhase(uploadSession.setProgress, uploads)
 
@@ -79,6 +88,12 @@
         notify('Draft saved, but preview upload failed.', ToastType.FAIL)
       }
 
+      await uploadService.uploadPreviewFiles({
+        uploads: previewUploads,
+        contentId,
+        trpcClient,
+      })
+
       notify('Draft saved', ToastType.SUCCESS)
       await goToFiles()
     } catch (error) {
@@ -94,7 +109,7 @@
     try {
       workStore.setLoading(true)
       const trpcClient = uploadService.createTrpcClient()
-      const { uploads, metadata, tags } = buildWorkPayload()
+      const { uploads, previewUploads, metadata, tags } = buildWorkPayload()
 
       startUploadingPhase(uploadSession.setProgress, uploads)
 
@@ -111,6 +126,12 @@
         previewImage: $workStore.previewImage,
         contentId,
         uploadService,
+        trpcClient,
+      })
+
+      await uploadService.uploadPreviewFiles({
+        uploads: previewUploads,
+        contentId,
         trpcClient,
       })
 

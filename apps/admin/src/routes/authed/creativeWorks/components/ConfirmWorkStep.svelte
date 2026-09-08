@@ -112,6 +112,21 @@
       </div>
     {/if}
 
+    <!-- Preview Files -->
+    {#if $workStore.existingFiles['preview-files'].length > 0 || $workStore.files['preview-files'].length > 0}
+      <div class="mb-8">
+        <span class="text-base font-semibold text-dark mb-1 w-full block">Preview Files</span>
+        <div class="flex flex-wrap gap-2">
+          {#each $workStore.existingFiles['preview-files'] as file (file.id)}
+            <WorkFileChip name={file.name} />
+          {/each}
+          {#each $workStore.files['preview-files'] as file, i (file.name + i)}
+            <WorkFileChip name={file.name} />
+          {/each}
+        </div>
+      </div>
+    {/if}
+
     <!-- Licensing Types -->
     <div class="mb-6">
       <div class="flex justify-end mb-4">

@@ -5,7 +5,7 @@ import { ContentModelName } from '../content.schema.js'
 
 export const PurchaseHistoryItemSchemaDefinition = z.object({
   buyerAddress: z.string().trim().toLowerCase(),
-  contentId: withMongoose(z.string(), { type: 'ObjectId', ref: ContentModelName }),
+  contentId: withMongoose(z.coerce.string(), { type: 'ObjectId', ref: ContentModelName }),
   licenseType: z.number(),
   priceFiat: z.string().optional(),
   txHash: z.string(),

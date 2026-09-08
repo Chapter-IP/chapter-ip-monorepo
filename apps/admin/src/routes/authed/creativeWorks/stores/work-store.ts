@@ -3,10 +3,11 @@ import type { UploadProgressEvent } from '$lib/upload/upload.service'
 import { type WorkFileKey } from '$lib/constants/workFileBuckets'
 import type { WorkMetadataInput, WorkLicensingMetadata } from '@repo/content-types/works'
 import {
-  type ExistingFilesByBucket as ExistingFilesByBucketGeneric,
   type PreloadedExistingFiles,
+  isPreviewBucket,
   loadExistingFiles as loadFilesFromContent,
 } from '$lib/stores/file-preload'
+import type { ExistingFile, ExistingFilesByBucket as ExistingFilesByBucketGeneric } from '$lib/types/files'
 import type { WorkState } from '../types/work-store.types'
 
 export { isPreviewBucket } from '$lib/stores/file-preload'
@@ -15,19 +16,46 @@ type ExistingFilesByBucket = ExistingFilesByBucketGeneric<WorkFileKey>
 
 const emptyExistingFiles = (): ExistingFilesByBucket => ({
   works: [],
+  'preview-files': [],
 })
+
+const matchesPreviewFileName = (label: string, allowedNames: Set<string>) => {
+  if (allowedNames.has(label)) return true
+  const labelBase = label.replace(/\.[^.]+$/, '')
+  for (const allowed of allowedNames) {
+    if (allowed === labelBase || allowed.replace(/\.[^.]+$/, '') === labelBase) return true
+  }
+  return false
+}
+
+const loadPreviewFiles = async (
+  content: { id: string; metadata?: WorkMetadataInput },
+  trpcClient: Parameters<typeof loadFilesFromContent>[1],
+): Promise<ExistingFile[]> => {
+  const previewNames = Array.isArray(content.metadata?.preview_files_name)
+    ? new Set(content.metadata.preview_files_name as string[])
+    : null
+  if (!previewNames || !content.id) return []
+  const { files } = await trpcClient.contents.getContentAllFilesLink.query({ contentId: content.id })
+  return (files ?? [])
+    .filter((file) => isPreviewBucket(file.bucket) && matchesPreviewFileName(file.label, previewNames))
+    .map((file) => ({ id: file.id, name: file.label, url: file.url, key: file.key }))
+}
 
 export async function loadExistingFiles(
   content: { id: string; metadata?: WorkMetadataInput },
   trpcClient: Parameters<typeof loadFilesFromContent>[1],
 ): Promise<PreloadedExistingFiles<WorkFileKey>> {
-  return loadFilesFromContent(content, trpcClient, 'works', emptyExistingFiles)
+  const result = await loadFilesFromContent<WorkFileKey>(content, trpcClient, 'works', emptyExistingFiles)
+  const previewFiles = await loadPreviewFiles(content, trpcClient)
+  return { ...result, files: { ...result.files, 'preview-files': previewFiles } }
 }
 
 function createWorkStore() {
   const { subscribe, set, update } = writable<WorkState>({
     files: {
       works: [],
+      'preview-files': [],
     },
     previewImage: null,
     existingPreviewUrl: null,
@@ -168,6 +196,7 @@ function createWorkStore() {
       set({
         files: {
           works: [],
+          'preview-files': [],
         },
         previewImage: null,
         existingPreviewUrl: null,

@@ -36,7 +36,7 @@
   beforeNavigate(() => workStore.setLoading(true))
   afterNavigate(() => workStore.setLoading(false))
 
-  const buildWorkMetadata = (uploadNames: string[]) => {
+  const buildWorkMetadata = (uploadNames: string[], previewUploadNames: string[]) => {
     const previewImage = $workStore.previewImage
     const previewFileName = previewImage
       ? appendOriginalExtension('preview', previewImage)
@@ -46,6 +46,11 @@
     const existingNames = $workStore.existingFiles.works.map((file) => file.name)
     const newNames = $workStore.files.works.map((file, index) => appendOriginalExtension(uploadNames[index], file))
     const filesName = [...existingNames, ...newNames]
+    const existingPreviewNames = $workStore.existingFiles['preview-files'].map((file) => file.name)
+    const newPreviewNames = $workStore.files['preview-files'].map((file, index) =>
+      appendOriginalExtension(previewUploadNames[index], file),
+    )
+    const previewFilesName = [...existingPreviewNames, ...newPreviewNames]
     return {
       type: 'works' as const,
       name: $workStore.title,
@@ -55,6 +60,7 @@
       authors: $workStore.authors,
       files_name: filesName,
       preview_file_name: previewFileName,
+      preview_files_name: previewFilesName.length > 0 ? previewFilesName : undefined,
       licensing: $workStore.licensing,
     }
   }
@@ -83,7 +89,10 @@
 
     if (!shouldRemove) return
 
+    const keptPreviewFileIds = new Set($workStore.existingFiles['preview-files'].map((file) => file.id))
+
     for (const fileId of initialPreviewFileIds) {
+      if (keptPreviewFileIds.has(fileId)) continue
       try {
         await trpcClient.contents.removeContentFile.mutate({ fileId })
       } catch (error) {
@@ -94,11 +103,21 @@
 
   const buildWorkPayload = () => {
     const uploadNames = buildUploadNames()
+    const previewUploadNames = createWorkFileNames(
+      'preview-files',
+      $workStore.files['preview-files'].length,
+      $workStore.existingFiles['preview-files'].map((file) => file.name),
+    )
+    const previewUploads = $workStore.files['preview-files'].map((file, index) => ({
+      file,
+      name: previewUploadNames[index],
+    }))
 
     return {
       keptFileIds: getKeptFileIds(),
-      metadata: buildWorkMetadata(uploadNames),
+      metadata: buildWorkMetadata(uploadNames, previewUploadNames),
       uploads: buildNamedUploads(uploadNames),
+      previewUploads,
       tags: (data.tags ?? []) as string[],
     }
   }
@@ -123,7 +142,7 @@
   ) => {
     const trpcClient = uploadService.createTrpcClient()
     const contentId = data.id
-    const { keptFileIds, metadata, uploads, tags } = buildWorkPayload()
+    const { keptFileIds, metadata, uploads, previewUploads, tags } = buildWorkPayload()
 
     startUploadingPhase(uploadSession.setProgress, uploads, false)
 
@@ -151,6 +170,12 @@
       console.error('Error uploading preview image:', previewError)
       notify('Preview upload failed.', ToastType.FAIL)
     }
+
+    await uploadService.uploadPreviewFiles({
+      uploads: previewUploads,
+      contentId,
+      trpcClient,
+    })
 
     const metadataToSave =
       previewUploadFailed && $workStore.previewImage

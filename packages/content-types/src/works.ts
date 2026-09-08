@@ -17,6 +17,7 @@ export type WorkMetadata = {
   authors?: string[]
   files_name?: string[]
   preview_file_name?: string
+  preview_files_name?: string[]
   licensing: WorkLicensingMetadata
 }
 

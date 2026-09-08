@@ -4,7 +4,7 @@
   import ChevronDownIcon from '$lib/components/icons/ChevronDownIcon.svelte'
   import GenreField from './GenreField.svelte'
   import AuthorsField from './AuthorsField.svelte'
-  import ScriptFileDropzone from './ScriptFileDropzone.svelte'
+  import WorkFileDropzone from './WorkFileDropzone.svelte'
 
   let {
     currentStep = $bindable(),
@@ -25,6 +25,8 @@
       $workStore.contentType &&
       (!isFileContentType ||
         (($workStore.files.works.length > 0 || ($workStore.existingFiles.works ?? []).length > 0) &&
+          ($workStore.files['preview-files'].length > 0 ||
+            ($workStore.existingFiles['preview-files'] ?? []).length > 0) &&
           $workStore.confirmations.rightsConfirmed)),
     ),
   )
@@ -107,11 +109,36 @@
         onRemove={(i) => workStore.removeAuthor(i)}
       />
 
+      <!-- Preview Files -->
+      <WorkFileDropzone bucket="preview-files" title="Your Sample content" required />
       <!-- Your Text File -->
-      <ScriptFileDropzone
-        confirmed={$workStore.confirmations.rightsConfirmed}
-        onToggleConfirmed={() => workStore.setRightsConfirmed(!$workStore.confirmations.rightsConfirmed)}
-      />
+      <WorkFileDropzone bucket="works" title="Your Creative Work" required />
+
+      <!-- Rights Confirmation -->
+      <label class="flex items-start gap-3 cursor-pointer">
+        <button
+          type="button"
+          onclick={() => workStore.setRightsConfirmed(!$workStore.confirmations.rightsConfirmed)}
+          class="w-4 h-4 shrink-0 rounded-[3px] border flex items-center justify-center transition-colors mt-0.5
+            {$workStore.confirmations.rightsConfirmed ? 'bg-primary border-primary' : 'bg-[#eae6e2] border-[#ddd]'}"
+        >
+          {#if $workStore.confirmations.rightsConfirmed}
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+              <path
+                d="M1 4L3.5 6.5L9 1"
+                stroke="white"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          {/if}
+        </button>
+        <span class="text-xs font-medium leading-4.5 text-[#747474]">
+          <span class="text-[#ff0000]">*</span> By uploading this content, you confirm that you are the author or rights holder
+          and have the legal right to license it.
+        </span>
+      </label>
     {/if}
 
     <div class="flex justify-end gap-1.5 mt-12.5">
