@@ -231,7 +231,7 @@
     { contentId, metadata, trpcClient, tags }: Awaited<ReturnType<typeof saveCurrentContent>>,
   ) => {
     uploadSession.setProgress({ phase: 'minting', overallProgress: 1 })
-    const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing.licensePrices))
+    const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing))
 
     uploadSession.setProgress({ phase: 'finalizing', overallProgress: 1 })
     await uploadService.finalizeContent({
@@ -271,7 +271,7 @@
           uploadSession.setProgress({ phase: 'updating-prices', overallProgress: 1 })
           await uploadService.updateContentPrices({
             tokenId,
-            prices: getLicensePrices($workStore.licensing.licensePrices),
+            prices: getLicensePrices($workStore.licensing),
           })
         }
 

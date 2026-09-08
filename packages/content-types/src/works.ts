@@ -34,11 +34,14 @@ export type WorkContent = Content<WorkMetadataInput> & {
 }
 
 export const WORK_CONTENT_TYPES = ['Script', 'Lyrics'] as const
-export const LICENSE_TYPE_OPTIONS = [{ value: 'single-use', label: 'Single-use license' }] as const
+export const LICENSE_TYPE_OPTIONS = [
+  { value: 'single-use', label: 'One-Time License - Single use' },
+  { value: 'perpetual', label: 'Lifetime License - Perpetual use' },
+] as const
 
 export const WORK_LICENSE_DESCRIPTIONS: Record<string, string> = {
-  'single-use':
-    'One approved use across a single project. The buyer cannot reuse the work for a separate project, extend the run, or sublicense without purchasing a new license.',
+  'single-use': 'A single use at a flat price.',
+  perpetual: 'Unlimited use, forever, at a premium price.',
 }
 
 export type WorkLicense = {

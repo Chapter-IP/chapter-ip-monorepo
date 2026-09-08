@@ -8,6 +8,8 @@
 
   const isEnabled = $derived($store.licensing.licenseTypes[license.id])
   const isPriceTooLow = (value: string) => value !== '' && Number(value) < MIN_PRICE
+
+  const [labelTitle, labelSubtitle] = $derived(license.label.split(' - '))
 </script>
 
 <div class="flex items-start gap-4">
@@ -15,7 +17,14 @@
 
   <div class="flex flex-col w-full">
     <div class="flex items-start justify-between gap-3">
-      <p class="text-base font-semibold text-[#202225]">{license.label}</p>
+      <div>
+        <p class="text-base font-semibold text-[#202225]">
+          {labelTitle} - {labelSubtitle}
+        </p>
+        <p class="text-base font-medium text-[#747474] max-w-150">
+          {license.description}
+        </p>
+      </div>
 
       <div
         class="flex flex-col items-end shrink-0 text-[#30364b] transition-opacity"
@@ -49,6 +58,5 @@
         {/if}
       </div>
     </div>
-    <p class="text-base font-medium text-[#747474] max-w-150">{license.description}</p>
   </div>
 </div>

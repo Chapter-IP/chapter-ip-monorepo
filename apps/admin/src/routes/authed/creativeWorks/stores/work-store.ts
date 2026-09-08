@@ -67,9 +67,11 @@ function createWorkStore() {
     licensing: {
       licenseTypes: {
         'single-use': true,
+        perpetual: false,
       },
       licensePrices: {
         'single-use': '',
+        perpetual: '',
       },
       agreedToFee: false,
     },
@@ -208,9 +210,11 @@ function createWorkStore() {
         licensing: {
           licenseTypes: {
             'single-use': true,
+            perpetual: false,
           },
           licensePrices: {
             'single-use': '',
+            perpetual: '',
           },
           agreedToFee: false,
         },

@@ -136,7 +136,7 @@
       })
 
       uploadSession.setProgress({ phase: 'minting', overallProgress: 1 })
-      const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing.licensePrices))
+      const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing))
       uploadSession.setProgress({ phase: 'finalizing', overallProgress: 1 })
       await uploadService.finalizeContent({ trpcClient, contentId, metadata, tokenId, tags })
 
