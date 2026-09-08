@@ -35,7 +35,6 @@
       file,
       name: previewUploadNames[index],
     }))
-    const { licenseTypes, licensePrices, agreedToFee } = $workStore.licensing
     const filesName = $workStore.files.works.map((file, index) => appendOriginalExtension(uploadNames[index], file))
     const previewFilesName = $workStore.files['preview-files'].map((file, index) =>
       appendOriginalExtension(previewUploadNames[index], file),
@@ -52,7 +51,7 @@
       files_name: filesName,
       preview_file_name: previewFileName,
       preview_files_name: previewFilesName.length > 0 ? previewFilesName : undefined,
-      licensing: { licenseTypes, licensePrices, agreedToFee },
+      licensing: $workStore.licensing,
     }
 
     return { uploads, previewUploads, metadata, tags: [] as string[] }

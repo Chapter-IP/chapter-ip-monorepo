@@ -1,6 +1,6 @@
 <script lang="ts">
   import { workStore } from '../stores/work-store'
-  import { LICENSE_TYPES } from '../constants/constants'
+  import { ADDITIONAL_TERMS, LICENSE_TYPES, PERMITTED_USES } from '../constants/constants'
   import { modals, type ModalProps } from 'svelte-modals'
   import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
   import WorkFileChip from './WorkFileChip.svelte'
@@ -16,6 +16,8 @@
   } = $props()
 
   const enabledLicenseTypes = $derived(LICENSE_TYPES.filter((license) => $workStore.licensing.licenseTypes[license.id]))
+  const enabledPermittedUses = $derived(PERMITTED_USES.filter((use) => $workStore.licensing.permittedUses[use.id]))
+  const enabledAdditionalTerms = $derived(ADDITIONAL_TERMS.filter((term) => $workStore.licensing[term.key]))
   const workFileCount = $derived($workStore.existingFiles.works.length + $workStore.files.works.length)
   const onSubmit = () => {
     modals.open<ModalProps & TConfirmModalProps>(ConfirmModal, {
@@ -168,6 +170,30 @@
         {/each}
       </div>
     </div>
+
+    <!-- Permitted uses -->
+    {#if enabledPermittedUses.length > 0}
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold text-dark font-heading mb-4">Permitted uses</h2>
+        <div class="flex flex-col">
+          {#each enabledPermittedUses as use (use.id)}
+            <p class="text-[#747474] text-sm leading-relaxed pl-6">{use.label}</p>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Additional information -->
+    {#if enabledAdditionalTerms.length > 0}
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold text-dark font-heading mb-4">Additional information</h2>
+        <div class="flex flex-col">
+          {#each enabledAdditionalTerms as term (term.key)}
+            <p class="text-[#747474] text-sm leading-relaxed pl-6">{term.label}</p>
+          {/each}
+        </div>
+      </div>
+    {/if}
   </div>
 </div>
 

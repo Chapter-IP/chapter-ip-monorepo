@@ -5,6 +5,10 @@ export type { ContentFile } from './content'
 export type WorkLicensingMetadata = {
   licenseTypes: Record<string, boolean>
   licensePrices: Record<string, string>
+  permittedUses: Record<string, boolean>
+  allowAiTraining: boolean
+  attributionRequired: boolean
+  canBuyerModify: boolean
   agreedToFee: boolean
 }
 
@@ -43,6 +47,14 @@ export const WORK_LICENSE_DESCRIPTIONS: Record<string, string> = {
   'single-use': 'A single use at a flat price.',
   perpetual: 'Unlimited use, forever, at a premium price.',
 }
+
+export const PERMITTED_USE_OPTIONS = [
+  { value: 'print', label: 'Print' },
+  { value: 'commercial', label: 'Commercial' },
+  { value: 'digital', label: 'Digital' },
+  { value: 'ai', label: 'AI' },
+  { value: 'film-tv', label: 'TV/Film' },
+] as const
 
 export type WorkLicense = {
   id: string

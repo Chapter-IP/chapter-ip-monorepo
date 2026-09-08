@@ -73,6 +73,10 @@ function createWorkStore() {
         'single-use': '',
         perpetual: '',
       },
+      permittedUses: {},
+      allowAiTraining: false,
+      attributionRequired: false,
+      canBuyerModify: false,
       agreedToFee: false,
     },
     confirmations: {
@@ -156,6 +160,13 @@ function createWorkStore() {
         return { ...s, licensing: nextLicensing }
       }),
     setAgreedToFee: (value: boolean) => update((s) => ({ ...s, licensing: { ...s.licensing, agreedToFee: value } })),
+    setPermittedUse: (id: string, value: boolean) =>
+      update((s) => ({
+        ...s,
+        licensing: { ...s.licensing, permittedUses: { ...s.licensing.permittedUses, [id]: value } },
+      })),
+    setAdditionalInfo: (key: 'allowAiTraining' | 'attributionRequired' | 'canBuyerModify', value: boolean) =>
+      update((s) => ({ ...s, licensing: { ...s.licensing, [key]: value } })),
     setRightsConfirmed: (value: boolean) =>
       update((s) => ({ ...s, confirmations: { ...s.confirmations, rightsConfirmed: value } })),
     setLoading: (loading: boolean) => update((s) => ({ ...s, ui: { ...s.ui, loading } })),
@@ -187,6 +198,7 @@ function createWorkStore() {
           ...licensing,
           licenseTypes: { ...s.licensing.licenseTypes, ...(licensing?.licenseTypes ?? {}) },
           licensePrices: { ...s.licensing.licensePrices, ...(licensing?.licensePrices ?? {}) },
+          permittedUses: { ...s.licensing.permittedUses, ...(licensing?.permittedUses ?? {}) },
         },
         confirmations: { rightsConfirmed: true },
         existingFiles,
@@ -216,6 +228,10 @@ function createWorkStore() {
             'single-use': '',
             perpetual: '',
           },
+          permittedUses: {},
+          allowAiTraining: false,
+          attributionRequired: false,
+          canBuyerModify: false,
           agreedToFee: false,
         },
         confirmations: { rightsConfirmed: false },

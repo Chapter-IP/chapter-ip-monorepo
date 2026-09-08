@@ -38,7 +38,7 @@ describe('creative work detail normalizer', () => {
       genres: ['Thriller'],
       files: ['pendulum.pdf'],
       image: { src: WORK_PLACEHOLDER_URL },
-      licenses: [{ id: 'single-use', name: 'Single-use license', price: '25' }],
+      licenses: [{ id: 'single-use', name: 'One-Time License - Single use', price: '25' }],
     })
   })
 
