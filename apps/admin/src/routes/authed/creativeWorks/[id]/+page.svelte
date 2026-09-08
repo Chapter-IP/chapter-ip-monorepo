@@ -171,11 +171,16 @@
       notify('Preview upload failed.', ToastType.FAIL)
     }
 
-    await uploadService.uploadPreviewFiles({
-      uploads: previewUploads,
-      contentId,
-      trpcClient,
-    })
+    try {
+      await uploadService.uploadPreviewFiles({
+        uploads: previewUploads,
+        contentId,
+        trpcClient,
+      })
+    } catch (previewError) {
+      console.error('Error uploading preview files:', previewError)
+      notify('Preview files upload failed.', ToastType.FAIL)
+    }
 
     const metadataToSave =
       previewUploadFailed && $workStore.previewImage

@@ -87,11 +87,16 @@
         notify('Draft saved, but preview upload failed.', ToastType.FAIL)
       }
 
-      await uploadService.uploadPreviewFiles({
-        uploads: previewUploads,
-        contentId,
-        trpcClient,
-      })
+      try {
+        await uploadService.uploadPreviewFiles({
+          uploads: previewUploads,
+          contentId,
+          trpcClient,
+        })
+      } catch (previewError) {
+        console.error('Error uploading preview files:', previewError)
+        notify('Draft saved, but preview files upload failed.', ToastType.FAIL)
+      }
 
       notify('Draft saved', ToastType.SUCCESS)
       await goToFiles()
@@ -128,11 +133,16 @@
         trpcClient,
       })
 
-      await uploadService.uploadPreviewFiles({
-        uploads: previewUploads,
-        contentId,
-        trpcClient,
-      })
+      try {
+        await uploadService.uploadPreviewFiles({
+          uploads: previewUploads,
+          contentId,
+          trpcClient,
+        })
+      } catch (previewError) {
+        console.error('Error uploading preview files:', previewError)
+        notify('Preview files upload failed, continuing with publish.', ToastType.FAIL)
+      }
 
       uploadSession.setProgress({ phase: 'minting', overallProgress: 1 })
       const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing))
