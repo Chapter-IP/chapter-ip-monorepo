@@ -2,6 +2,8 @@
   import { workStore, isFormValid } from '../stores/work-store'
   import { LICENSE_TYPES } from '../constants/constants'
   import LicenseTypeRow from '$lib/components/LicenseTypeRow.svelte'
+  import AdditionalInformation from './AdditionalInformation.svelte'
+  import PermittedUses from './PermittedUses.svelte'
 
   let {
     currentStep = $bindable(),
@@ -17,6 +19,10 @@
 
   const canContinue = $derived(Boolean($isFormValid && !$workStore.ui.loading))
 </script>
+
+{#snippet divider(className = '')}
+  <div class={`border-t border-dashed border-[#ddd4cc] ${className}`}></div>
+{/snippet}
 
 <div class="space-y-12 mt-7.25 text-dark">
   <!-- Title Section -->
@@ -37,6 +43,12 @@
       {/each}
     </div>
   </div>
+
+  {@render divider('mx-10')}
+  <PermittedUses />
+  {@render divider()}
+  <AdditionalInformation />
+  {@render divider()}
 
   <!-- Fee Agreement -->
   <div class="flex justify-center">

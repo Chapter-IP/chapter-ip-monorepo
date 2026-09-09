@@ -30,7 +30,11 @@
       file,
       name: uploadNames[index],
     }))
-    const { licenseTypes, licensePrices, agreedToFee } = $workStore.licensing
+    const previewUploadNames = createWorkFileNames('preview-files', $workStore.files['preview-files'].length)
+    const previewUploads = $workStore.files['preview-files'].map((file, index) => ({
+      file,
+      name: previewUploadNames[index],
+    }))
     const filesName = $workStore.files.works.map((file, index) => appendOriginalExtension(uploadNames[index], file))
     const metadata: Record<string, unknown> = {
       type: 'works' as const,
@@ -39,11 +43,13 @@
       description: $workStore.description,
       genre: $workStore.genre,
       authors: $workStore.authors,
+      sample_text: $workStore.sampleText || undefined,
       files_name: filesName,
-      licensing: { licenseTypes, licensePrices, agreedToFee },
+      preview_files_name: previewUploads.map(({ name, file }) => appendOriginalExtension(name, file)),
+      licensing: $workStore.licensing,
     }
 
-    return { uploads, metadata, tags: [] as string[] }
+    return { uploads, previewUploads, metadata, tags: [] as string[] }
   }
 
   const onSaveDraftClick = async () => {
@@ -51,18 +57,21 @@
     try {
       workStore.setLoading(true)
       const trpcClient = uploadService.createTrpcClient()
-      const { uploads, metadata, tags } = buildWorkPayload()
+      const { uploads, previewUploads, metadata, tags } = buildWorkPayload()
 
       startUploadingPhase(uploadSession.setProgress, uploads)
 
-      await uploadService.saveDraftContent({
+      const { contentId } = await uploadService.saveDraftContent({
         trpcClient,
         uploads,
         metadata,
         tags,
         withWatermark: false,
+        publishOriginal: $workStore.contentType === 'Lyrics',
         onUploadProgress: uploadSession.setProgress,
       })
+
+      await uploadService.uploadPreviewFiles({ trpcClient, contentId, uploads: previewUploads })
 
       notify('Draft saved', ToastType.SUCCESS)
       await goToFiles()
@@ -79,7 +88,7 @@
     try {
       workStore.setLoading(true)
       const trpcClient = uploadService.createTrpcClient()
-      const { uploads, metadata, tags } = buildWorkPayload()
+      const { uploads, previewUploads, metadata, tags } = buildWorkPayload()
 
       startUploadingPhase(uploadSession.setProgress, uploads)
 
@@ -89,11 +98,14 @@
         metadata,
         tags,
         withWatermark: false,
+        publishOriginal: $workStore.contentType === 'Lyrics',
         onUploadProgress: uploadSession.setProgress,
       })
 
+      await uploadService.uploadPreviewFiles({ trpcClient, contentId, uploads: previewUploads })
+
       uploadSession.setProgress({ phase: 'minting', overallProgress: 1 })
-      const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing.licensePrices))
+      const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing))
       uploadSession.setProgress({ phase: 'finalizing', overallProgress: 1 })
       await uploadService.finalizeContent({ trpcClient, contentId, metadata, tokenId, tags })
 
@@ -122,7 +134,7 @@
   }
 </script>
 
-<div class="min-h-xl rounded-3xl p-5 shadow-md md:p-10 bg-[#f8f5f1]">
+<div class="min-h-screen rounded-3xl p-5 shadow-md md:p-10 bg-[#f8f5f1]">
   <UploadStepHeader {currentStep} />
 
   {#if currentStep === 1}

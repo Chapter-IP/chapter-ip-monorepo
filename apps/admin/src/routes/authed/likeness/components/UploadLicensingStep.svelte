@@ -29,7 +29,7 @@
 {/snippet}
 
 <div class="space-y-12 mt-7.25 text-dark">
-  <div class="pb-6">
+  <div class="pb-3">
     <h2 class="mb-2 text-[28px] font-medium text-left text-dark">Licensing</h2>
 
     <p class="mt-3 text-base text-[#72717b]">

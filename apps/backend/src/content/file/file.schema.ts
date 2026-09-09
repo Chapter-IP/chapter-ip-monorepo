@@ -4,7 +4,7 @@ import { createMongooseSchema, withMongoose, z } from '../../common/mongoose/zod
 import { ContentModelName } from '../content.schema.js'
 
 export const ContentFileSchemaDefinition = z.object({
-  contentId: withMongoose(z.string(), { type: 'ObjectId', ref: ContentModelName }),
+  contentId: withMongoose(z.coerce.string(), { type: 'ObjectId', ref: ContentModelName }),
   label: z.string().default(''),
   filename: z.string(),
   mimetype: z.string(),

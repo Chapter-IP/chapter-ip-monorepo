@@ -7,9 +7,11 @@ import { modals, type ModalProps } from 'svelte-modals'
 import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
 import { openMarketplaceAndGoToDashboard } from '$lib/helpers/marketplace'
 import { workStore } from '../stores/work-store'
+import type { WorkState } from '../types/work-store.types'
 
-export const getLicensePrices = (licensePrices: Record<string, string>) => ({
-  oneTimePrice: Number(licensePrices['single-use']),
+export const getLicensePrices = (licensing: WorkState['licensing']) => ({
+  oneTimePrice: licensing.licenseTypes['single-use'] ? Number(licensing.licensePrices['single-use'] || 0) : 0,
+  lifetimePrice: licensing.licenseTypes.perpetual ? Number(licensing.licensePrices.perpetual || 0) : 0,
 })
 
 export const goToFiles = async () => {

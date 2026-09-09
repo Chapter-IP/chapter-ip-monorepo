@@ -22,7 +22,10 @@
   let currentStep = $state(1)
   const { uploadService, uploadSessions } = createWorkUploadServices()
 
+  let initialPreviewFileIds: string[] = []
+
   onMount(() => {
+    initialPreviewFileIds = (data.existingFiles?.['preview-files'] ?? []).map((file) => file.id)
     workStore.hydrateFromContent(data, data.existingFiles)
   })
   onDestroy(() => {
@@ -33,10 +36,11 @@
   beforeNavigate(() => workStore.setLoading(true))
   afterNavigate(() => workStore.setLoading(false))
 
-  const buildWorkMetadata = (uploadNames: string[]) => {
+  const buildWorkMetadata = (uploadNames: string[], previewUploadNames: string[]) => {
     const existingNames = $workStore.existingFiles.works.map((file) => file.name)
     const newNames = $workStore.files.works.map((file, index) => appendOriginalExtension(uploadNames[index], file))
     const filesName = [...existingNames, ...newNames]
+    const existingPreviewNames = $workStore.existingFiles['preview-files'].map((file) => file.name)
     return {
       type: 'works' as const,
       name: $workStore.title,
@@ -44,8 +48,15 @@
       description: $workStore.description,
       genre: $workStore.genre,
       authors: $workStore.authors,
+      sample_text: $workStore.sampleText || undefined,
       files_name: filesName,
-      sample_file_name: data.metadata?.sample_file_name as string | undefined,
+      preview_file_name: data.metadata?.preview_file_name as string | undefined,
+      preview_files_name: [
+        ...existingPreviewNames,
+        ...$workStore.files['preview-files'].map((file, index) =>
+          appendOriginalExtension(previewUploadNames[index], file),
+        ),
+      ],
       licensing: $workStore.licensing,
     }
   }
@@ -70,11 +81,21 @@
 
   const buildWorkPayload = () => {
     const uploadNames = buildUploadNames()
+    const previewUploadNames = createWorkFileNames(
+      'preview-files',
+      $workStore.files['preview-files'].length,
+      $workStore.existingFiles['preview-files'].map((file) => file.name),
+    )
+    const previewUploads = $workStore.files['preview-files'].map((file, index) => ({
+      file,
+      name: previewUploadNames[index],
+    }))
 
     return {
       keptFileIds: getKeptFileIds(),
-      metadata: buildWorkMetadata(uploadNames),
+      metadata: buildWorkMetadata(uploadNames, previewUploadNames),
       uploads: buildNamedUploads(uploadNames),
+      previewUploads,
       tags: (data.tags ?? []) as string[],
     }
   }
@@ -99,7 +120,7 @@
   ) => {
     const trpcClient = uploadService.createTrpcClient()
     const contentId = data.id
-    const { keptFileIds, metadata, uploads, tags } = buildWorkPayload()
+    const { keptFileIds, metadata, uploads, previewUploads, tags } = buildWorkPayload()
 
     startUploadingPhase(uploadSession.setProgress, uploads, false)
 
@@ -109,8 +130,20 @@
       keptFileIds,
       uploads,
       trpcClient,
+      publishOriginal: $workStore.contentType === 'Lyrics',
       onUploadProgress: uploadSession.setProgress,
     })
+
+    const keptPreviewFileIds = new Set($workStore.existingFiles['preview-files'].map((file) => file.id))
+    for (const fileId of initialPreviewFileIds) {
+      if (keptPreviewFileIds.has(fileId)) continue
+      try {
+        await trpcClient.contents.removeContentFile.mutate({ fileId })
+      } catch (error) {
+        console.error(`Failed to remove preview file ${fileId}:`, error)
+      }
+    }
+    await uploadService.uploadPreviewFiles({ trpcClient, contentId, uploads: previewUploads })
 
     await uploadService.updateContentMetadata({
       contentId,
@@ -158,7 +191,7 @@
     { contentId, metadata, trpcClient, tags }: Awaited<ReturnType<typeof saveCurrentContent>>,
   ) => {
     uploadSession.setProgress({ phase: 'minting', overallProgress: 1 })
-    const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing.licensePrices))
+    const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing))
 
     uploadSession.setProgress({ phase: 'finalizing', overallProgress: 1 })
     await uploadService.finalizeContent({
@@ -198,7 +231,7 @@
           uploadSession.setProgress({ phase: 'updating-prices', overallProgress: 1 })
           await uploadService.updateContentPrices({
             tokenId,
-            prices: getLicensePrices($workStore.licensing.licensePrices),
+            prices: getLicensePrices($workStore.licensing),
           })
         }
 

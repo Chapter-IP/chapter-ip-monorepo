@@ -87,7 +87,7 @@
 </script>
 
 <div class="space-y-12 mt-7.25 text-dark">
-  <div class="pb-6">
+  <div class="pb-3">
     <h2 class="mb-2 text-[28px] font-medium text-left text-dark">Confirm your Likeness</h2>
     <p class="mt-3 text-base text-left text-[#72717b]">
       You're almost done. Before completing your likeness, take a moment to review the information you've provided. This

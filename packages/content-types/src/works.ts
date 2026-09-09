@@ -22,6 +22,7 @@ export type WorkMetadata = {
   files_name?: string[]
   preview_file_name?: string
   sample_file_name?: string
+  preview_files_name?: string[]
   licensing: WorkLicensingMetadata
 }
 
