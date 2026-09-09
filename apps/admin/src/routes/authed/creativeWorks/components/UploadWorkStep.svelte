@@ -34,14 +34,11 @@
 
 <div class="space-y-12 mt-7.25 text-dark">
   <!-- Title -->
-  <div class="pb-6">
+  <div class="pb-3">
     <h2 class="mb-2 text-[22px] font-semibold text-left text-dark font-heading">Creative Works</h2>
     <p class="mt-3 text-base text-left text-[#72717b]">
       Add a written work to license for commercial and creative use. The details below are what creators see — and what
       every license is anchored to.
-    </p>
-    <p class="text-sm text-[#72717b] mt-4">
-      <span class="text-[#ff0000]">* required</span> indicates required field
     </p>
   </div>
 
@@ -109,7 +106,7 @@
         onRemove={(i) => workStore.removeAuthor(i)}
       />
 
-      <!-- Preview Files -->
+      <!-- Preview File -->
       <WorkFileDropzone bucket="preview-files" title="Your Sample content" required />
       <!-- Your Text File -->
       <WorkFileDropzone bucket="works" title="Your Creative Work" required />

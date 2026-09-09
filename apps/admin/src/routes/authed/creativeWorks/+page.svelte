@@ -174,7 +174,7 @@
   }
 </script>
 
-<div class="min-h-xl rounded-3xl p-5 shadow-md md:p-10 bg-[#f8f5f1]">
+<div class="min-h-screen rounded-3xl p-5 shadow-md md:p-10 bg-[#f8f5f1]">
   <UploadStepHeader {currentStep} />
 
   {#if currentStep === 1}

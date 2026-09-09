@@ -34,7 +34,7 @@
 
 <div class="space-y-12 mt-7.25 text-dark">
   <!-- Title Section -->
-  <div class="pb-6">
+  <div class="pb-3">
     <h2 class="mb-2 text-[28px] font-medium text-left text-dark font-heading">Confirm your Creative Work</h2>
     <p class="mt-3 text-base text-left text-[#72717b]">
       You're almost done. Before completing your written work, take a moment to review the information you've provided.
@@ -114,10 +114,10 @@
       </div>
     {/if}
 
-    <!-- Preview Files -->
+    <!-- Preview File -->
     {#if $workStore.existingFiles['preview-files'].length > 0 || $workStore.files['preview-files'].length > 0}
       <div class="mb-8">
-        <span class="text-base font-semibold text-dark mb-1 w-full block">Preview Files</span>
+        <span class="text-base font-semibold text-dark mb-1 w-full block">Preview File</span>
         <div class="flex flex-wrap gap-2">
           {#each $workStore.existingFiles['preview-files'] as file (file.id)}
             <WorkFileChip name={file.name} />

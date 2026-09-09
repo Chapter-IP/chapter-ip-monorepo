@@ -20,6 +20,7 @@
   const files = $derived($workStore.files[bucket])
   const existingFiles = $derived($workStore.existingFiles[bucket])
   const hasFiles = $derived(files.length > 0 || existingFiles.length > 0)
+  const isSingleFile = $derived(bucket === 'preview-files')
 
   const accept = [...new Set(SCRIPT_FILE_EXTENSIONS.flatMap((ext) => [`.${ext}`, `.${ext.toUpperCase()}`]))].join(',')
 
@@ -29,7 +30,14 @@
     const accepted = source.filter((file) =>
       SCRIPT_FILE_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(`.${ext}`)),
     )
-    if (accepted.length) workStore.appendMediaFiles(bucket, accepted)
+    if (!accepted.length) return
+    if (bucket === 'preview-files') {
+      const current = files.length + existingFiles.length
+      if (current >= 1) return
+      workStore.appendMediaFiles(bucket, accepted.slice(0, 1 - current))
+      return
+    }
+    workStore.appendMediaFiles(bucket, accepted)
   }
 
   function openPicker(e: MouseEvent) {
@@ -72,10 +80,10 @@
   </div>
 
   <div
-    class="border border-dashed rounded-lg border-[#1A1A2E33] p-4 bg-cream flex flex-col items-center justify-center min-h-50"
+    class="border border-dashed rounded-lg border-[#1A1A2E33] p-8.75 flex flex-col items-center justify-center min-h-50"
     role="button"
     tabindex="0"
-    aria-label="Upload your files"
+    aria-label={isSingleFile ? 'Upload your file' : 'Upload your files'}
     ondragover={handleDragOver}
     ondrop={handleDrop}
     onclick={openPicker}
@@ -101,28 +109,41 @@
           <FileTile name={file.name} onRemove={(e) => removeFile(e, i)} />
         {/each}
 
-        <button
-          type="button"
-          onclick={openPicker}
-          class="h-20 w-20 rounded border-2 border-dashed border-[#1A1A2E33] flex items-center justify-center text-3xl text-[#aaa] hover:border-primary hover:text-primary transition-colors"
-          >+</button
-        >
+        {#if !(bucket === 'preview-files' && files.length + existingFiles.length >= 1)}
+          <button
+            type="button"
+            onclick={openPicker}
+            class="h-20 w-20 rounded border-2 border-dashed border-[#1A1A2E33] flex items-center justify-center text-3xl text-[#aaa] hover:border-primary hover:text-primary transition-colors"
+            >+</button
+          >
+        {/if}
       </div>
     {:else}
-      <img src={UploadImg} alt="" />
-      <p class="text-sm font-semibold text-dark mt-2.5">Upload or drag your files</p>
+      <img src={UploadImg} alt="" class="w-6.5" />
+      <p class="text-sm font-semibold text-dark mt-2">
+        {isSingleFile ? 'Upload or drag your file' : 'Upload or drag your files'}
+      </p>
       <button
         type="button"
         onclick={openPicker}
-        class="rounded-sm border border-[#ddd] bg-cream mt-10.25 px-5 py-1.5 text-sm font-medium text-dark/60 hover:text-dark transition-colors"
+        class="rounded-sm border border-[#ddd] bg-cream mt-9 px-5 py-1.5 text-sm font-medium text-dark/60 hover:text-dark transition-colors"
       >
-        Upload your files
+        {isSingleFile ? 'Upload your file' : 'Upload your files'}
       </button>
-      <span class="text-[11px] text-center text-[#747474] w-full block">
-        PDF, DOCX, TXT, RTF, EPUB, MD files accepted
+      <span class="text-[11px] text-center text-[#747474] w-full block mt-1">
+        {isSingleFile
+          ? 'One PDF, DOCX, TXT, RTF, EPUB, or MD file accepted'
+          : 'PDF, DOCX, TXT, RTF, EPUB, MD files accepted'}
       </span>
     {/if}
 
-    <input type="file" class="hidden" bind:this={fileInput} onchange={handleFileInput} {accept} multiple />
+    <input
+      type="file"
+      class="hidden"
+      bind:this={fileInput}
+      onchange={handleFileInput}
+      {accept}
+      multiple={!isSingleFile}
+    />
   </div>
 </div>
