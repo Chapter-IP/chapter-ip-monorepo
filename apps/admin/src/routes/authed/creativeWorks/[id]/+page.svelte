@@ -8,7 +8,7 @@
   import UploadLicensingStep from '../components/UploadLicensingStep.svelte'
   import ConfirmWorkStep from '../components/ConfirmWorkStep.svelte'
 
-  import { removeWorkPreviews, uploadWorkPreviews } from '../service/work-previews'
+  import { getWorkSampleSource, syncWorkSample, type ExistingSampleFile } from '../service/work-previews'
   import type { NamedUpload } from '$lib/upload/upload.service'
   import { startUploadingPhase, type UploadSession } from '$lib/upload/upload-session'
   import UploadProgressModal from '$lib/components/UploadProgressModal.svelte'
@@ -23,10 +23,10 @@
   let currentStep = $state(1)
   const { uploadService, uploadSessions } = createWorkUploadServices()
 
-  let initialPreviewFileIds: string[] = []
+  let initialPreviewFiles: ExistingSampleFile[] = []
 
   onMount(() => {
-    initialPreviewFileIds = (data.existingFiles?.['preview-files'] ?? []).map((file) => file.id)
+    initialPreviewFiles = data.existingFiles?.['preview-files'] ?? []
     workStore.hydrateFromContent(data, data.existingFiles)
   })
   onDestroy(() => {
@@ -52,7 +52,7 @@
       sample_text: $workStore.sampleText || undefined,
       files_name: filesName,
       preview_file_name: data.metadata?.preview_file_name as string | undefined,
-      sample_file_name: undefined,
+      sample_file_name: '',
       preview_files_name: existingPreviewNames,
       licensing: $workStore.licensing,
     }
@@ -78,21 +78,12 @@
 
   const buildWorkPayload = () => {
     const uploadNames = buildUploadNames()
-    const previewUploadNames = createWorkFileNames(
-      'preview-files',
-      $workStore.files['preview-files'].length,
-      $workStore.existingFiles['preview-files'].map((file) => file.name),
-    )
-    const previewUploads = $workStore.files['preview-files'].map((file, index) => ({
-      file,
-      name: previewUploadNames[index],
-    }))
 
     return {
       keptFileIds: getKeptFileIds(),
       metadata: buildWorkMetadata(uploadNames),
       uploads: buildNamedUploads(uploadNames),
-      previewUploads,
+      sampleSource: getWorkSampleSource($workStore),
       tags: (data.tags ?? []) as string[],
     }
   }
@@ -117,7 +108,7 @@
   ) => {
     const trpcClient = uploadService.createTrpcClient()
     const contentId = data.id
-    const { keptFileIds, metadata, uploads, previewUploads, tags } = buildWorkPayload()
+    const { keptFileIds, metadata, uploads, sampleSource, tags } = buildWorkPayload()
 
     startUploadingPhase(uploadSession.setProgress, uploads, false)
 
@@ -127,25 +118,29 @@
       keptFileIds,
       uploads,
       trpcClient,
-      publishOriginal: $workStore.contentType === 'Lyrics',
       onUploadProgress: uploadSession.setProgress,
     })
 
-    await removeWorkPreviews({
-      trpcClient,
-      initialFileIds: initialPreviewFileIds,
-      keptFileIds: new Set($workStore.existingFiles['preview-files'].map((file) => file.id)),
-      onRemoved: (fileId) => {
-        initialPreviewFileIds = initialPreviewFileIds.filter((id) => id !== fileId)
-      },
-    })
-    const uploadedPreviewNames = await uploadWorkPreviews({
+    const isKeptSource = sampleSource && !(sampleSource instanceof File)
+    const preserveExistingSample = Boolean(
+      isKeptSource &&
+      ($workStore.contentType === 'Lyrics'
+        ? data.metadata?.contentType === 'Lyrics' && sampleSource.id === data.existingFiles.works[0]?.id
+        : initialPreviewFiles.some((file) => file.id === sampleSource.id && /^sample\.[^.]+$/.test(file.name))),
+    )
+    const sampleNames = await syncWorkSample({
       uploadService,
       trpcClient,
       contentId,
-      uploads: previewUploads,
+      source: sampleSource,
+      existingPreviewFiles: initialPreviewFiles,
+      preserveExistingSample,
+      onRemoved: (fileId) => {
+        initialPreviewFiles = initialPreviewFiles.filter((file) => file.id !== fileId)
+      },
     })
-    metadata.preview_files_name.push(...uploadedPreviewNames)
+    metadata.sample_file_name = sampleNames[0] ?? ''
+    metadata.preview_files_name = sampleNames
 
     await uploadService.updateContentMetadata({
       contentId,

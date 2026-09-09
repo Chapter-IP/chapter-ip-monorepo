@@ -25,16 +25,23 @@ const loadPreviewFiles = async (
   content: { id: string; metadata?: WorkMetadataInput },
   trpcClient: Parameters<typeof loadFilesFromContent>[1],
 ): Promise<ExistingFile[]> => {
-  const previewNames = Array.isArray(content.metadata?.preview_files_name)
-    ? new Set(content.metadata.preview_files_name)
-    : content.metadata?.sample_file_name
-      ? new Set([content.metadata.sample_file_name])
-      : null
-  if (!previewNames || !content.id) return []
+  const metadata = content.metadata
+  const previewNames = new Set([
+    ...(Array.isArray(metadata?.preview_files_name) ? metadata.preview_files_name : []),
+    ...(metadata?.sample_file_name ? [metadata.sample_file_name] : []),
+    // Older Lyrics listings mirrored originals under their work filenames.
+    ...(metadata?.contentType === 'Lyrics' &&
+    metadata.sample_file_name === undefined &&
+    Array.isArray(metadata.files_name)
+      ? (metadata.files_name ?? [])
+      : []),
+  ])
+  if (!previewNames.size || !content.id) return []
   const { files } = await trpcClient.contents.getContentAllFilesLink.query({ contentId: content.id })
   return (files ?? [])
     .filter((file) => isPreviewBucket(file.bucket) && matchesFileName(file.label, previewNames))
     .map((file) => ({ id: file.id, name: file.label, url: file.url, key: file.key }))
+    .sort((a, b) => Number(b.name === metadata?.sample_file_name) - Number(a.name === metadata?.sample_file_name))
 }
 
 export async function loadExistingFiles(

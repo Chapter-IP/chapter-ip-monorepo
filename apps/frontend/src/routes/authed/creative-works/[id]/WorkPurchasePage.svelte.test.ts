@@ -71,11 +71,12 @@ test('keeps the full sample link and purchase enabled when extraction fails', as
   await expect.element(screen.getByRole('button', { name: 'Buy License' })).toBeEnabled()
 })
 
-test('shows Lyrics from saved text, expands the full text, and purchases the chosen license', async () => {
+test('loads Lyrics from the public sample even when metadata has cached text, and purchases the chosen license', async () => {
   const lyrics = 'First verse\n'.repeat(140) + 'Last verse'
-  const screen = await render(WorkPurchasePage, { workDetails: { ...workDetails, sampleText: lyrics } })
+  extractTextFromFileMock.mockResolvedValueOnce(lyrics)
+  const screen = await render(WorkPurchasePage, { workDetails: { ...workDetails, sampleText: 'stale cached text' } })
   await expect.element(screen.getByRole('button', { name: 'Show more' })).toBeVisible()
-  expect(fetch).not.toHaveBeenCalled()
+  expect(fetch).toHaveBeenCalledWith(workDetails.sample?.url)
   await expect.element(screen.getByRole('radio', { name: /Lifetime License/ })).toBeChecked()
   await screen.getByRole('button', { name: 'Show more' }).click()
   await expect.element(screen.getByText(/Last verse/)).toBeVisible()
@@ -97,4 +98,12 @@ test('ignores unsupported licenses and disables buying without a supported choic
   })
   await expect.element(screen.getByText('No licensing options are currently available.')).toBeVisible()
   await expect.element(screen.getByRole('button', { name: 'Buy License' })).not.toBeInTheDocument()
+})
+
+test('does not show cached sample text when no public preview file exists', async () => {
+  const screen = await render(WorkPurchasePage, {
+    workDetails: { ...workDetails, sample: undefined, sampleText: 'Cached sample without a public file' },
+  })
+  await expect.element(screen.getByText('Cached sample without a public file')).not.toBeInTheDocument()
+  expect(fetch).not.toHaveBeenCalled()
 })

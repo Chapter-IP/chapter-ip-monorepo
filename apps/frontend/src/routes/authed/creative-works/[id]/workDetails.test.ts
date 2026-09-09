@@ -99,7 +99,7 @@ describe('creative work detail normalizer', () => {
           type: 'works',
           contentType: 'Script',
           preview_files_name: ['preview-files-1.pdf'],
-          sample_file_name: 'old.pdf',
+          sample_file_name: 'sample.pdf',
           sample_text: 'First paragraph\n\nSecond paragraph',
           licensing: {
             licenseTypes: { perpetual: true, 'single-use': true, 'ai-training': true },
@@ -109,7 +109,8 @@ describe('creative work detail normalizer', () => {
       },
       '0xcontent',
     )
-    expect(work?.sample?.filename).toBe('preview-files-1.pdf')
+    expect(work?.sample?.filename).toBe('sample.pdf')
+    expect(work?.sample?.url).toBe('https://preview-files-staging.chapterip.com/0xcontent/new/sample.pdf')
     expect(work?.sampleText).toBe('First paragraph\n\nSecond paragraph')
     expect(work?.licenses.map(({ id }) => id)).toEqual(['perpetual', 'single-use'])
   })
@@ -125,7 +126,7 @@ describe('creative work detail normalizer', () => {
           type: 'works',
           contentType: 'Script',
           preview_files_name: [],
-          sample_file_name: 'deleted.pdf',
+          sample_file_name: '',
           files_name: ['private.pdf'],
         },
       },
@@ -134,7 +135,7 @@ describe('creative work detail normalizer', () => {
     expect(work?.sample).toBeUndefined()
   })
 
-  it('uses the published Lyrics file when no separate sample exists', () => {
+  it('does not assume a legacy Lyrics original exists in the preview bucket', () => {
     const work = normalizeWork(
       {
         id: 'lyrics',
@@ -150,6 +151,26 @@ describe('creative work detail normalizer', () => {
       },
       '0xcontent',
     )
-    expect(work?.sample?.filename).toBe('lyrics.txt')
+    expect(work?.sample).toBeUndefined()
   })
+})
+
+it('does not invent a preview URL for a failed Lyrics sample upload', () => {
+  const work = normalizeWork(
+    {
+      id: 'lyrics',
+      sub: 'author',
+      status: 'ACTIVE',
+      contractAddress: '0xcontent',
+      metadata: {
+        type: 'works',
+        contentType: 'Lyrics',
+        sample_file_name: '',
+        preview_files_name: [],
+        files_name: ['work_1.txt'],
+      },
+    },
+    '0xcontent',
+  )
+  expect(work?.sample).toBeUndefined()
 })

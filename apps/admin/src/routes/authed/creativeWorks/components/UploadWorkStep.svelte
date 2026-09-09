@@ -120,7 +120,14 @@
         <WorkFileDropzone bucket="preview-files" title="Your sample content" required />
       {/if}
       <!-- Your Text File -->
-      <WorkFileDropzone bucket="works" title={isLyrics ? 'Your Text File' : 'Your Creative Work'} required />
+      <WorkFileDropzone
+        bucket="works"
+        title={isLyrics ? 'Your Text File' : 'Your Creative Work'}
+        subtitle={isLyrics
+          ? 'This file is shown as a public sample. Buyers download the original after purchase.'
+          : undefined}
+        required
+      />
 
       <!-- Rights Confirmation -->
       <label class="flex items-start gap-3 cursor-pointer">

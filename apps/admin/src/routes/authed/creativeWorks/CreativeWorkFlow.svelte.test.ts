@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   mintContent: vi.fn(),
   finalizeContent: vi.fn(),
   saveMetadata: vi.fn(),
+  removeContentFile: vi.fn(),
 }))
 vi.mock('svelte-modals', () => ({
   modals: { open: vi.fn((_component: unknown, props: { onSubmit?: () => Promise<void> }) => props.onSubmit?.()) },
@@ -30,7 +31,10 @@ vi.mock('./service/work.helpers', async () => {
     createWorkUploadServices: () => {
       const controller = createUploadSessionController(workStore)
       return {
-        uploadService: { ...mocks, createTrpcClient: () => ({}) },
+        uploadService: {
+          ...mocks,
+          createTrpcClient: () => ({ contents: { removeContentFile: { mutate: mocks.removeContentFile } } }),
+        },
         uploadSessions: {
           ...controller,
           begin: () => {
@@ -62,6 +66,8 @@ beforeEach(() => {
   mocks.mintContent.mockResolvedValue('42')
   mocks.finalizeContent.mockResolvedValue(undefined)
   mocks.saveMetadata.mockResolvedValue(undefined)
+  mocks.uploadPreviewFiles.mockResolvedValue({ keys: ['preview-key'] })
+  mocks.removeContentFile.mockResolvedValue({ ok: true })
 })
 
 test('create draft errors release loading so the user can retry', async () => {
@@ -128,6 +134,11 @@ test('successful publishing ends the upload session exactly once', async () => {
   await screen.getByRole('button', { name: 'Save and Publish' }).click()
   await expect.element(screen.getByRole('button', { name: 'Save and Publish' })).toBeEnabled()
   expect(mocks.saveMetadata).toHaveBeenCalledOnce()
+  expect(mocks.updateContentMetadata).toHaveBeenCalledWith(
+    expect.objectContaining({
+      metadata: expect.objectContaining({ sample_file_name: 'sample.txt', preview_files_name: ['sample.txt'] }),
+    }),
+  )
   expect(mocks.end).toHaveBeenCalledOnce()
   expect(get(workStore).ui.loading).toBe(false)
 })
@@ -144,4 +155,92 @@ test('legacy unsupported licenses do not prevent continuing with supported licen
   workStore.setLicenseTypePrice('single-use', '25')
   workStore.setAgreedToFee(true)
   expect(get(isFormValid)).toBe(true)
+})
+
+test('a new Script publishes only its designated sample file to preview storage', async () => {
+  workStore.setContentType('Script')
+  const script = new File(['private full script'], 'full.pdf')
+  const sample = new File(['public excerpt'], 'excerpt.pdf')
+  workStore.appendMediaFiles('works', [script])
+  workStore.appendMediaFiles('preview-files', [sample])
+  const screen = await render(CreatePage)
+  await screen.getByRole('button', { name: 'Save as Draft' }).click()
+  expect(mocks.uploadPreviewFiles).toHaveBeenCalledWith(
+    expect.objectContaining({ uploads: [{ file: sample, name: 'sample' }] }),
+  )
+  expect(mocks.saveDraftContent).toHaveBeenCalledWith(
+    expect.objectContaining({ uploads: [{ file: script, name: 'work_1' }] }),
+  )
+  expect(mocks.updateContentMetadata).toHaveBeenCalledWith(
+    expect.objectContaining({ metadata: expect.objectContaining({ sample_file_name: 'sample.pdf' }) }),
+  )
+})
+
+test('failed Lyrics preview upload does not leave a sample URL in metadata', async () => {
+  workStore.appendMediaFiles('works', [new File(['lyrics'], 'lyrics.txt')])
+  mocks.uploadPreviewFiles.mockRejectedValueOnce(new Error('preview offline'))
+  const screen = await render(CreatePage)
+  await screen.getByRole('button', { name: 'Save as Draft' }).click()
+  expect(mocks.updateContentMetadata).toHaveBeenCalledWith(
+    expect.objectContaining({ metadata: expect.objectContaining({ sample_file_name: '', preview_files_name: [] }) }),
+  )
+  expect(get(workStore).ui.loading).toBe(false)
+})
+
+test('editing Lyrics preserves its existing public sample when the original is unchanged', async () => {
+  const data = {
+    id: 'work',
+    metadata: {
+      type: 'works',
+      name: 'Lyrics',
+      contentType: 'Lyrics',
+      sample_file_name: 'sample.txt',
+      files_name: ['work_1.txt'],
+    },
+    existingFiles: {
+      works: [{ id: 'original', name: 'work_1.txt', url: 'https://private/work_1.txt', key: 'original-key' }],
+      'preview-files': [{ id: 'sample', name: 'sample.txt', url: 'https://preview/sample.txt', key: 'sample-key' }],
+    },
+  } as unknown as ComponentProps<typeof EditPage>['data']
+  const screen = await render(EditPage, { data })
+  await screen.getByRole('button', { name: 'Save as Draft' }).click()
+  expect(mocks.uploadPreviewFiles).not.toHaveBeenCalled()
+  expect(mocks.removeContentFile).not.toHaveBeenCalled()
+  expect(mocks.updateContentMetadata).toHaveBeenCalledWith(
+    expect.objectContaining({ metadata: expect.objectContaining({ sample_file_name: 'sample.txt' }) }),
+  )
+})
+
+test('replacing the Lyrics original replaces the public sample and its metadata', async () => {
+  const data = {
+    id: 'work',
+    metadata: {
+      type: 'works',
+      name: 'Lyrics',
+      contentType: 'Lyrics',
+      sample_file_name: 'sample.txt',
+      files_name: ['work_1.txt'],
+    },
+    existingFiles: {
+      works: [{ id: 'original', name: 'work_1.txt', url: 'https://private/work_1.txt', key: 'original-key' }],
+      'preview-files': [{ id: 'sample', name: 'sample.txt', url: 'https://preview/sample.txt', key: 'sample-key' }],
+    },
+  } as unknown as ComponentProps<typeof EditPage>['data']
+  const screen = await render(EditPage, { data })
+  const replacement = new File(['replacement lyrics'], 'new.pdf')
+  workStore.removeExistingFile('works', 0)
+  workStore.appendMediaFiles('works', [replacement])
+  await screen.getByRole('button', { name: 'Save as Draft' }).click()
+  expect(mocks.updateContentFiles).toHaveBeenCalledWith(
+    expect.objectContaining({ uploads: [{ file: replacement, name: 'work_1' }] }),
+  )
+  expect(mocks.removeContentFile).toHaveBeenCalledWith({ fileId: 'sample' })
+  expect(mocks.uploadPreviewFiles).toHaveBeenCalledWith(
+    expect.objectContaining({ uploads: [{ file: replacement, name: 'sample' }] }),
+  )
+  expect(mocks.updateContentMetadata).toHaveBeenCalledWith(
+    expect.objectContaining({
+      metadata: expect.objectContaining({ sample_file_name: 'sample.pdf', preview_files_name: ['sample.pdf'] }),
+    }),
+  )
 })

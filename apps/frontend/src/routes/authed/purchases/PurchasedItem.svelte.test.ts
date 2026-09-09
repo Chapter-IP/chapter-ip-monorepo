@@ -187,7 +187,7 @@ function getTrpcClient() {
                 url: 'https://r2.example/headshot',
                 filename: 'headshot.jpg',
                 mimetype: 'image/jpeg',
-                bucket: 'content-bucket',
+                bucket: 'chapter-ip-content-test',
                 key: 'headshot.jpg',
               },
               {
@@ -196,8 +196,17 @@ function getTrpcClient() {
                 url: 'https://r2.example/voice',
                 filename: 'voice.mp3',
                 mimetype: 'audio/mpeg',
-                bucket: 'content-bucket',
+                bucket: 'chapter-ip-content-test',
                 key: 'voice.mp3',
+              },
+              {
+                id: 'public-sample',
+                label: 'Public sample',
+                url: 'https://preview.example/sample.txt',
+                filename: 'sample.txt',
+                mimetype: 'text/plain',
+                bucket: 'chapter-ip-preview-test',
+                key: 'sample.txt',
               },
             ],
           }
@@ -254,7 +263,7 @@ test('opens location license details in an accessible modal', async () => {
   await expect.element(dialog.getByRole('img', { name: 'Flowith' })).toBeVisible()
 })
 
-test('downloads content files and starts grace for one-time licenses locally', async () => {
+test('downloads only content-bucket originals and starts grace for one-time licenses locally', async () => {
   const screen = await render(PurchasedItem, {
     purchase,
     item: likenessItem,
@@ -274,9 +283,11 @@ test('downloads content files and starts grace for one-time licenses locally', a
   await screen.getByRole('button', { name: 'Done' }).click()
   await tick()
   await expect.element(screen.getByRole('button', { name: 'Download' })).toBeEnabled()
+  expect(fetch).not.toHaveBeenCalledWith('https://preview.example/sample.txt', expect.anything())
+  expect(fetch).toHaveBeenCalledTimes(2)
 })
 
-test('shows per-file download progress with percent labels', async () => {
+test('shows per-file download progress', async () => {
   allowDownloadComplete = false
   holdInFlightFetch = true
   const screen = await render(PurchasedItem, {
@@ -289,7 +300,7 @@ test('shows per-file download progress with percent labels', async () => {
 
   await expect.element(screen.getByText('Downloading files…')).toBeVisible()
   await expect.element(screen.getByText('Headshot')).toBeVisible()
-  expect([...document.querySelectorAll('span.tabular-nums')].some((element) => element.textContent === '0%')).toBe(true)
+  await expect.element(screen.getByRole('progressbar', { name: 'Headshot' })).toHaveAttribute('aria-valuenow', '0')
 
   releaseInFlightFetch?.()
   holdInFlightFetch = false

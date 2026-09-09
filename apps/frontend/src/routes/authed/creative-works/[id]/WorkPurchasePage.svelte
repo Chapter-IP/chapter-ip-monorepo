@@ -28,14 +28,13 @@
 
   $effect(() => {
     const sample = workDetails.sample
-    const storedSampleText = workDetails.sampleText || ''
     let cancelled = false
-    sampleText = storedSampleText
+    sampleText = ''
     sampleExpanded = false
     sampleError = false
     sampleLoading = false
 
-    if (storedSampleText || !sample) return
+    if (!sample) return
 
     sampleLoading = true
     ;(async () => {

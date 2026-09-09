@@ -12,7 +12,7 @@
   import { appendOriginalExtension } from '$lib/helpers/work-upload'
   import { createWorkUploadServices, getLicensePrices, goToFiles, openSuccessModal } from './service/work.helpers'
   import { onDestroy } from 'svelte'
-  import { uploadWorkPreviews } from './service/work-previews'
+  import { getWorkSampleSource, syncWorkSample } from './service/work-previews'
 
   let currentStep = $state(1)
   const { uploadService, uploadSessions } = createWorkUploadServices()
@@ -31,11 +31,7 @@
       file,
       name: uploadNames[index],
     }))
-    const previewUploadNames = createWorkFileNames('preview-files', $workStore.files['preview-files'].length)
-    const previewUploads = $workStore.files['preview-files'].map((file, index) => ({
-      file,
-      name: previewUploadNames[index],
-    }))
+    const sampleSource = getWorkSampleSource($workStore)
     const filesName = $workStore.files.works.map((file, index) => appendOriginalExtension(uploadNames[index], file))
     const metadata: Record<string, unknown> = {
       type: 'works' as const,
@@ -46,11 +42,12 @@
       authors: $workStore.authors,
       sample_text: $workStore.sampleText || undefined,
       files_name: filesName,
+      sample_file_name: '',
       preview_files_name: [],
       licensing: $workStore.licensing,
     }
 
-    return { uploads, previewUploads, metadata, tags: [] as string[] }
+    return { uploads, sampleSource, metadata, tags: [] as string[] }
   }
 
   const onSaveDraftClick = async () => {
@@ -58,7 +55,7 @@
     try {
       workStore.setLoading(true)
       const trpcClient = uploadService.createTrpcClient()
-      const { uploads, previewUploads, metadata, tags } = buildWorkPayload()
+      const { uploads, sampleSource, metadata, tags } = buildWorkPayload()
 
       startUploadingPhase(uploadSession.setProgress, uploads)
 
@@ -68,16 +65,17 @@
         metadata,
         tags,
         withWatermark: false,
-        publishOriginal: $workStore.contentType === 'Lyrics',
         onUploadProgress: uploadSession.setProgress,
       })
 
-      metadata.preview_files_name = await uploadWorkPreviews({
+      const sampleNames = await syncWorkSample({
         uploadService,
         trpcClient,
         contentId,
-        uploads: previewUploads,
+        source: sampleSource,
       })
+      metadata.sample_file_name = sampleNames[0] ?? ''
+      metadata.preview_files_name = sampleNames
       await uploadService.updateContentMetadata({ trpcClient, contentId, metadata, tags })
 
       notify('Draft saved', ToastType.SUCCESS)
@@ -95,7 +93,7 @@
     try {
       workStore.setLoading(true)
       const trpcClient = uploadService.createTrpcClient()
-      const { uploads, previewUploads, metadata, tags } = buildWorkPayload()
+      const { uploads, sampleSource, metadata, tags } = buildWorkPayload()
 
       startUploadingPhase(uploadSession.setProgress, uploads)
 
@@ -105,16 +103,17 @@
         metadata,
         tags,
         withWatermark: false,
-        publishOriginal: $workStore.contentType === 'Lyrics',
         onUploadProgress: uploadSession.setProgress,
       })
 
-      metadata.preview_files_name = await uploadWorkPreviews({
+      const sampleNames = await syncWorkSample({
         uploadService,
         trpcClient,
         contentId,
-        uploads: previewUploads,
+        source: sampleSource,
       })
+      metadata.sample_file_name = sampleNames[0] ?? ''
+      metadata.preview_files_name = sampleNames
       await uploadService.updateContentMetadata({ trpcClient, contentId, metadata, tags })
 
       uploadSession.setProgress({ phase: 'minting', overallProgress: 1 })

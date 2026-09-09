@@ -21,7 +21,7 @@
   const files = $derived($workStore.files[bucket])
   const existingFiles = $derived($workStore.existingFiles[bucket])
   const hasFiles = $derived(files.length > 0 || existingFiles.length > 0)
-  const isSingleFile = $derived(bucket === 'preview-files')
+  const isSingleFile = $derived(bucket === 'preview-files' || $workStore.contentType === 'Lyrics')
 
   const accept = [...new Set(SCRIPT_FILE_EXTENSIONS.flatMap((ext) => [`.${ext}`, `.${ext.toUpperCase()}`]))].join(',')
 
@@ -32,12 +32,12 @@
       SCRIPT_FILE_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(`.${ext}`)),
     )
     if (!accepted.length) return
-    if (bucket === 'preview-files') {
+    if (isSingleFile) {
       const current = files.length + existingFiles.length
       if (current >= 1) return
       const acceptedFiles = accepted.slice(0, 1 - current)
       workStore.appendMediaFiles(bucket, acceptedFiles)
-      void extractSample(acceptedFiles[0], 'preview file')
+      void extractSample(acceptedFiles[0], bucket === 'preview-files' ? 'preview file' : 'work file')
       return
     }
     workStore.appendMediaFiles(bucket, accepted)
@@ -133,7 +133,7 @@
           <FileTile name={file.name} onRemove={(e) => removeFile(e, i)} />
         {/each}
 
-        {#if !(bucket === 'preview-files' && files.length + existingFiles.length >= 1)}
+        {#if !(isSingleFile && files.length + existingFiles.length >= 1)}
           <button
             type="button"
             onclick={openPicker}
