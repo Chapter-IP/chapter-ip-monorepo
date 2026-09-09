@@ -152,6 +152,7 @@
       keptFileIds,
       uploads,
       trpcClient,
+      publishOriginal: $workStore.contentType === 'Lyrics',
       onUploadProgress: uploadSession.setProgress,
     })
 

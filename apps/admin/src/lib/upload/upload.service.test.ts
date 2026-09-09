@@ -250,6 +250,109 @@ describe('UploadService', () => {
     })
   })
 
+  it('mirrors the original file to the public preview bucket when publishOriginal is true', async () => {
+    const original = new File(['lyrics'], 'work_1.txt', { type: 'text/plain' })
+    const { client, createContentFileUploadUrl, registerContentFile } = createTrpcClient()
+
+    const service = new UploadService({ mintWithPrices: vi.fn() } as never)
+
+    await expect(
+      service.uploadContentFiles({
+        contentId: 'content-id',
+        uploads: [{ file: original, name: 'work_1' }],
+        trpcClient: client as never,
+        includePreviews: false,
+        publishOriginal: true,
+      }),
+    ).resolves.toEqual({ keys: ['original-key'] })
+
+    expect(createContentFileUploadUrl).toHaveBeenCalledTimes(2)
+    expect(createContentFileUploadUrl).toHaveBeenNthCalledWith(1, {
+      contentId: 'content-id',
+      mimetype: 'text/plain',
+      bucket: 'content',
+      filename: 'work_1',
+      extension: 'txt',
+    })
+    expect(createContentFileUploadUrl).toHaveBeenNthCalledWith(2, {
+      contentId: 'content-id',
+      mimetype: 'text/plain',
+      bucket: 'preview',
+      filename: 'work_1',
+      extension: 'txt',
+    })
+
+    expect(mocks.uploadFileToBucket).toHaveBeenCalledTimes(2)
+    expect(mocks.uploadFileToBucket).toHaveBeenNthCalledWith(1, original, 'original-url', expect.any(Function))
+    expect(mocks.uploadFileToBucket).toHaveBeenNthCalledWith(2, original, 'preview-url', expect.any(Function))
+
+    expect(registerContentFile).toHaveBeenCalledTimes(2)
+    expect(registerContentFile).toHaveBeenNthCalledWith(1, {
+      contentId: 'content-id',
+      key: 'original-key',
+      bucket: 'content',
+      filename: 'work_1.txt',
+      mimetype: 'text/plain',
+      label: 'work_1.txt',
+    })
+    expect(registerContentFile).toHaveBeenNthCalledWith(2, {
+      contentId: 'content-id',
+      key: 'preview-key',
+      bucket: 'preview',
+      filename: 'work_1.txt',
+      mimetype: 'text/plain',
+      label: 'work_1.txt',
+    })
+  })
+
+  it('mirrors replaced files to the public preview bucket when publishOriginal is true', async () => {
+    const newFile = new File(['lyrics v2'], 'songs/track.txt', { type: 'text/plain' })
+    const { client, createContentFileUploadUrl, registerContentFile } = createTrpcClient()
+
+    const service = new UploadService({ mintWithPrices: vi.fn() } as never)
+
+    await expect(
+      service.updateContentFiles({
+        contentId: 'content-id',
+        currentFiles: [
+          { id: 'kept-file-id', key: 'kept-key' },
+          { id: 'removed-file-id', key: 'removed-key' },
+        ],
+        keptFileIds: new Set(['kept-file-id']),
+        uploads: [{ file: newFile, name: 'work_2' }],
+        trpcClient: client as never,
+        includePreviews: false,
+        publishOriginal: true,
+      }),
+    ).resolves.toEqual({ keys: ['kept-key', 'original-key'] })
+
+    expect(client.contents.removeContentFile.mutate).toHaveBeenCalledWith({ fileId: 'removed-file-id' })
+    expect(createContentFileUploadUrl).toHaveBeenCalledTimes(2)
+    expect(createContentFileUploadUrl).toHaveBeenNthCalledWith(1, {
+      contentId: 'content-id',
+      mimetype: 'text/plain',
+      bucket: 'content',
+      filename: 'work_2',
+      extension: 'txt',
+    })
+    expect(createContentFileUploadUrl).toHaveBeenNthCalledWith(2, {
+      contentId: 'content-id',
+      mimetype: 'text/plain',
+      bucket: 'preview',
+      filename: 'work_2',
+      extension: 'txt',
+    })
+    expect(registerContentFile).toHaveBeenCalledTimes(2)
+    expect(registerContentFile).toHaveBeenNthCalledWith(2, {
+      contentId: 'content-id',
+      key: 'preview-key',
+      bucket: 'preview',
+      filename: 'work_2.txt',
+      mimetype: 'text/plain',
+      label: 'work_2.txt',
+    })
+  })
+
   it('saves a draft without minting a token', async () => {
     const original = new File(['original'], 'voice.mp3', { type: 'audio/mpeg' })
     const { client } = createTrpcClient()

@@ -18,18 +18,26 @@
   const isLyrics = $derived($workStore.contentType === 'Lyrics')
   const isFileContentType = $derived(isScript || isLyrics)
 
+  const hasWorkFiles = $derived($workStore.files.works.length > 0 || ($workStore.existingFiles.works ?? []).length > 0)
+  const hasPreviewFiles = $derived(
+    $workStore.files['preview-files'].length > 0 || ($workStore.existingFiles['preview-files'] ?? []).length > 0,
+  )
+
   const canContinueFromStepOne = $derived(
     Boolean(
       currentStep === 1 &&
       $workStore.title &&
       $workStore.contentType &&
       (!isFileContentType ||
-        (($workStore.files.works.length > 0 || ($workStore.existingFiles.works ?? []).length > 0) &&
-          ($workStore.files['preview-files'].length > 0 ||
-            ($workStore.existingFiles['preview-files'] ?? []).length > 0) &&
-          $workStore.confirmations.rightsConfirmed)),
+        (hasWorkFiles && (!isScript || hasPreviewFiles) && $workStore.confirmations.rightsConfirmed)),
     ),
   )
+
+  function handleContentTypeChange(event: Event) {
+    const value = (event.target as HTMLSelectElement).value
+    if (value !== 'Script') workStore.clearPreviewFiles()
+    workStore.setContentType(value)
+  }
 </script>
 
 <div class="space-y-12 mt-7.25 text-dark">
@@ -65,7 +73,8 @@
       </div>
       <div class="relative w-full">
         <select
-          bind:value={$workStore.contentType}
+          value={$workStore.contentType}
+          onchange={handleContentTypeChange}
           class="w-full h-11.75 bg-white rounded border border-[#ddd] px-3.75 pr-10 text-sm font-medium text-[#72717b]
             focus:border-primary focus:outline-none focus:shadow-[0_3px_6px_0_rgba(0,0,0,0.16)] transition-shadow appearance-none"
         >
@@ -106,8 +115,10 @@
         onRemove={(i) => workStore.removeAuthor(i)}
       />
 
-      <!-- Preview File -->
-      <WorkFileDropzone bucket="preview-files" title="Your Sample content" required />
+      {#if isScript}
+        <!-- Preview File -->
+        <WorkFileDropzone bucket="preview-files" title="Your Sample content" required />
+      {/if}
       <!-- Your Text File -->
       <WorkFileDropzone bucket="works" title="Your Creative Work" required />
 

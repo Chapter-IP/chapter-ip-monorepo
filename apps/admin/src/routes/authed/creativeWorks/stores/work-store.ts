@@ -112,6 +112,16 @@ function createWorkStore() {
         },
       }))
     },
+    setContentType(value: string) {
+      update((s) => ({ ...s, contentType: value }))
+    },
+    clearPreviewFiles() {
+      update((s) => ({
+        ...s,
+        files: { ...s.files, 'preview-files': [] },
+        existingFiles: { ...s.existingFiles, 'preview-files': [] },
+      }))
+    },
     toggleGenre(genre: string) {
       update((s) => ({
         ...s,

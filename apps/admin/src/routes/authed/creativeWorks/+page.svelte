@@ -72,6 +72,7 @@
         metadata,
         tags,
         withWatermark: false,
+        publishOriginal: $workStore.contentType === 'Lyrics',
         onUploadProgress: uploadSession.setProgress,
       })
 
@@ -123,6 +124,7 @@
         metadata,
         tags,
         withWatermark: false,
+        publishOriginal: $workStore.contentType === 'Lyrics',
         onUploadProgress: uploadSession.setProgress,
       })
 
