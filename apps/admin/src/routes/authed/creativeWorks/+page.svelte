@@ -48,6 +48,7 @@
       description: $workStore.description,
       genre: $workStore.genre,
       authors: $workStore.authors,
+      sample_text: $workStore.sampleText || undefined,
       files_name: filesName,
       preview_file_name: previewFileName,
       preview_files_name: previewFilesName.length > 0 ? previewFilesName : undefined,

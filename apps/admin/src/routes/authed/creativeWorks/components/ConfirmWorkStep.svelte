@@ -3,7 +3,10 @@
   import { ADDITIONAL_TERMS, LICENSE_TYPES, PERMITTED_USES } from '../constants/constants'
   import { modals, type ModalProps } from 'svelte-modals'
   import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
+  import { extractTextFromFile } from '@repo/fe-services'
+  import { onMount } from 'svelte'
   import WorkFileChip from './WorkFileChip.svelte'
+  import WarningIcon from '$lib/assets/warning-icon.svg'
 
   let {
     currentStep = $bindable(),
@@ -19,6 +22,30 @@
   const enabledPermittedUses = $derived(PERMITTED_USES.filter((use) => $workStore.licensing.permittedUses[use.id]))
   const enabledAdditionalTerms = $derived(ADDITIONAL_TERMS.filter((term) => $workStore.licensing[term.key]))
   const workFileCount = $derived($workStore.existingFiles.works.length + $workStore.files.works.length)
+  let sampleExpanded = $state(false)
+
+  onMount(() => {
+    if ($workStore.sampleText) return
+    const previewFile = $workStore.files['preview-files']?.[0]
+    const existingPreview = $workStore.existingFiles['preview-files']?.[0]
+
+    if (previewFile) {
+      extractTextFromFile(previewFile)
+        .then((text) => workStore.setSampleText(text))
+        .catch((error) => console.error('Failed to extract sample text from preview file:', error))
+      return
+    }
+
+    if (!existingPreview?.url) return
+    fetch(existingPreview.url)
+      .then((response) => {
+        if (!response.ok) throw new Error(`Preview fetch failed: ${response.status}`)
+        return response.blob()
+      })
+      .then((blob) => extractTextFromFile(new File([blob], existingPreview.name, { type: blob.type })))
+      .then((text) => workStore.setSampleText(text))
+      .catch((error) => console.error('Failed to extract sample text from existing preview:', error))
+  })
   const onSubmit = () => {
     modals.open<ModalProps & TConfirmModalProps>(ConfirmModal, {
       title: 'Confirming your Creative Work',
@@ -55,7 +82,7 @@
     </div>
 
     <!-- Title & Description -->
-    <div class="mb-8">
+    <div class="mb-8.75">
       <h1 class="text-2xl font-semibold text-dark">
         {$workStore.title || 'Untitled Work'}
       </h1>
@@ -76,6 +103,39 @@
         </div>
       {/if}
     </div>
+
+    <!-- Sample Preview -->
+    {#if $workStore.sampleText}
+      <div class="mb-8">
+        <p
+          class="text-base text-[#72717b] leading-7 whitespace-pre-line wrap-break-word {sampleExpanded
+            ? ''
+            : 'line-clamp-9'}"
+        >
+          {$workStore.sampleText}
+        </p>
+        <div class="mt-8.75 flex items-center gap-2">
+          <img src={WarningIcon} alt="" class="size-4" />
+          <button
+            type="button"
+            onclick={() => (sampleExpanded = !sampleExpanded)}
+            class="inline-flex items-center gap-1.5 text-base bg-transparent cursor-pointer text-primary"
+          >
+            {sampleExpanded ? 'Show less' : 'Read full sample'}
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 8 8"
+              fill="none"
+              class="transition-transform duration-200 {sampleExpanded ? 'rotate-180' : ''}"
+            >
+              <path d="M1 7L7 1M7 1H2.5M7 1V5.5" stroke="#6734FF" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    {/if}
+
     <!-- Author(s) -->
     {#if $workStore.authors.length > 0}
       <div class="flex flex-wrap gap-2 mb-8">

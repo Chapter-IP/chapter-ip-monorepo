@@ -13,6 +13,7 @@ export type WorkState = {
   title: string
   contentType: string
   description: string
+  sampleText: string
   genre: string[]
   authors: string[]
   licensing: WorkLicensingMetadata

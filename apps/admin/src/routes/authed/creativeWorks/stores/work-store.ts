@@ -54,6 +54,7 @@ function createWorkStore() {
     title: '',
     contentType: '',
     description: '',
+    sampleText: '',
     genre: [],
     authors: [],
     licensing: {
@@ -112,6 +113,9 @@ function createWorkStore() {
         },
       }))
     },
+    setSampleText(value: string | null) {
+      update((s) => ({ ...s, sampleText: value ?? '' }))
+    },
     setContentType(value: string) {
       update((s) => ({ ...s, contentType: value }))
     },
@@ -120,6 +124,7 @@ function createWorkStore() {
         ...s,
         files: { ...s.files, 'preview-files': [] },
         existingFiles: { ...s.existingFiles, 'preview-files': [] },
+        sampleText: '',
       }))
     },
     toggleGenre(genre: string) {
@@ -186,6 +191,7 @@ function createWorkStore() {
       const description = (metadata.description as string) ?? ''
       const genre = (metadata.genre as string[]) ?? []
       const author = (metadata.authors as string[]) ?? []
+      const sampleText = (metadata.sample_text as string) ?? ''
       const licensing = (metadata.licensing ?? {}) as Partial<WorkLicensingMetadata>
 
       update((s) => ({
@@ -193,6 +199,7 @@ function createWorkStore() {
         title: title ?? '',
         contentType: contentType ?? '',
         description: description ?? '',
+        sampleText: sampleText ?? '',
         genre: Array.isArray(genre) ? genre : [],
         authors: Array.isArray(author) ? author : [],
         licensing: {
@@ -219,6 +226,7 @@ function createWorkStore() {
         title: '',
         contentType: '',
         description: '',
+        sampleText: '',
         genre: [],
         authors: [],
         licensing: {

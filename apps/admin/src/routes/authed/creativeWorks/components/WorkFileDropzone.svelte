@@ -1,6 +1,7 @@
 <script lang="ts">
   import { workStore } from '../stores/work-store'
   import { SCRIPT_FILE_EXTENSIONS } from '../constants/constants'
+  import { extractTextFromFile } from '@repo/fe-services'
   import type { WorkFileKey } from '$lib/constants/workFileBuckets'
   import UploadImg from '$lib/assets/upload-icon.svg'
   import FileTile from '$lib/components/FileTile.svelte'
@@ -34,7 +35,9 @@
     if (bucket === 'preview-files') {
       const current = files.length + existingFiles.length
       if (current >= 1) return
-      workStore.appendMediaFiles(bucket, accepted.slice(0, 1 - current))
+      const acceptedFiles = accepted.slice(0, 1 - current)
+      workStore.appendMediaFiles(bucket, acceptedFiles)
+      void extractSample(acceptedFiles[0])
       return
     }
     workStore.appendMediaFiles(bucket, accepted)
@@ -63,6 +66,31 @@
   function removeFile(e: MouseEvent, index: number) {
     e.stopPropagation()
     workStore.removeMediaFile(bucket, index)
+    refreshSampleText()
+  }
+
+  function removeExistingFile(e: MouseEvent, index: number) {
+    e.stopPropagation()
+    workStore.removeExistingFile(bucket, index)
+    refreshSampleText()
+  }
+
+  async function extractSample(file: File | undefined) {
+    if (!$workStore.contentType || $workStore.contentType !== 'Script' || !file) {
+      workStore.setSampleText(null)
+      return
+    }
+    try {
+      workStore.setSampleText(await extractTextFromFile(file))
+    } catch (error) {
+      console.error('Failed to extract sample text from preview file:', error)
+      workStore.setSampleText(null)
+    }
+  }
+
+  function refreshSampleText() {
+    if (bucket !== 'preview-files') return
+    void extractSample($workStore.files['preview-files'][0])
   }
 </script>
 
@@ -97,13 +125,7 @@
     {#if hasFiles}
       <div class="w-full flex flex-wrap gap-2 justify-center py-2">
         {#each existingFiles as file, i (`existing-${file.id}`)}
-          <FileTile
-            name={file.name}
-            onRemove={(e) => {
-              e.stopPropagation()
-              workStore.removeExistingFile(bucket, i)
-            }}
-          />
+          <FileTile name={file.name} onRemove={(e) => removeExistingFile(e, i)} />
         {/each}
         {#each files as file, i (file.name + i)}
           <FileTile name={file.name} onRemove={(e) => removeFile(e, i)} />
