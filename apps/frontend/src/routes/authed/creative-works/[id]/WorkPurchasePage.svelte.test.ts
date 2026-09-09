@@ -25,9 +25,14 @@ const workDetails: WorkDetails = {
   description: 'A song description.',
   authors: ['Chadwick Bowser'],
   genres: [],
-  licenses: [{ id: 'single-use', name: 'Single-use license', price: '25', description: 'One use.' }],
+  licenses: [
+    { id: 'single-use', name: 'One-Time License - Single use', price: '25', description: 'One use.' },
+    { id: 'perpetual', name: 'Lifetime License - Perpetual use', price: '100', description: 'Forever.' },
+  ],
   image: { src: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=', alt: 'Irregardless' },
   sample: { filename: 'sample.txt', url: 'https://preview.example/work-1/sample.txt' },
+  permittedUses: ['Print', 'TV/Film'],
+  additionalTerms: ['Attribution required'],
   files: ['work_1.docx'],
 }
 
@@ -46,6 +51,10 @@ test('loads and renders a public sample without affecting purchase', async () =>
   const fullSample = screen.getByRole('link', { name: /Read full sample/ })
   await expect.element(fullSample).toHaveAttribute('href', workDetails.sample?.url ?? '')
   await expect.element(fullSample).toHaveAttribute('target', '_blank')
+  await expect.element(screen.getByText('Lifetime License - Perpetual use')).toBeVisible()
+  await expect.element(screen.getByText('Print', { exact: true })).toBeVisible()
+  await expect.element(screen.getByText('TV/Film', { exact: true })).toBeVisible()
+  await expect.element(screen.getByText('Attribution required', { exact: true })).toBeVisible()
 
   const purchaseButton = screen.getByRole('button', { name: 'Purchase' })
   await expect.element(purchaseButton).toBeEnabled()

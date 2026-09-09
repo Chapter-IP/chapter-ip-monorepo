@@ -3,7 +3,7 @@ import { normalizeWork } from './workDetails'
 import { WORK_PLACEHOLDER_URL } from '../works'
 
 describe('creative work detail normalizer', () => {
-  it('normalizes Script metadata and only exposes single-use', () => {
+  it('normalizes Script metadata, both licenses, and the sample file', () => {
     const work = normalizeWork(
       {
         id: 'work-1',
@@ -19,10 +19,15 @@ describe('creative work detail normalizer', () => {
           authors: [' Chadwick Bowser '],
           genre: [' Thriller '],
           files_name: ['pendulum.pdf'],
+          preview_file_name: 'cover.jpg',
           sample_file_name: 'sample.pdf',
           licensing: {
             licenseTypes: { 'single-use': true, perpetual: true },
             licensePrices: { 'single-use': '25', perpetual: '100' },
+            permittedUses: { print: true, digital: false, 'film-tv': true, custom: true },
+            allowAiTraining: true,
+            attributionRequired: true,
+            canBuyerModify: false,
             agreedToFee: true,
           },
         },
@@ -38,12 +43,17 @@ describe('creative work detail normalizer', () => {
       authors: ['Chadwick Bowser'],
       genres: ['Thriller'],
       files: ['pendulum.pdf'],
-      image: { src: WORK_PLACEHOLDER_URL },
+      image: { src: 'https://preview-files-staging.chapterip.com/0xcontent/work-1/cover.jpg' },
       sample: {
         filename: 'sample.pdf',
         url: 'https://preview-files-staging.chapterip.com/0xcontent/work-1/sample.pdf',
       },
-      licenses: [{ id: 'single-use', name: 'Single-use license', price: '25' }],
+      licenses: [
+        { id: 'single-use', name: 'One-Time License - Single use', price: '25' },
+        { id: 'perpetual', name: 'Lifetime License - Perpetual use', price: '100' },
+      ],
+      permittedUses: ['Print', 'TV/Film', 'Custom'],
+      additionalTerms: ['Allow AI training', 'Attribution required'],
     })
   })
 
@@ -67,6 +77,8 @@ describe('creative work detail normalizer', () => {
       genres: [],
       image: { src: WORK_PLACEHOLDER_URL },
       files: [],
+      permittedUses: [],
+      additionalTerms: [],
     })
     expect(work?.sample).toBeUndefined()
   })

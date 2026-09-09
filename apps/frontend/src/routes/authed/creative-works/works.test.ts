@@ -48,6 +48,15 @@ describe('creative work data helpers', () => {
     )
   })
 
+  it('uses the uploaded preview image when one exists', () => {
+    const [work] = toWorkItems(
+      [{ id: 'work-3', metadata: { type: 'works', name: 'Screenplay', preview_file_name: ' cover.jpg ' } }],
+      CONTRACT,
+    )
+
+    expect(work?.imageUrl).toBe(`${r2BaseConfig.previewUrl}/${CONTRACT}/work-3/cover.jpg`)
+  })
+
   it('builds the preview URL', () => {
     expect(getWorkPreviewUrl(CONTRACT, 'work-1', 'preview.png')).toBe(
       `${r2BaseConfig.previewUrl}/${CONTRACT}/work-1/preview.png`,

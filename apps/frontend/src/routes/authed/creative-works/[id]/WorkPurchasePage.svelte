@@ -64,6 +64,24 @@
   }
 </script>
 
+{#snippet checkedItems(title: string, items: string[])}
+  {#if items.length}
+    <section class="mt-8 border-t border-[#1a1a2e1a] pt-8" aria-label={title}>
+      <h2 class="font-semibold text-dark">{title}</h2>
+      <ul class="mt-4 space-y-3">
+        {#each items as item (item)}
+          <li class="flex items-start gap-3 text-sm font-medium text-[#747474]">
+            <svg aria-hidden="true" class="mt-1 h-2.75 w-3.5 shrink-0 text-primary" viewBox="0 0 14 11" fill="none">
+              <path d="M1 5.5 5 9.5 13 1.5" stroke="currentColor" stroke-width="2"></path>
+            </svg>
+            <span>{item}</span>
+          </li>
+        {/each}
+      </ul>
+    </section>
+  {/if}
+{/snippet}
+
 <article
   class="mx-auto w-full max-w-293.75 rounded-3xl border border-[#1a1a2e0d] bg-[#f8f5f1] px-5 py-10 sm:px-10 lg:px-25 lg:py-12"
 >
@@ -161,6 +179,9 @@
           >{purchasePending ? 'Processing...' : 'Purchase'}</button
         >
       {:else}<p class="mt-2 text-[#747474]">No licensing options are currently available.</p>{/if}
+
+      {@render checkedItems('Permitted Uses', workDetails.permittedUses)}
+      {@render checkedItems('Additional Information', workDetails.additionalTerms)}
     </section>
   </div>
 
