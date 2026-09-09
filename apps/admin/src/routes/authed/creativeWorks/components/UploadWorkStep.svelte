@@ -42,7 +42,7 @@
 
 <div class="space-y-12 mt-7.25 text-dark">
   <!-- Title -->
-  <div class="pb-3">
+  <div>
     <h2 class="mb-2 text-[22px] font-semibold text-left text-dark font-heading">Creative Works</h2>
     <p class="mt-3 text-base text-left text-[#72717b]">
       Add a written work to license for commercial and creative use. The details below are what creators see — and what
