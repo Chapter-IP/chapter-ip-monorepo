@@ -68,16 +68,28 @@ describe('overallPercent', () => {
 })
 
 describe('displayOverallPercent', () => {
-  it('allows 100% only during the uploading phase', () => {
-    expect(displayOverallPercent(1, 'uploading')).toBe(100)
-    expect(displayOverallPercent(1, 'minting')).toBe(99)
-    expect(displayOverallPercent(1, 'finalizing')).toBe(99)
-    expect(displayOverallPercent(1, 'saving-metadata')).toBe(99)
+  it('reserves completion until the whole upload operation finishes', () => {
+    expect(displayOverallPercent(1)).toBe(99)
+    expect(displayOverallPercent(0.995)).toBe(99)
   })
 
-  it('passes through partial progress for all phases', () => {
-    expect(displayOverallPercent(0.5, 'minting')).toBe(50)
-    expect(displayOverallPercent(0.5, 'uploading')).toBe(50)
+  it('passes through partial progress', () => {
+    expect(displayOverallPercent(0)).toBe(0)
+    expect(displayOverallPercent(0.5)).toBe(50)
+  })
+
+  it('never moves backwards when the last file finishes and minting starts', () => {
+    const events = [
+      { phase: 'uploading', overallProgress: 0.98 },
+      { phase: 'uploading', overallProgress: 0.999 },
+      { phase: 'uploading', overallProgress: 1 },
+      { phase: 'minting', overallProgress: 1 },
+      { phase: 'finalizing', overallProgress: 1 },
+      { phase: 'saving-metadata', overallProgress: 1 },
+    ]
+    expect(events.map(({ overallProgress }) => displayOverallPercent(overallProgress))).toEqual([
+      98, 99, 99, 99, 99, 99,
+    ])
   })
 })
 

@@ -29,9 +29,9 @@ export function overallPercent(overallProgress: number): number {
   return clampPercent(overallProgress * 100)
 }
 
-export function displayOverallPercent(overallProgress: number, phase: UploadProgressEvent['phase']): number {
-  const percent = overallPercent(overallProgress)
-  return phase === 'uploading' ? percent : Math.min(percent, 99)
+export function displayOverallPercent(overallProgress: number): number {
+  // File transfers can finish before minting and metadata saves complete.
+  return Math.min(overallPercent(overallProgress), 99)
 }
 
 function seedFromPendingUnits(pendingFiles: PendingUploadUnit[]): {

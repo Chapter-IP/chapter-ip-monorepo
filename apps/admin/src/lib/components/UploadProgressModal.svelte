@@ -30,7 +30,7 @@
     labelById = next.labelById
   })
 
-  const overallPercentValue = $derived(displayOverallPercent(progress.overallProgress, progress.phase))
+  const overallPercentValue = $derived(displayOverallPercent(progress.overallProgress))
   const subtitle = $derived(phaseLabels[progress.phase])
   const showFileList = $derived(progress.phase === 'uploading')
 

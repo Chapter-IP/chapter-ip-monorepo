@@ -5,7 +5,6 @@
   import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
   import { extractTextFromFile } from '@repo/fe-services'
   import { onMount } from 'svelte'
-  import WarningIcon from '$lib/assets/warning-icon.svg'
 
   let {
     currentStep = $bindable(),
@@ -140,27 +139,17 @@
         >
           {$workStore.sampleText}
         </p>
-        <div class="mt-8.75 flex items-center gap-2">
-          {#if $workStore.contentType === 'Script'}<img src={WarningIcon} alt="" class="size-4" />{/if}
-          <button
-            type="button"
-            onclick={() => (sampleExpanded = !sampleExpanded)}
-            class="inline-flex items-center gap-1.5 text-base bg-transparent cursor-pointer text-primary"
-          >
-            {sampleExpanded ? 'Show less' : $workStore.contentType === 'Lyrics' ? 'Show more' : 'Read full sample'}
-            {#if $workStore.contentType === 'Script'}
-              <svg
-                width="10"
-                height="10"
-                viewBox="0 0 8 8"
-                fill="none"
-                class="transition-transform duration-200 {sampleExpanded ? 'rotate-180' : ''}"
-              >
-                <path d="M1 7L7 1M7 1H2.5M7 1V5.5" stroke="#6734FF" stroke-width="1.5" stroke-linecap="round" />
-              </svg>
-            {/if}
-          </button>
-        </div>
+        {#if $workStore.contentType === 'Lyrics'}
+          <div class="mt-8.75 flex items-center gap-2">
+            <button
+              type="button"
+              onclick={() => (sampleExpanded = !sampleExpanded)}
+              class="inline-flex items-center gap-1.5 text-base bg-transparent cursor-pointer text-primary"
+            >
+              {sampleExpanded ? 'Show less' : 'Show more'}
+            </button>
+          </div>
+        {/if}
       </div>
     {/if}
     <div class="flex justify-end mb-4">
