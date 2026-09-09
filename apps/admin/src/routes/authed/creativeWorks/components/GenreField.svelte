@@ -26,7 +26,7 @@
       <button
         type="button"
         onclick={() => onToggle(genre)}
-        class="px-3.75 h-8.5 rounded-[14px] text-sm font-medium transition-colors border inline-flex items-center gap-1.5
+        class="px-5 h-7 rounded-[14px] text-sm font-medium transition-colors border inline-flex items-center gap-1.5
         {value.includes(genre)
           ? 'bg-primary border-primary text-cream'
           : 'bg-[#eae6e2] border-[#71707a]/25 text-dark opacity-60 hover:opacity-100'}"
@@ -39,7 +39,7 @@
       <button
         type="button"
         onclick={() => onToggle(custom)}
-        class="px-3.75 h-8.5 rounded-[14px] text-sm font-medium transition-colors border inline-flex items-center gap-1.5 bg-primary border-primary text-cream"
+        class="px-5 h-7 rounded-[14px] text-sm font-medium transition-colors border inline-flex items-center gap-1.5 bg-primary border-primary text-cream"
       >
         {custom}
         <PlusIcon class="shrink-0" />

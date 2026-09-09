@@ -3,19 +3,19 @@
   import { workStore } from '../stores/work-store'
 </script>
 
-<div class="space-y-4">
-  <h3 class="text-base font-semibold text-dark font-heading">Permitted uses</h3>
+<div class="space-y-4.5">
+  <h3 class=" text-base font-medium text-left text-dark">Permitted uses</h3>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 max-w-75">
     {#each PERMITTED_USES as use (use.id)}
-      <label class="flex items-center gap-3 cursor-pointer">
+      <label class="flex items-center gap-2.5 cursor-pointer">
         <input
           type="checkbox"
           checked={$workStore.licensing.permittedUses[use.id]}
           onchange={() => workStore.setPermittedUse(use.id, !$workStore.licensing.permittedUses[use.id])}
-          class="checkbox"
+          class="checkbox size-5 rounded-[3px] border rgba(112, 112, 112, 0.25) bg-[#eae6e2]"
         />
-        <span class="text-sm font-semibold text-[#1A1A2E]">{use.label}</span>
+        <span class="text-base font-medium leading-[1.13px] text-left text-[#202225]">{use.label}</span>
       </label>
     {/each}
   </div>

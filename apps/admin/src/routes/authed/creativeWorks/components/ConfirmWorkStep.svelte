@@ -32,7 +32,7 @@
   }
 </script>
 
-<div class="space-y-12 mt-7.25 text-dark">
+<div class="space-y-8.75 mt-7.25 text-dark">
   <!-- Title Section -->
   <div class="pb-3">
     <h2 class="mb-2 text-[28px] font-medium text-left text-dark font-heading">Confirm your Creative Work</h2>
@@ -174,7 +174,7 @@
     <!-- Permitted uses -->
     {#if enabledPermittedUses.length > 0}
       <div class="mb-6">
-        <h2 class="text-lg font-semibold text-dark font-heading mb-4">Permitted uses</h2>
+        <h2 class="text-lg font-semibold text-dark font-heading mb-4.5">Permitted uses</h2>
         <div class="flex flex-col">
           {#each enabledPermittedUses as use (use.id)}
             <p class="text-[#747474] text-sm leading-relaxed pl-6">{use.label}</p>
