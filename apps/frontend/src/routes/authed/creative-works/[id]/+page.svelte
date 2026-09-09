@@ -3,12 +3,10 @@
   import { configStore, ContractName } from '$lib/stores/config.svelte'
   import WorkPurchasePage from './WorkPurchasePage.svelte'
   import { normalizeWork } from './workDetails'
-  import { toWorkItems, type WorkItem } from '../works'
   import type { WorkDetails } from '@repo/content-types/works'
 
   let { data } = $props()
   let workDetails = $state<WorkDetails | null>(null)
-  let similarWorks = $state<WorkItem[]>([])
   let loading = $state(true)
 
   $effect(() => {
@@ -23,7 +21,6 @@
         const normalized = normalizeWork(content, contractAddress)
         if (!normalized) return void (await goto('/authed/creative-works'))
         workDetails = normalized
-        similarWorks = toWorkItems(content.similarContents ?? [], contractAddress)
       } catch {
         if (!cancelled) await goto('/authed/creative-works')
       } finally {
@@ -42,5 +39,5 @@
     aria-label="Loading creative work"
   ></div>
 {:else if workDetails}
-  <WorkPurchasePage {workDetails} {similarWorks} />
+  <WorkPurchasePage {workDetails} />
 {/if}

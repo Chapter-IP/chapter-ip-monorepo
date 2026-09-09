@@ -2,6 +2,7 @@ import { writable, derived } from 'svelte/store'
 import type { UploadProgressEvent } from '$lib/upload/upload.service'
 import { type WorkFileKey } from '$lib/constants/workFileBuckets'
 import type { WorkMetadataInput, WorkLicensingMetadata } from '@repo/content-types/works'
+import { LICENSE_TYPE_OPTIONS } from '@repo/content-types/works'
 import {
   type PreloadedExistingFiles,
   isPreviewBucket,
@@ -24,14 +25,23 @@ const loadPreviewFiles = async (
   content: { id: string; metadata?: WorkMetadataInput },
   trpcClient: Parameters<typeof loadFilesFromContent>[1],
 ): Promise<ExistingFile[]> => {
-  const previewNames = Array.isArray(content.metadata?.preview_files_name)
-    ? new Set(content.metadata.preview_files_name as string[])
-    : null
-  if (!previewNames || !content.id) return []
+  const metadata = content.metadata
+  const previewNames = new Set([
+    ...(Array.isArray(metadata?.preview_files_name) ? metadata.preview_files_name : []),
+    ...(metadata?.sample_file_name ? [metadata.sample_file_name] : []),
+    // Older Lyrics listings mirrored originals under their work filenames.
+    ...(metadata?.contentType === 'Lyrics' &&
+    metadata.sample_file_name === undefined &&
+    Array.isArray(metadata.files_name)
+      ? (metadata.files_name ?? [])
+      : []),
+  ])
+  if (!previewNames.size || !content.id) return []
   const { files } = await trpcClient.contents.getContentAllFilesLink.query({ contentId: content.id })
   return (files ?? [])
     .filter((file) => isPreviewBucket(file.bucket) && matchesFileName(file.label, previewNames))
     .map((file) => ({ id: file.id, name: file.label, url: file.url, key: file.key }))
+    .sort((a, b) => Number(b.name === metadata?.sample_file_name) - Number(a.name === metadata?.sample_file_name))
 }
 
 export async function loadExistingFiles(
@@ -49,8 +59,6 @@ function createWorkStore() {
       works: [],
       'preview-files': [],
     },
-    previewImage: null,
-    existingPreviewUrl: null,
     title: '',
     contentType: '',
     description: '',
@@ -146,8 +154,6 @@ function createWorkStore() {
     removeAuthor(index: number) {
       update((s) => ({ ...s, authors: s.authors.filter((_, i) => i !== index) }))
     },
-    setPreviewImage: (file: File | null) => update((s) => ({ ...s, previewImage: file })),
-    setExistingPreviewUrl: (url: string | null) => update((s) => ({ ...s, existingPreviewUrl: url })),
     setLicenseTypeEnabled: (id: string, value: boolean) =>
       update((s) => {
         const nextLicensing = {
@@ -183,7 +189,6 @@ function createWorkStore() {
     hydrateFromContent(
       content: { metadata?: WorkMetadataInput; tags?: string[] },
       existingFiles: ExistingFilesByBucket = emptyExistingFiles(),
-      existingPreviewUrl: string | null = null,
     ) {
       const metadata = (content.metadata ?? {}) as Record<string, unknown>
       const title = (metadata.name as string) ?? ''
@@ -211,7 +216,6 @@ function createWorkStore() {
         },
         confirmations: { rightsConfirmed: true },
         existingFiles,
-        existingPreviewUrl,
         isEditing: Object.values(existingFiles).some((files) => files.length > 0),
       }))
     },
@@ -221,8 +225,6 @@ function createWorkStore() {
           works: [],
           'preview-files': [],
         },
-        previewImage: null,
-        existingPreviewUrl: null,
         title: '',
         contentType: '',
         description: '',
@@ -255,10 +257,12 @@ function createWorkStore() {
 export const workStore = createWorkStore()
 
 export const isFormValid = derived(workStore, ($s) => {
-  const enabledLicenseTypes = Object.entries($s.licensing.licenseTypes).filter(([, enabled]) => enabled)
+  const enabledLicenseTypes = LICENSE_TYPE_OPTIONS.filter(({ value }) => $s.licensing.licenseTypes[value])
   const hasLicenseType = enabledLicenseTypes.length > 0
 
-  const hasValidLicensePrice = enabledLicenseTypes.every(([id]) => Number($s.licensing.licensePrices[id] || 0) >= 0.5)
+  const hasValidLicensePrice = enabledLicenseTypes.every(
+    ({ value }) => Number($s.licensing.licensePrices[value] || 0) >= 0.5,
+  )
 
   return hasLicenseType && hasValidLicensePrice && $s.licensing.agreedToFee
 })

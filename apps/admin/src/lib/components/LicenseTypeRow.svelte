@@ -15,13 +15,13 @@
 <div class="flex items-start gap-4">
   <Toggle checked={isEnabled} onToggle={() => store.setLicenseTypeEnabled(license.id, !isEnabled)} />
 
-  <div class="flex flex-col w-full">
-    <div class="flex items-start justify-between gap-3">
+  <div class="flex min-w-0 flex-col w-full">
+    <div class="flex flex-col sm:flex-row items-start justify-between gap-3">
       <div>
         <p class="text-base font-semibold text-[#202225]">
           {labelTitle} - {labelSubtitle}
         </p>
-        <p class="text-base font-medium text-[#747474] max-w-150">
+        <p class="text-sm font-medium text-[#747474] max-w-150">
           {license.description}
         </p>
       </div>
@@ -36,6 +36,8 @@
           <span class="px-2.5 text-[#30364b]">$</span>
           <input
             type="number"
+            aria-label={`${license.label} price in USD`}
+            disabled={!isEnabled}
             min="0.5"
             value={$store.licensing.licensePrices[license.id]}
             oninput={(e) => store.setLicenseTypePrice(license.id, e.currentTarget.value)}

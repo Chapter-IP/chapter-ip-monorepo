@@ -34,6 +34,8 @@ vi.mock('./file-upload.service', () => ({
 }))
 
 import UploadService from './upload.service'
+import { syncWorkSample } from '../../routes/authed/creativeWorks/service/work-previews'
+vi.mock('@repo/ui-components', () => ({ notify: vi.fn(), ToastType: { FAIL: 'fail' } }))
 import { STATUS } from '../../routes/authed/likeness/constants/constants'
 
 const createTrpcClient = () => {
@@ -770,4 +772,37 @@ describe('UploadService', () => {
       })
     })
   })
+})
+
+it('stores identical Lyrics bytes in private content and public sample objects, keeping only private keys for purchase', async () => {
+  const original = new File(['full lyrics'], 'irregardless.txt', { type: 'text/plain' })
+  const { client, createContentFileUploadUrl, registerContentFile } = createTrpcClient()
+  const service = new UploadService({ mintWithPrices: vi.fn() } as never)
+  const { contentId, keys } = await service.saveDraftContent({
+    uploads: [{ file: original, name: 'work_1' }],
+    metadata: { type: 'works', contentType: 'Lyrics' },
+    trpcClient: client as never,
+    includePreviews: false,
+  })
+  const samples = await syncWorkSample({
+    source: original,
+    contentId,
+    trpcClient: client as never,
+    uploadService: service,
+  })
+  expect(keys).toEqual(['original-key'])
+  expect(samples).toEqual(['sample.txt'])
+  expect(createContentFileUploadUrl).toHaveBeenNthCalledWith(
+    1,
+    expect.objectContaining({ bucket: 'content', filename: 'work_1', extension: 'txt' }),
+  )
+  expect(createContentFileUploadUrl).toHaveBeenNthCalledWith(
+    2,
+    expect.objectContaining({ bucket: 'preview', filename: 'sample', extension: 'txt' }),
+  )
+  expect(mocks.uploadFileToBucket.mock.calls.slice(-2).map(([file]) => file)).toEqual([original, original])
+  expect(registerContentFile).toHaveBeenNthCalledWith(
+    2,
+    expect.objectContaining({ bucket: 'preview', filename: 'sample.txt' }),
+  )
 })

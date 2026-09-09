@@ -24,7 +24,6 @@ describe('creative work data helpers', () => {
               description: 'A thriller.',
               authors: [' Chadwick Bowser ', ''],
               genre: ['Thriller'],
-              preview_file_name: 'preview.png',
             },
           },
           { id: 'location-1', metadata: { type: 'location' } },
@@ -38,7 +37,7 @@ describe('creative work data helpers', () => {
         contentType: 'Script',
         authors: ['Chadwick Bowser'],
         genres: ['Thriller'],
-        imageUrl: getWorkPreviewUrl(CONTRACT, 'work-1', 'preview.png'),
+        imageUrl: WORK_PLACEHOLDER_URL,
       },
     ])
   })
@@ -47,6 +46,15 @@ describe('creative work data helpers', () => {
     expect(toWorkItems([{ id: 'work-2', metadata: { type: 'works', name: 'Lyrics' } }], CONTRACT)[0]?.imageUrl).toBe(
       WORK_PLACEHOLDER_URL,
     )
+  })
+
+  it('uses the uploaded preview image when one exists', () => {
+    const [work] = toWorkItems(
+      [{ id: 'work-3', metadata: { type: 'works', name: 'Screenplay', preview_file_name: ' cover.jpg ' } }],
+      CONTRACT,
+    )
+
+    expect(work?.imageUrl).toBe(`${r2BaseConfig.previewUrl}/${CONTRACT}/work-3/cover.jpg`)
   })
 
   it('builds the preview URL', () => {

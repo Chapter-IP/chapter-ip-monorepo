@@ -21,7 +21,10 @@ export type WorkMetadata = {
   authors?: string[]
   files_name?: string[]
   preview_file_name?: string
+  /** Preview-bucket object name (sample.<extension>); an empty string explicitly means no public sample. */
+  sample_file_name?: string
   preview_files_name?: string[]
+  sample_text?: string
   licensing: WorkLicensingMetadata
 }
 
@@ -78,6 +81,13 @@ export type WorkDetails = {
   genres: string[]
   licenses: WorkLicense[]
   image: WorkImage
+  sampleText?: string
+  sample?: {
+    filename: string
+    url: string
+  }
+  permittedUses: string[]
+  additionalTerms: string[]
   files: string[]
 }
 

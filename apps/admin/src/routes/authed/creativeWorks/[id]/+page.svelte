@@ -1,6 +1,6 @@
 <script lang="ts">
   import { WORK_FILE_BUCKETS, createWorkFileNames } from '$lib/constants/workFileBuckets'
-  import { appendOriginalExtension, uploadPreviewIfNeeded } from '$lib/helpers/work-upload'
+  import { appendOriginalExtension } from '$lib/helpers/work-upload'
   import { afterNavigate, beforeNavigate } from '$app/navigation'
   import { workStore } from '../stores/work-store'
   import UploadStepHeader from '../components/UploadStepHeader.svelte'
@@ -8,6 +8,7 @@
   import UploadLicensingStep from '../components/UploadLicensingStep.svelte'
   import ConfirmWorkStep from '../components/ConfirmWorkStep.svelte'
 
+  import { getWorkSampleSource, syncWorkSample, type ExistingSampleFile } from '../service/work-previews'
   import type { NamedUpload } from '$lib/upload/upload.service'
   import { startUploadingPhase, type UploadSession } from '$lib/upload/upload-session'
   import UploadProgressModal from '$lib/components/UploadProgressModal.svelte'
@@ -19,14 +20,14 @@
 
   let { data } = $props()
 
-  let initialPreviewFileIds = $state<string[]>([])
-
   let currentStep = $state(1)
   const { uploadService, uploadSessions } = createWorkUploadServices()
 
+  let initialPreviewFiles: ExistingSampleFile[] = []
+
   onMount(() => {
-    initialPreviewFileIds = (data.existingFiles?.['preview-files'] ?? []).map((file) => file.id)
-    workStore.hydrateFromContent(data, data.existingFiles, data.existingPreviewUrl)
+    initialPreviewFiles = data.existingFiles?.['preview-files'] ?? []
+    workStore.hydrateFromContent(data, data.existingFiles)
   })
   onDestroy(() => {
     uploadSessions.invalidate()
@@ -36,21 +37,11 @@
   beforeNavigate(() => workStore.setLoading(true))
   afterNavigate(() => workStore.setLoading(false))
 
-  const buildWorkMetadata = (uploadNames: string[], previewUploadNames: string[]) => {
-    const previewImage = $workStore.previewImage
-    const previewFileName = previewImage
-      ? appendOriginalExtension('preview', previewImage)
-      : $workStore.existingPreviewUrl
-        ? (data.metadata?.preview_file_name as string | undefined)
-        : undefined
+  const buildWorkMetadata = (uploadNames: string[]) => {
     const existingNames = $workStore.existingFiles.works.map((file) => file.name)
     const newNames = $workStore.files.works.map((file, index) => appendOriginalExtension(uploadNames[index], file))
     const filesName = [...existingNames, ...newNames]
     const existingPreviewNames = $workStore.existingFiles['preview-files'].map((file) => file.name)
-    const newPreviewNames = $workStore.files['preview-files'].map((file, index) =>
-      appendOriginalExtension(previewUploadNames[index], file),
-    )
-    const previewFilesName = [...existingPreviewNames, ...newPreviewNames]
     return {
       type: 'works' as const,
       name: $workStore.title,
@@ -60,8 +51,9 @@
       authors: $workStore.authors,
       sample_text: $workStore.sampleText || undefined,
       files_name: filesName,
-      preview_file_name: previewFileName,
-      preview_files_name: previewFilesName.length > 0 ? previewFilesName : undefined,
+      preview_file_name: data.metadata?.preview_file_name as string | undefined,
+      sample_file_name: '',
+      preview_files_name: existingPreviewNames,
       licensing: $workStore.licensing,
     }
   }
@@ -84,38 +76,14 @@
   const getCurrentFiles = () =>
     (data.allExistingFiles?.works ?? data.existingFiles?.works ?? data.files ?? []) as ExistingContentFile[]
 
-  const removeOldPreviewFiles = async (trpcClient: ReturnType<typeof uploadService.createTrpcClient>) => {
-    if (initialPreviewFileIds.length === 0) return
-
-    const keptPreviewFileIds = new Set($workStore.existingFiles['preview-files'].map((file) => file.id))
-
-    for (const fileId of initialPreviewFileIds) {
-      if (keptPreviewFileIds.has(fileId)) continue
-      try {
-        await trpcClient.contents.removeContentFile.mutate({ fileId })
-      } catch (error) {
-        console.error(`Failed to remove preview file ${fileId}:`, error)
-      }
-    }
-  }
-
   const buildWorkPayload = () => {
     const uploadNames = buildUploadNames()
-    const previewUploadNames = createWorkFileNames(
-      'preview-files',
-      $workStore.files['preview-files'].length,
-      $workStore.existingFiles['preview-files'].map((file) => file.name),
-    )
-    const previewUploads = $workStore.files['preview-files'].map((file, index) => ({
-      file,
-      name: previewUploadNames[index],
-    }))
 
     return {
       keptFileIds: getKeptFileIds(),
-      metadata: buildWorkMetadata(uploadNames, previewUploadNames),
+      metadata: buildWorkMetadata(uploadNames),
       uploads: buildNamedUploads(uploadNames),
-      previewUploads,
+      sampleSource: getWorkSampleSource($workStore),
       tags: (data.tags ?? []) as string[],
     }
   }
@@ -140,7 +108,7 @@
   ) => {
     const trpcClient = uploadService.createTrpcClient()
     const contentId = data.id
-    const { keptFileIds, metadata, uploads, previewUploads, tags } = buildWorkPayload()
+    const { keptFileIds, metadata, uploads, sampleSource, tags } = buildWorkPayload()
 
     startUploadingPhase(uploadSession.setProgress, uploads, false)
 
@@ -150,55 +118,40 @@
       keptFileIds,
       uploads,
       trpcClient,
-      publishOriginal: $workStore.contentType === 'Lyrics',
       onUploadProgress: uploadSession.setProgress,
     })
 
-    await removeOldPreviewFiles(trpcClient)
-
-    let previewUploadFailed = false
-    try {
-      await uploadPreviewIfNeeded({
-        previewImage: $workStore.previewImage,
-        contentId,
-        uploadService,
-        trpcClient,
-      })
-    } catch (previewError) {
-      previewUploadFailed = true
-      console.error('Error uploading preview image:', previewError)
-      notify('Preview upload failed.', ToastType.FAIL)
-    }
-
-    try {
-      await uploadService.uploadPreviewFiles({
-        uploads: previewUploads,
-        contentId,
-        trpcClient,
-      })
-    } catch (previewError) {
-      console.error('Error uploading preview files:', previewError)
-      notify('Preview files upload failed.', ToastType.FAIL)
-    }
-
-    const metadataToSave =
-      previewUploadFailed && $workStore.previewImage
-        ? {
-            ...metadata,
-            preview_file_name: data.metadata?.preview_file_name as string | undefined,
-          }
-        : metadata
+    const isKeptSource = sampleSource && !(sampleSource instanceof File)
+    const preserveExistingSample = Boolean(
+      isKeptSource &&
+      ($workStore.contentType === 'Lyrics'
+        ? data.metadata?.contentType === 'Lyrics' && sampleSource.id === data.existingFiles.works[0]?.id
+        : initialPreviewFiles.some((file) => file.id === sampleSource.id && /^sample\.[^.]+$/.test(file.name))),
+    )
+    const sampleNames = await syncWorkSample({
+      uploadService,
+      trpcClient,
+      contentId,
+      source: sampleSource,
+      existingPreviewFiles: initialPreviewFiles,
+      preserveExistingSample,
+      onRemoved: (fileId) => {
+        initialPreviewFiles = initialPreviewFiles.filter((file) => file.id !== fileId)
+      },
+    })
+    metadata.sample_file_name = sampleNames[0] ?? ''
+    metadata.preview_files_name = sampleNames
 
     await uploadService.updateContentMetadata({
       contentId,
       trpcClient,
-      metadata: metadataToSave,
+      metadata,
       tags,
       tokenId,
       status,
     })
 
-    return { contentId, keys, metadata: metadataToSave, trpcClient, tags }
+    return { contentId, keys, metadata, trpcClient, tags }
   }
 
   const withWorkLoading = async (
@@ -288,20 +241,22 @@
   }
 </script>
 
-<div class="min-h-xl rounded-3xl p-5 shadow-md md:p-10 bg-[#f8f5f1]">
-  <UploadStepHeader {currentStep} />
+<div class="min-h-xl rounded-3xl p-5 shadow-md md:p-12.5 bg-[#f8f5f1]">
+  <div class="max-w-250">
+    <UploadStepHeader {currentStep} />
 
-  {#if currentStep === 1}
-    <UploadWorkStep bind:currentStep onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined} />
-  {:else if currentStep === 2}
-    <UploadLicensingStep bind:currentStep onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined} />
-  {:else}
-    <ConfirmWorkStep
-      bind:currentStep
-      onFormSubmit={onSubmitClick}
-      onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined}
-    />
-  {/if}
+    {#if currentStep === 1}
+      <UploadWorkStep bind:currentStep onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined} />
+    {:else if currentStep === 2}
+      <UploadLicensingStep bind:currentStep onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined} />
+    {:else}
+      <ConfirmWorkStep
+        bind:currentStep
+        onFormSubmit={onSubmitClick}
+        onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined}
+      />
+    {/if}
+  </div>
 </div>
 
 {#if $workStore.ui.uploadProgress}

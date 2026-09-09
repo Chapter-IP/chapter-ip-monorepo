@@ -88,18 +88,18 @@
     </label>
 
     {#if isScript || isLyrics}
-      <!-- Description -->
-      <label class="block space-y-3">
-        <span class="mb-2 block text-sm text-[#72717b]">Description</span>
-        <textarea
-          bind:value={$workStore.description}
-          placeholder="Description"
-          class="w-full h-25 bg-white rounded border border-[#ddd] px-3.75 py-3 text-sm font-medium text-[#72717b]
-            focus:border-primary focus:outline-none focus:shadow-[0_3px_6px_0_rgba(0,0,0,0.16)] resize-none transition-shadow"
-        ></textarea>
-      </label>
-
       {#if isScript}
+        <!-- Description -->
+        <label class="block space-y-3">
+          <span class="mb-2 block text-sm text-[#72717b]">Description</span>
+          <textarea
+            bind:value={$workStore.description}
+            placeholder="Description"
+            class="w-full h-25 bg-white rounded border border-[#ddd] px-3.75 py-3 text-sm font-medium text-[#72717b]
+            focus:border-primary focus:outline-none focus:shadow-[0_3px_6px_0_rgba(0,0,0,0.16)] resize-none transition-shadow"
+          ></textarea>
+        </label>
+
         <!-- Genre -->
         <GenreField
           value={$workStore.genre}
@@ -117,10 +117,17 @@
 
       {#if isScript}
         <!-- Preview File -->
-        <WorkFileDropzone bucket="preview-files" title="Your Sample content" required />
+        <WorkFileDropzone bucket="preview-files" title="Your sample content" required />
       {/if}
       <!-- Your Text File -->
-      <WorkFileDropzone bucket="works" title="Your Creative Work" required />
+      <WorkFileDropzone
+        bucket="works"
+        title={isLyrics ? 'Your Text File' : 'Your Creative Work'}
+        subtitle={isLyrics
+          ? 'This file is shown as a public sample. Buyers download the original after purchase.'
+          : undefined}
+        required
+      />
 
       <!-- Rights Confirmation -->
       <label class="flex items-start gap-3 cursor-pointer">

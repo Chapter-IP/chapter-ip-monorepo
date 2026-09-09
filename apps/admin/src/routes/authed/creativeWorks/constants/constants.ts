@@ -2,11 +2,13 @@ import { LICENSE_TYPE_OPTIONS, PERMITTED_USE_OPTIONS, WORK_LICENSE_DESCRIPTIONS 
 import type { LicenseType } from '$lib/types/licensing'
 export { STATUS, type StatusValue } from '@repo/content-types/content'
 
-export const LICENSE_TYPES: LicenseType[] = LICENSE_TYPE_OPTIONS.map((option) => ({
-  id: option.value,
-  label: option.label,
-  description: WORK_LICENSE_DESCRIPTIONS[option.value] ?? '',
-}))
+export const LICENSE_TYPES: LicenseType[] = [...LICENSE_TYPE_OPTIONS]
+  .sort((a, b) => Number(b.value === 'perpetual') - Number(a.value === 'perpetual'))
+  .map((option) => ({
+    id: option.value,
+    label: option.label,
+    description: WORK_LICENSE_DESCRIPTIONS[option.value] ?? '',
+  }))
 
 export const PERMITTED_USES = PERMITTED_USE_OPTIONS.map((option) => ({
   id: option.value,
@@ -46,4 +48,4 @@ export const GENRE_OPTIONS = [
   'Young Adult',
 ] as const
 
-export const SCRIPT_FILE_EXTENSIONS = ['pdf', 'docx', 'txt', 'rtf', 'epub', 'md'] as const
+export const SCRIPT_FILE_EXTENSIONS = ['pdf', 'docx', 'txt', 'epub', 'md'] as const

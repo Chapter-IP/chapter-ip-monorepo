@@ -51,6 +51,22 @@
               </div>{/each}
           </div>{:else}<p class="mt-2">Not specified.</p>{/if}
       </section>
+      {#if work.permittedUses.length || work.additionalTerms.length}
+        <section aria-label="Usage terms" class="grid gap-5 sm:grid-cols-2">
+          {#if work.permittedUses.length}
+            <div>
+              <h3 class="text-base font-semibold text-dark">Permitted Uses</h3>
+              <p class="mt-2">{work.permittedUses.join(', ')}</p>
+            </div>
+          {/if}
+          {#if work.additionalTerms.length}
+            <div>
+              <h3 class="text-base font-semibold text-dark">Additional Information</h3>
+              <p class="mt-2">{work.additionalTerms.join(', ')}</p>
+            </div>
+          {/if}
+        </section>
+      {/if}
       {#if work.files.length}<section aria-label="Files">
           <h3 class="text-base font-semibold text-dark">Files</h3>
           <div class="mt-3 flex flex-wrap gap-2">

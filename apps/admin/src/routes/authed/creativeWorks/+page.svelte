@@ -9,9 +9,10 @@
   import UploadProgressModal from '$lib/components/UploadProgressModal.svelte'
   import { notify, ToastType } from '@repo/ui-components'
   import { createWorkFileNames } from '$lib/constants/workFileBuckets'
-  import { appendOriginalExtension, uploadPreviewIfNeeded } from '$lib/helpers/work-upload'
+  import { appendOriginalExtension } from '$lib/helpers/work-upload'
   import { createWorkUploadServices, getLicensePrices, goToFiles, openSuccessModal } from './service/work.helpers'
   import { onDestroy } from 'svelte'
+  import { getWorkSampleSource, syncWorkSample } from './service/work-previews'
 
   let currentStep = $state(1)
   const { uploadService, uploadSessions } = createWorkUploadServices()
@@ -30,17 +31,8 @@
       file,
       name: uploadNames[index],
     }))
-    const previewUploadNames = createWorkFileNames('preview-files', $workStore.files['preview-files'].length)
-    const previewUploads = $workStore.files['preview-files'].map((file, index) => ({
-      file,
-      name: previewUploadNames[index],
-    }))
+    const sampleSource = getWorkSampleSource($workStore)
     const filesName = $workStore.files.works.map((file, index) => appendOriginalExtension(uploadNames[index], file))
-    const previewFilesName = $workStore.files['preview-files'].map((file, index) =>
-      appendOriginalExtension(previewUploadNames[index], file),
-    )
-    const previewImage = $workStore.previewImage
-    const previewFileName = previewImage ? appendOriginalExtension('preview', previewImage) : undefined
     const metadata: Record<string, unknown> = {
       type: 'works' as const,
       name: $workStore.title,
@@ -50,12 +42,12 @@
       authors: $workStore.authors,
       sample_text: $workStore.sampleText || undefined,
       files_name: filesName,
-      preview_file_name: previewFileName,
-      preview_files_name: previewFilesName.length > 0 ? previewFilesName : undefined,
+      sample_file_name: '',
+      preview_files_name: [],
       licensing: $workStore.licensing,
     }
 
-    return { uploads, previewUploads, metadata, tags: [] as string[] }
+    return { uploads, sampleSource, metadata, tags: [] as string[] }
   }
 
   const onSaveDraftClick = async () => {
@@ -63,7 +55,7 @@
     try {
       workStore.setLoading(true)
       const trpcClient = uploadService.createTrpcClient()
-      const { uploads, previewUploads, metadata, tags } = buildWorkPayload()
+      const { uploads, sampleSource, metadata, tags } = buildWorkPayload()
 
       startUploadingPhase(uploadSession.setProgress, uploads)
 
@@ -73,32 +65,18 @@
         metadata,
         tags,
         withWatermark: false,
-        publishOriginal: $workStore.contentType === 'Lyrics',
         onUploadProgress: uploadSession.setProgress,
       })
 
-      try {
-        await uploadPreviewIfNeeded({
-          previewImage: $workStore.previewImage,
-          contentId,
-          uploadService,
-          trpcClient,
-        })
-      } catch (previewError) {
-        console.error('Error uploading preview image:', previewError)
-        notify('Draft saved, but preview upload failed.', ToastType.FAIL)
-      }
-
-      try {
-        await uploadService.uploadPreviewFiles({
-          uploads: previewUploads,
-          contentId,
-          trpcClient,
-        })
-      } catch (previewError) {
-        console.error('Error uploading preview files:', previewError)
-        notify('Draft saved, but preview files upload failed.', ToastType.FAIL)
-      }
+      const sampleNames = await syncWorkSample({
+        uploadService,
+        trpcClient,
+        contentId,
+        source: sampleSource,
+      })
+      metadata.sample_file_name = sampleNames[0] ?? ''
+      metadata.preview_files_name = sampleNames
+      await uploadService.updateContentMetadata({ trpcClient, contentId, metadata, tags })
 
       notify('Draft saved', ToastType.SUCCESS)
       await goToFiles()
@@ -115,7 +93,7 @@
     try {
       workStore.setLoading(true)
       const trpcClient = uploadService.createTrpcClient()
-      const { uploads, previewUploads, metadata, tags } = buildWorkPayload()
+      const { uploads, sampleSource, metadata, tags } = buildWorkPayload()
 
       startUploadingPhase(uploadSession.setProgress, uploads)
 
@@ -125,27 +103,18 @@
         metadata,
         tags,
         withWatermark: false,
-        publishOriginal: $workStore.contentType === 'Lyrics',
         onUploadProgress: uploadSession.setProgress,
       })
 
-      await uploadPreviewIfNeeded({
-        previewImage: $workStore.previewImage,
-        contentId,
+      const sampleNames = await syncWorkSample({
         uploadService,
         trpcClient,
+        contentId,
+        source: sampleSource,
       })
-
-      try {
-        await uploadService.uploadPreviewFiles({
-          uploads: previewUploads,
-          contentId,
-          trpcClient,
-        })
-      } catch (previewError) {
-        console.error('Error uploading preview files:', previewError)
-        notify('Preview files upload failed, continuing with publish.', ToastType.FAIL)
-      }
+      metadata.sample_file_name = sampleNames[0] ?? ''
+      metadata.preview_files_name = sampleNames
+      await uploadService.updateContentMetadata({ trpcClient, contentId, metadata, tags })
 
       uploadSession.setProgress({ phase: 'minting', overallProgress: 1 })
       const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing))
@@ -161,8 +130,6 @@
         trpcClient,
       })
 
-      uploadSession.end()
-
       openSuccessModal()
     } catch (error) {
       console.error('Error uploading file:', error)
@@ -177,16 +144,18 @@
   }
 </script>
 
-<div class="min-h-screen rounded-3xl p-5 shadow-md md:p-10 bg-[#f8f5f1]">
-  <UploadStepHeader {currentStep} />
+<div class="min-h-screen rounded-3xl p-5 shadow-md md:p-12.5 bg-[#f8f5f1]">
+  <div class="max-w-250">
+    <UploadStepHeader {currentStep} />
 
-  {#if currentStep === 1}
-    <UploadWorkStep bind:currentStep onSaveDraft={onSaveDraftClick} />
-  {:else if currentStep === 2}
-    <UploadLicensingStep bind:currentStep onSaveDraft={onSaveDraftClick} />
-  {:else}
-    <ConfirmWorkStep bind:currentStep onFormSubmit={onSubmitClick} onSaveDraft={onSaveDraftClick} />
-  {/if}
+    {#if currentStep === 1}
+      <UploadWorkStep bind:currentStep onSaveDraft={onSaveDraftClick} />
+    {:else if currentStep === 2}
+      <UploadLicensingStep bind:currentStep onSaveDraft={onSaveDraftClick} />
+    {:else}
+      <ConfirmWorkStep bind:currentStep onFormSubmit={onSubmitClick} onSaveDraft={onSaveDraftClick} />
+    {/if}
+  </div>
 </div>
 
 {#if $workStore.ui.uploadProgress}

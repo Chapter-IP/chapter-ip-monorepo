@@ -248,7 +248,9 @@
       if (!trpcClient) throw new Error('Missing TRPC client')
 
       const result = await trpcClient.contents.getContentAllFilesLink.query(getFilesLinkInput())
-      files = result.files
+      files = result.files.filter(({ bucket }) =>
+        ['content', 'chapter-ip-content', 'chapter-ip-content-test'].includes(bucket),
+      )
       if (!files.length) throw new Error('No content files available')
 
       startOneTimeGraceIfNeeded()

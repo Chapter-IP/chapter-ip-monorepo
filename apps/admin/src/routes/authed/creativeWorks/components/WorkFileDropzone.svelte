@@ -21,7 +21,7 @@
   const files = $derived($workStore.files[bucket])
   const existingFiles = $derived($workStore.existingFiles[bucket])
   const hasFiles = $derived(files.length > 0 || existingFiles.length > 0)
-  const isSingleFile = $derived(bucket === 'preview-files')
+  const isSingleFile = $derived(bucket === 'preview-files' || $workStore.contentType === 'Lyrics')
 
   const accept = [...new Set(SCRIPT_FILE_EXTENSIONS.flatMap((ext) => [`.${ext}`, `.${ext.toUpperCase()}`]))].join(',')
 
@@ -32,12 +32,12 @@
       SCRIPT_FILE_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(`.${ext}`)),
     )
     if (!accepted.length) return
-    if (bucket === 'preview-files') {
+    if (isSingleFile) {
       const current = files.length + existingFiles.length
       if (current >= 1) return
       const acceptedFiles = accepted.slice(0, 1 - current)
       workStore.appendMediaFiles(bucket, acceptedFiles)
-      void extractSample(acceptedFiles[0], 'preview file')
+      void extractSample(acceptedFiles[0], bucket === 'preview-files' ? 'preview file' : 'work file')
       return
     }
     workStore.appendMediaFiles(bucket, accepted)
@@ -101,17 +101,13 @@
 </script>
 
 <div class="block space-y-3">
-  <h1 class="text-sm font-semibold text-dark">Upload your sample content</h1>
-  <p class="text-base text-[#72717b]">{subtitle}</p>
-  <div class="flex justify-between">
-    <span class="block text-sm text-[#72717b]"
-      >{title}{#if required}
-        <span class="text-[#ff0000]">*</span>{/if}</span
-    >
-    {#if required}
-      <span class="text-sm text-[#f00]">* required</span>
-    {/if}
+  <div class="flex justify-between gap-3">
+    <h2 class="text-sm font-semibold text-dark">
+      {title}{#if required}<span class="text-[#ff0000]"> *</span>{/if}
+    </h2>
+    {#if required}<span class="text-sm text-[#f00]">* required</span>{/if}
   </div>
+  {#if subtitle}<p class="text-base text-[#72717b]">{subtitle}</p>{/if}
 
   <div
     class="border border-dashed rounded-lg border-[#1A1A2E33] p-8.75 flex flex-col items-center justify-center min-h-50"
@@ -137,7 +133,7 @@
           <FileTile name={file.name} onRemove={(e) => removeFile(e, i)} />
         {/each}
 
-        {#if !(bucket === 'preview-files' && files.length + existingFiles.length >= 1)}
+        {#if !(isSingleFile && files.length + existingFiles.length >= 1)}
           <button
             type="button"
             onclick={openPicker}
@@ -159,9 +155,7 @@
         {isSingleFile ? 'Upload your file' : 'Upload your files'}
       </button>
       <span class="text-[11px] text-center text-[#747474] w-full block mt-1">
-        {isSingleFile
-          ? 'One PDF, DOCX, TXT, RTF, EPUB, or MD file accepted'
-          : 'PDF, DOCX, TXT, RTF, EPUB, MD files accepted'}
+        {isSingleFile ? 'One PDF, DOCX, TXT, EPUB, or MD file accepted' : 'PDF, DOCX, TXT, EPUB, MD files accepted'}
       </span>
     {/if}
 

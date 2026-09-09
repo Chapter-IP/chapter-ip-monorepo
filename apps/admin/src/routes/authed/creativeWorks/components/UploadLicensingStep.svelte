@@ -27,7 +27,7 @@
 <div class="space-y-12 mt-7.25 text-dark">
   <!-- Title Section -->
   <div>
-    <h2 class="mb-2 text-[28px] font-medium text-left text-dark font-heading">Licensing</h2>
+    <h2 class="mb-2 text-[22px] font-semibold text-left text-dark font-heading">Licensing</h2>
     <p class="mt-3 text-base text-[#72717b]">
       Set how creators can license this written work. Pick at least one and name your price. Royalties route to you.
     </p>
@@ -37,7 +37,7 @@
   <div class="space-y-4">
     <h3 class="text-base font-semibold text-dark font-heading">License types <span class="text-[#ff0000]">*</span></h3>
 
-    <div class="space-y-6">
+    <div class="space-y-6 max-w-150">
       {#each LICENSE_TYPES as license (license.id)}
         <LicenseTypeRow {license} store={workStore} />
       {/each}

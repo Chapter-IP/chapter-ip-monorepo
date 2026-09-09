@@ -86,7 +86,7 @@ export function toWorkItems(contentItems: ContentItem[], contractAddress: string
   return contentItems.flatMap((item) => {
     const metadata = item.metadata
     if (metadata?.type !== 'works') return []
-    const preview = metadata.preview_file_name?.trim()
+    const previewImage = metadata.preview_file_name?.trim()
     return [
       {
         id: item.id,
@@ -95,7 +95,7 @@ export function toWorkItems(contentItems: ContentItem[], contractAddress: string
         description: metadata.description?.trim() ?? '',
         authors: stringArray(metadata.authors),
         genres: stringArray(metadata.genre),
-        imageUrl: preview ? getWorkPreviewUrl(contractAddress, item.id, preview) : WORK_PLACEHOLDER_URL,
+        imageUrl: previewImage ? getWorkPreviewUrl(contractAddress, item.id, previewImage) : WORK_PLACEHOLDER_URL,
         metadata,
       },
     ]
