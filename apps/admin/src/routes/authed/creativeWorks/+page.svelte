@@ -30,8 +30,15 @@
       file,
       name: uploadNames[index],
     }))
-    const { licenseTypes, licensePrices, agreedToFee } = $workStore.licensing
+    const previewUploadNames = createWorkFileNames('preview-files', $workStore.files['preview-files'].length)
+    const previewUploads = $workStore.files['preview-files'].map((file, index) => ({
+      file,
+      name: previewUploadNames[index],
+    }))
     const filesName = $workStore.files.works.map((file, index) => appendOriginalExtension(uploadNames[index], file))
+    const previewFilesName = $workStore.files['preview-files'].map((file, index) =>
+      appendOriginalExtension(previewUploadNames[index], file),
+    )
     const previewImage = $workStore.previewImage
     const previewFileName = previewImage ? appendOriginalExtension('preview', previewImage) : undefined
     const metadata: Record<string, unknown> = {
@@ -41,12 +48,14 @@
       description: $workStore.description,
       genre: $workStore.genre,
       authors: $workStore.authors,
+      sample_text: $workStore.sampleText || undefined,
       files_name: filesName,
       preview_file_name: previewFileName,
-      licensing: { licenseTypes, licensePrices, agreedToFee },
+      preview_files_name: previewFilesName.length > 0 ? previewFilesName : undefined,
+      licensing: $workStore.licensing,
     }
 
-    return { uploads, metadata, tags: [] as string[] }
+    return { uploads, previewUploads, metadata, tags: [] as string[] }
   }
 
   const onSaveDraftClick = async () => {
@@ -54,7 +63,7 @@
     try {
       workStore.setLoading(true)
       const trpcClient = uploadService.createTrpcClient()
-      const { uploads, metadata, tags } = buildWorkPayload()
+      const { uploads, previewUploads, metadata, tags } = buildWorkPayload()
 
       startUploadingPhase(uploadSession.setProgress, uploads)
 
@@ -64,6 +73,7 @@
         metadata,
         tags,
         withWatermark: false,
+        publishOriginal: $workStore.contentType === 'Lyrics',
         onUploadProgress: uploadSession.setProgress,
       })
 
@@ -77,6 +87,17 @@
       } catch (previewError) {
         console.error('Error uploading preview image:', previewError)
         notify('Draft saved, but preview upload failed.', ToastType.FAIL)
+      }
+
+      try {
+        await uploadService.uploadPreviewFiles({
+          uploads: previewUploads,
+          contentId,
+          trpcClient,
+        })
+      } catch (previewError) {
+        console.error('Error uploading preview files:', previewError)
+        notify('Draft saved, but preview files upload failed.', ToastType.FAIL)
       }
 
       notify('Draft saved', ToastType.SUCCESS)
@@ -94,7 +115,7 @@
     try {
       workStore.setLoading(true)
       const trpcClient = uploadService.createTrpcClient()
-      const { uploads, metadata, tags } = buildWorkPayload()
+      const { uploads, previewUploads, metadata, tags } = buildWorkPayload()
 
       startUploadingPhase(uploadSession.setProgress, uploads)
 
@@ -104,6 +125,7 @@
         metadata,
         tags,
         withWatermark: false,
+        publishOriginal: $workStore.contentType === 'Lyrics',
         onUploadProgress: uploadSession.setProgress,
       })
 
@@ -114,8 +136,19 @@
         trpcClient,
       })
 
+      try {
+        await uploadService.uploadPreviewFiles({
+          uploads: previewUploads,
+          contentId,
+          trpcClient,
+        })
+      } catch (previewError) {
+        console.error('Error uploading preview files:', previewError)
+        notify('Preview files upload failed, continuing with publish.', ToastType.FAIL)
+      }
+
       uploadSession.setProgress({ phase: 'minting', overallProgress: 1 })
-      const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing.licensePrices))
+      const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing))
       uploadSession.setProgress({ phase: 'finalizing', overallProgress: 1 })
       await uploadService.finalizeContent({ trpcClient, contentId, metadata, tokenId, tags })
 
@@ -144,7 +177,7 @@
   }
 </script>
 
-<div class="min-h-xl rounded-3xl p-5 shadow-md md:p-10 bg-[#f8f5f1]">
+<div class="min-h-screen rounded-3xl p-5 shadow-md md:p-10 bg-[#f8f5f1]">
   <UploadStepHeader {currentStep} />
 
   {#if currentStep === 1}

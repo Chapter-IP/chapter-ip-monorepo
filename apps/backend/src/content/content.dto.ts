@@ -89,7 +89,7 @@ export type TRegisterContentFileInput = z.infer<typeof registerContentFileInputS
 
 export const contentFileOutputSchema = z.object({
   id: z.string(),
-  contentId: z.string(),
+  contentId: z.coerce.string(),
   label: z.string(),
   filename: z.string(),
   mimetype: z.string(),

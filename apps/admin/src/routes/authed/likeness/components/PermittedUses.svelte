@@ -17,7 +17,7 @@
   <div class="flex items-end justify-between">
     <div>
       <p class="text-xs text-[#71707a]">A minimum of one must be selected</p>
-      <h3 class="text-base font-semibold text-[#1A1A2E]">Permitted uses <span class="text-[#ff0000]">*</span></h3>
+      <h3 class="text-base font-semibold text-dark">Permitted uses <span class="text-[#ff0000]">*</span></h3>
     </div>
     <button type="button" onclick={toggleAllUses} class="text-sm text-primary flex items-center gap-1 hover:underline">
       <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
@@ -41,7 +41,7 @@
           onToggle={() => likenessStore.setPermittedUse(use.id, !$likenessStore.licensing.permittedUses[use.id])}
         />
         <div>
-          <p class="text-sm font-semibold text-[#1A1A2E]">{use.label}</p>
+          <p class="text-sm font-semibold text-dark">{use.label}</p>
           <p class="text-xs text-[#71707a] mt-1">{use.description}</p>
         </div>
       </div>

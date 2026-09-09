@@ -6,12 +6,14 @@ import type { ExistingFilesByBucket } from '$lib/stores/file-preload'
 export type WorkState = {
   files: {
     works: File[]
+    'preview-files': File[]
   }
   previewImage: File | null
   existingPreviewUrl: string | null
   title: string
   contentType: string
   description: string
+  sampleText: string
   genre: string[]
   authors: string[]
   licensing: WorkLicensingMetadata

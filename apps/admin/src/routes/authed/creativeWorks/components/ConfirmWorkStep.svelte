@@ -1,9 +1,12 @@
 <script lang="ts">
   import { workStore } from '../stores/work-store'
-  import { LICENSE_TYPES } from '../constants/constants'
+  import { ADDITIONAL_TERMS, LICENSE_TYPES, PERMITTED_USES } from '../constants/constants'
   import { modals, type ModalProps } from 'svelte-modals'
   import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
+  import { extractTextFromFile } from '@repo/fe-services'
+  import { onMount } from 'svelte'
   import WorkFileChip from './WorkFileChip.svelte'
+  import WarningIcon from '$lib/assets/warning-icon.svg'
 
   let {
     currentStep = $bindable(),
@@ -16,7 +19,56 @@
   } = $props()
 
   const enabledLicenseTypes = $derived(LICENSE_TYPES.filter((license) => $workStore.licensing.licenseTypes[license.id]))
+  const enabledPermittedUses = $derived(PERMITTED_USES.filter((use) => $workStore.licensing.permittedUses[use.id]))
+  const enabledAdditionalTerms = $derived(ADDITIONAL_TERMS.filter((term) => $workStore.licensing[term.key]))
   const workFileCount = $derived($workStore.existingFiles.works.length + $workStore.files.works.length)
+  let sampleExpanded = $state(false)
+
+  function extractFromFile(file: File, label: string) {
+    extractTextFromFile(file)
+      .then((text) => workStore.setSampleText(text))
+      .catch((error) => console.error(`Failed to extract sample text from ${label}:`, error))
+  }
+
+  function extractFromUrl(file: { name: string; url: string }, label: string) {
+    fetch(file.url)
+      .then((response) => {
+        if (!response.ok) throw new Error(`Preview fetch failed: ${response.status}`)
+        return response.blob()
+      })
+      .then((blob) => extractTextFromFile(new File([blob], file.name, { type: blob.type })))
+      .then((text) => workStore.setSampleText(text))
+      .catch((error) => console.error(`Failed to extract sample text from ${label}:`, error))
+  }
+
+  onMount(() => {
+    if ($workStore.sampleText) return
+
+    const previewFile = $workStore.files['preview-files']?.[0]
+    const existingPreview = $workStore.existingFiles['preview-files']?.[0]
+
+    if (previewFile) {
+      extractFromFile(previewFile, 'preview file')
+      return
+    }
+
+    if (existingPreview?.url) {
+      extractFromUrl(existingPreview, 'existing preview')
+      return
+    }
+
+    const workFile = $workStore.files.works?.[0]
+    const existingWork = $workStore.existingFiles.works?.[0]
+
+    if (workFile) {
+      extractFromFile(workFile, 'work file')
+      return
+    }
+
+    if (existingWork?.url) {
+      extractFromUrl(existingWork, 'existing work file')
+    }
+  })
   const onSubmit = () => {
     modals.open<ModalProps & TConfirmModalProps>(ConfirmModal, {
       title: 'Confirming your Creative Work',
@@ -30,9 +82,9 @@
   }
 </script>
 
-<div class="space-y-12 mt-7.25 text-dark">
+<div class="space-y-8.75 mt-7.25 text-dark">
   <!-- Title Section -->
-  <div class="pb-6">
+  <div>
     <h2 class="mb-2 text-[28px] font-medium text-left text-dark font-heading">Confirm your Creative Work</h2>
     <p class="mt-3 text-base text-left text-[#72717b]">
       You're almost done. Before completing your written work, take a moment to review the information you've provided.
@@ -40,9 +92,9 @@
   </div>
 
   <!-- Review Card -->
-  <div class="border border-dashed border-[#1a1a2e33] bg-cream rounded-lg p-6 md:p-10">
+  <div class="border border-dashed border-[#1a1a2e33] bg-cream rounded-lg py-6 px-13.25">
     <!-- Edit Details Button -->
-    <div class="flex justify-end mb-6">
+    <div class="flex justify-end mb-8.75">
       <button
         disabled={$workStore.ui.loading}
         onclick={() => (currentStep = 1)}
@@ -53,33 +105,68 @@
     </div>
 
     <!-- Title & Description -->
-    <div class="mb-8">
-      <h1 class="text-2xl font-semibold text-dark font-heading mb-3">{$workStore.title || 'Untitled Work'}</h1>
-
-      {#if $workStore.contentType}
-        <span
-          class="px-4 py-1.5 inline-block rounded-full bg-[#eae6e2] border border-[#ddd] text-sm font-semibold text-dark/50 mb-3"
-        >
-          {$workStore.contentType}
-        </span>
-      {/if}
-
+    <div class="mb-8.75">
+      <h1 class="text-2xl font-semibold text-dark">
+        {$workStore.title || 'Untitled Work'}
+      </h1>
       {#if $workStore.description}
-        <p class="text-base text-[#72717b] leading-relaxed max-w-3xl wrap-break-word">{$workStore.description}</p>
+        <p class="text-base text-[#72717b] leading-relaxed max-w-3xl wrap-break-word">
+          {$workStore.description}
+        </p>
+      {/if}
+      {#if $workStore.genre.length > 0}
+        <div class="flex flex-wrap mt-2.5 gap-1.5">
+          {#each $workStore.genre as g (g)}
+            <span
+              class="h-7.25 px-6 inline-flex items-center justify-center rounded-full text-sm font-semibold text-dark/50 bg-[#eae6e2]"
+            >
+              {g}
+            </span>
+          {/each}
+        </div>
       {/if}
     </div>
 
-    <!-- Genre -->
-    {#if $workStore.genre.length > 0}
-      <div class="flex flex-wrap gap-2 mb-8">
-        <span class="text-base font-semibold text-dark mb-1 w-full">Genre</span>
-        {#each $workStore.genre as g (g)}
-          <span class="px-4 py-1.5 rounded-full bg-[#eae6e2] border border-[#ddd] text-sm font-semibold text-dark/50">
-            {g}
-          </span>
-        {/each}
+    <!-- Sample Preview -->
+    {#if $workStore.sampleText}
+      <div class="mb-8">
+        <p
+          class="text-base text-[#72717b] leading-7 whitespace-pre-line wrap-break-word {sampleExpanded
+            ? ''
+            : 'line-clamp-9'}"
+        >
+          {$workStore.sampleText}
+        </p>
+        <div class="mt-8.75 flex items-center gap-2">
+          <img src={WarningIcon} alt="" class="size-4" />
+          <button
+            type="button"
+            onclick={() => (sampleExpanded = !sampleExpanded)}
+            class="inline-flex items-center gap-1.5 text-base bg-transparent cursor-pointer text-primary"
+          >
+            {sampleExpanded ? 'Show less' : 'Read full sample'}
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 8 8"
+              fill="none"
+              class="transition-transform duration-200 {sampleExpanded ? 'rotate-180' : ''}"
+            >
+              <path d="M1 7L7 1M7 1H2.5M7 1V5.5" stroke="#6734FF" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
       </div>
     {/if}
+    <div class="flex justify-end mb-4">
+      <button
+        disabled={$workStore.ui.loading}
+        onclick={() => (currentStep = 2)}
+        class="bg-primary text-white rounded-sm px-5 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"
+      >
+        Edit licensing
+      </button>
+    </div>
 
     <!-- Author(s) -->
     {#if $workStore.authors.length > 0}
@@ -112,19 +199,36 @@
       </div>
     {/if}
 
+    <!-- Permitted uses -->
+    {#if enabledPermittedUses.length > 0}
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold text-dark font-heading mb-4.5">Permitted uses</h2>
+        <div class="flex flex-col">
+          {#each enabledPermittedUses as use (use.id)}
+            <p class="text-[#747474] text-sm leading-relaxed pl-6">
+              {use.label}
+            </p>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Additional information -->
+    {#if enabledAdditionalTerms.length > 0}
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold text-dark font-heading mb-4">Additional information</h2>
+        <div class="flex flex-col">
+          {#each enabledAdditionalTerms as term (term.key)}
+            <p class="text-[#747474] text-sm leading-relaxed pl-6">
+              {term.label}
+            </p>
+          {/each}
+        </div>
+      </div>
+    {/if}
     <!-- Licensing Types -->
     <div class="mb-6">
-      <div class="flex justify-end mb-4">
-        <button
-          disabled={$workStore.ui.loading}
-          onclick={() => (currentStep = 2)}
-          class="bg-primary text-white rounded-sm px-5 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"
-        >
-          Edit licensing
-        </button>
-      </div>
-
-      <h2 class="text-lg font-semibold text-dark font-heading mb-4">Licensing types</h2>
+      <h2 class="text-lg font-heading mb-4 font-medium text-dark">Licensing types</h2>
       <div class="flex flex-col gap-5">
         {#each enabledLicenseTypes as license (license.id)}
           <div class="flex justify-between items-start gap-4">
@@ -141,7 +245,9 @@
                 </svg>
                 <span class="font-semibold text-dark">{license.label}</span>
               </div>
-              <p class="text-[#747474] text-sm leading-relaxed pl-6">{license.description}</p>
+              <p class="pl-5 text-base font-medium text-[#747474]">
+                {license.description}
+              </p>
             </div>
             <div class="shrink-0 text-right mt-0.5">
               <span class="text-sm font-semibold text-dark">

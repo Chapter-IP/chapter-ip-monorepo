@@ -1,9 +1,10 @@
-export const WORK_FILE_BUCKETS = ['works'] as const
+export const WORK_FILE_BUCKETS = ['works', 'preview-files'] as const
 
 export type WorkFileKey = (typeof WORK_FILE_BUCKETS)[number]
 
 const WORK_FILE_PREFIXES: Record<WorkFileKey, string> = {
   works: 'work',
+  'preview-files': 'preview_file',
 }
 
 export const createWorkFileNames = (bucket: WorkFileKey, count: number, existingNames: string[] = []): string[] => {
