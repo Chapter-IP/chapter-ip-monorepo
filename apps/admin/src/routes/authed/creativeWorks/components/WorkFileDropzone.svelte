@@ -101,17 +101,13 @@
 </script>
 
 <div class="block space-y-3">
-  <h1 class="text-sm font-semibold text-dark">Upload your sample content</h1>
-  <p class="text-base text-[#72717b]">{subtitle}</p>
-  <div class="flex justify-between">
-    <span class="block text-sm text-[#72717b]"
-      >{title}{#if required}
-        <span class="text-[#ff0000]">*</span>{/if}</span
-    >
-    {#if required}
-      <span class="text-sm text-[#f00]">* required</span>
-    {/if}
+  <div class="flex justify-between gap-3">
+    <h2 class="text-sm font-semibold text-dark">
+      {title}{#if required}<span class="text-[#ff0000]"> *</span>{/if}
+    </h2>
+    {#if required}<span class="text-sm text-[#f00]">* required</span>{/if}
   </div>
+  {#if subtitle}<p class="text-base text-[#72717b]">{subtitle}</p>{/if}
 
   <div
     class="border border-dashed rounded-lg border-[#1A1A2E33] p-8.75 flex flex-col items-center justify-center min-h-50"
@@ -159,9 +155,7 @@
         {isSingleFile ? 'Upload your file' : 'Upload your files'}
       </button>
       <span class="text-[11px] text-center text-[#747474] w-full block mt-1">
-        {isSingleFile
-          ? 'One PDF, DOCX, TXT, RTF, EPUB, or MD file accepted'
-          : 'PDF, DOCX, TXT, RTF, EPUB, MD files accepted'}
+        {isSingleFile ? 'One PDF, DOCX, TXT, EPUB, or MD file accepted' : 'PDF, DOCX, TXT, EPUB, MD files accepted'}
       </span>
     {/if}
 

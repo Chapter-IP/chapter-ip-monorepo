@@ -36,7 +36,11 @@ export function normalizeWork(content: WorkContent, contractAddress: string): Wo
   if (metadata?.type !== 'works') return null
   const title = trimString(metadata.name) || 'Untitled work'
   const previewImage = trimString(metadata.preview_file_name)
-  const sample = trimString(metadata.sample_file_name)
+  const previewFiles = stringArray(metadata.preview_files_name)
+  const sample = Array.isArray(metadata.preview_files_name)
+    ? previewFiles[0] || (metadata.contentType === 'Lyrics' ? stringArray(metadata.files_name)[0] : '')
+    : trimString(metadata.sample_file_name) ||
+      (metadata.contentType === 'Lyrics' ? stringArray(metadata.files_name)[0] : '')
 
   return {
     id: content.id,
@@ -46,6 +50,7 @@ export function normalizeWork(content: WorkContent, contractAddress: string): Wo
     description: trimString(metadata.description),
     authors: stringArray(metadata.authors),
     genres: stringArray(metadata.genre),
+    sampleText: trimString(metadata.sample_text),
     licenses: getLicenses(metadata.licensing, {
       licenseNames: LICENSE_NAMES,
       licenseDescriptions: WORK_LICENSE_DESCRIPTIONS,

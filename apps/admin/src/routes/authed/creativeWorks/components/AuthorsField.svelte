@@ -19,6 +19,14 @@
     <input
       type="text"
       bind:value={authorInput}
+      onblur={submit}
+      onkeydown={(event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault()
+          submit()
+        }
+      }}
+      aria-label="Author"
       placeholder="Author"
       class="w-full h-11.75 bg-white rounded-sm border border-[#ddd] px-3.75 text-sm font-medium text-[#71707a]
         focus:border-primary focus:outline-none"

@@ -8,6 +8,7 @@
   import UploadLicensingStep from '../components/UploadLicensingStep.svelte'
   import ConfirmWorkStep from '../components/ConfirmWorkStep.svelte'
 
+  import { removeWorkPreviews, uploadWorkPreviews } from '../service/work-previews'
   import type { NamedUpload } from '$lib/upload/upload.service'
   import { startUploadingPhase, type UploadSession } from '$lib/upload/upload-session'
   import UploadProgressModal from '$lib/components/UploadProgressModal.svelte'
@@ -36,7 +37,7 @@
   beforeNavigate(() => workStore.setLoading(true))
   afterNavigate(() => workStore.setLoading(false))
 
-  const buildWorkMetadata = (uploadNames: string[], previewUploadNames: string[]) => {
+  const buildWorkMetadata = (uploadNames: string[]) => {
     const existingNames = $workStore.existingFiles.works.map((file) => file.name)
     const newNames = $workStore.files.works.map((file, index) => appendOriginalExtension(uploadNames[index], file))
     const filesName = [...existingNames, ...newNames]
@@ -51,12 +52,8 @@
       sample_text: $workStore.sampleText || undefined,
       files_name: filesName,
       preview_file_name: data.metadata?.preview_file_name as string | undefined,
-      preview_files_name: [
-        ...existingPreviewNames,
-        ...$workStore.files['preview-files'].map((file, index) =>
-          appendOriginalExtension(previewUploadNames[index], file),
-        ),
-      ],
+      sample_file_name: undefined,
+      preview_files_name: existingPreviewNames,
       licensing: $workStore.licensing,
     }
   }
@@ -93,7 +90,7 @@
 
     return {
       keptFileIds: getKeptFileIds(),
-      metadata: buildWorkMetadata(uploadNames, previewUploadNames),
+      metadata: buildWorkMetadata(uploadNames),
       uploads: buildNamedUploads(uploadNames),
       previewUploads,
       tags: (data.tags ?? []) as string[],
@@ -134,16 +131,21 @@
       onUploadProgress: uploadSession.setProgress,
     })
 
-    const keptPreviewFileIds = new Set($workStore.existingFiles['preview-files'].map((file) => file.id))
-    for (const fileId of initialPreviewFileIds) {
-      if (keptPreviewFileIds.has(fileId)) continue
-      try {
-        await trpcClient.contents.removeContentFile.mutate({ fileId })
-      } catch (error) {
-        console.error(`Failed to remove preview file ${fileId}:`, error)
-      }
-    }
-    await uploadService.uploadPreviewFiles({ trpcClient, contentId, uploads: previewUploads })
+    await removeWorkPreviews({
+      trpcClient,
+      initialFileIds: initialPreviewFileIds,
+      keptFileIds: new Set($workStore.existingFiles['preview-files'].map((file) => file.id)),
+      onRemoved: (fileId) => {
+        initialPreviewFileIds = initialPreviewFileIds.filter((id) => id !== fileId)
+      },
+    })
+    const uploadedPreviewNames = await uploadWorkPreviews({
+      uploadService,
+      trpcClient,
+      contentId,
+      uploads: previewUploads,
+    })
+    metadata.preview_files_name.push(...uploadedPreviewNames)
 
     await uploadService.updateContentMetadata({
       contentId,
@@ -244,20 +246,22 @@
   }
 </script>
 
-<div class="min-h-xl rounded-3xl p-5 shadow-md md:p-10 bg-[#f8f5f1]">
-  <UploadStepHeader {currentStep} />
+<div class="min-h-xl rounded-3xl p-5 shadow-md md:p-12.5 bg-[#f8f5f1]">
+  <div class="max-w-250">
+    <UploadStepHeader {currentStep} />
 
-  {#if currentStep === 1}
-    <UploadWorkStep bind:currentStep onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined} />
-  {:else if currentStep === 2}
-    <UploadLicensingStep bind:currentStep onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined} />
-  {:else}
-    <ConfirmWorkStep
-      bind:currentStep
-      onFormSubmit={onSubmitClick}
-      onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined}
-    />
-  {/if}
+    {#if currentStep === 1}
+      <UploadWorkStep bind:currentStep onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined} />
+    {:else if currentStep === 2}
+      <UploadLicensingStep bind:currentStep onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined} />
+    {:else}
+      <ConfirmWorkStep
+        bind:currentStep
+        onFormSubmit={onSubmitClick}
+        onSaveDraft={!data.tokenId ? onSaveDraftClick : undefined}
+      />
+    {/if}
+  </div>
 </div>
 
 {#if $workStore.ui.uploadProgress}

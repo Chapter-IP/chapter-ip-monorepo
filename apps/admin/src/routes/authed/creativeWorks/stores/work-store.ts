@@ -2,6 +2,7 @@ import { writable, derived } from 'svelte/store'
 import type { UploadProgressEvent } from '$lib/upload/upload.service'
 import { type WorkFileKey } from '$lib/constants/workFileBuckets'
 import type { WorkMetadataInput, WorkLicensingMetadata } from '@repo/content-types/works'
+import { LICENSE_TYPE_OPTIONS } from '@repo/content-types/works'
 import {
   type PreloadedExistingFiles,
   isPreviewBucket,
@@ -25,8 +26,10 @@ const loadPreviewFiles = async (
   trpcClient: Parameters<typeof loadFilesFromContent>[1],
 ): Promise<ExistingFile[]> => {
   const previewNames = Array.isArray(content.metadata?.preview_files_name)
-    ? new Set(content.metadata.preview_files_name as string[])
-    : null
+    ? new Set(content.metadata.preview_files_name)
+    : content.metadata?.sample_file_name
+      ? new Set([content.metadata.sample_file_name])
+      : null
   if (!previewNames || !content.id) return []
   const { files } = await trpcClient.contents.getContentAllFilesLink.query({ contentId: content.id })
   return (files ?? [])
@@ -247,10 +250,12 @@ function createWorkStore() {
 export const workStore = createWorkStore()
 
 export const isFormValid = derived(workStore, ($s) => {
-  const enabledLicenseTypes = Object.entries($s.licensing.licenseTypes).filter(([, enabled]) => enabled)
+  const enabledLicenseTypes = LICENSE_TYPE_OPTIONS.filter(({ value }) => $s.licensing.licenseTypes[value])
   const hasLicenseType = enabledLicenseTypes.length > 0
 
-  const hasValidLicensePrice = enabledLicenseTypes.every(([id]) => Number($s.licensing.licensePrices[id] || 0) >= 0.5)
+  const hasValidLicensePrice = enabledLicenseTypes.every(
+    ({ value }) => Number($s.licensing.licensePrices[value] || 0) >= 0.5,
+  )
 
   return hasLicenseType && hasValidLicensePrice && $s.licensing.agreedToFee
 })

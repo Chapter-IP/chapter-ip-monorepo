@@ -23,6 +23,7 @@ export type WorkMetadata = {
   preview_file_name?: string
   sample_file_name?: string
   preview_files_name?: string[]
+  sample_text?: string
   licensing: WorkLicensingMetadata
 }
 
@@ -79,6 +80,7 @@ export type WorkDetails = {
   genres: string[]
   licenses: WorkLicense[]
   image: WorkImage
+  sampleText?: string
   sample?: {
     filename: string
     url: string

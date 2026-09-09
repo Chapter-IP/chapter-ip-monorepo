@@ -88,4 +88,68 @@ describe('creative work detail normalizer', () => {
       normalizeWork({ id: 'x', sub: '', status: 'ACTIVE', contractAddress: '', metadata: { type: 'location' } }, ''),
     ).toBeNull()
   })
+  it('reads new preview metadata, preserves text, and ignores unsupported licenses', () => {
+    const work = normalizeWork(
+      {
+        id: 'new',
+        sub: 'author',
+        status: 'ACTIVE',
+        contractAddress: '0xcontent',
+        metadata: {
+          type: 'works',
+          contentType: 'Script',
+          preview_files_name: ['preview-files-1.pdf'],
+          sample_file_name: 'old.pdf',
+          sample_text: 'First paragraph\n\nSecond paragraph',
+          licensing: {
+            licenseTypes: { perpetual: true, 'single-use': true, 'ai-training': true },
+            licensePrices: { perpetual: '2000', 'single-use': '2500', 'ai-training': '3000' },
+          },
+        },
+      },
+      '0xcontent',
+    )
+    expect(work?.sample?.filename).toBe('preview-files-1.pdf')
+    expect(work?.sampleText).toBe('First paragraph\n\nSecond paragraph')
+    expect(work?.licenses.map(({ id }) => id)).toEqual(['perpetual', 'single-use'])
+  })
+
+  it('does not revive a deleted legacy Script sample', () => {
+    const work = normalizeWork(
+      {
+        id: 'new',
+        sub: 'author',
+        status: 'ACTIVE',
+        contractAddress: '0xcontent',
+        metadata: {
+          type: 'works',
+          contentType: 'Script',
+          preview_files_name: [],
+          sample_file_name: 'deleted.pdf',
+          files_name: ['private.pdf'],
+        },
+      },
+      '0xcontent',
+    )
+    expect(work?.sample).toBeUndefined()
+  })
+
+  it('uses the published Lyrics file when no separate sample exists', () => {
+    const work = normalizeWork(
+      {
+        id: 'lyrics',
+        sub: 'author',
+        status: 'ACTIVE',
+        contractAddress: '0xcontent',
+        metadata: {
+          type: 'works',
+          contentType: 'Lyrics',
+          preview_files_name: [],
+          files_name: ['lyrics.txt'],
+        },
+      },
+      '0xcontent',
+    )
+    expect(work?.sample?.filename).toBe('lyrics.txt')
+  })
 })

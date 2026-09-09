@@ -45,7 +45,7 @@ beforeEach(() => {
 })
 
 test('loads and renders a public sample without affecting purchase', async () => {
-  const screen = await render(WorkPurchasePage, { workDetails })
+  const screen = await render(WorkPurchasePage, { workDetails: { ...workDetails, contentType: 'Script' } })
 
   await expect.element(screen.getByText('First verse\n\nSecond verse', { exact: true })).toBeVisible()
   const fullSample = screen.getByRole('link', { name: /Read full sample/ })
@@ -56,7 +56,7 @@ test('loads and renders a public sample without affecting purchase', async () =>
   await expect.element(screen.getByText('TV/Film', { exact: true })).toBeVisible()
   await expect.element(screen.getByText('Attribution required', { exact: true })).toBeVisible()
 
-  const purchaseButton = screen.getByRole('button', { name: 'Purchase' })
+  const purchaseButton = screen.getByRole('button', { name: 'Buy License' })
   await expect.element(purchaseButton).toBeEnabled()
   await purchaseButton.click()
   expect(purchaseLicenseMock).toHaveBeenCalledOnce()
@@ -64,9 +64,37 @@ test('loads and renders a public sample without affecting purchase', async () =>
 
 test('keeps the full sample link and purchase enabled when extraction fails', async () => {
   extractTextFromFileMock.mockRejectedValueOnce(new Error('broken sample'))
-  const screen = await render(WorkPurchasePage, { workDetails })
+  const screen = await render(WorkPurchasePage, { workDetails: { ...workDetails, contentType: 'Script' } })
 
   await expect.element(screen.getByText('The sample preview could not be displayed.')).toBeVisible()
   await expect.element(screen.getByRole('link', { name: /Read full sample/ })).toBeVisible()
-  await expect.element(screen.getByRole('button', { name: 'Purchase' })).toBeEnabled()
+  await expect.element(screen.getByRole('button', { name: 'Buy License' })).toBeEnabled()
+})
+
+test('shows Lyrics from saved text, expands the full text, and purchases the chosen license', async () => {
+  const lyrics = 'First verse\n'.repeat(140) + 'Last verse'
+  const screen = await render(WorkPurchasePage, { workDetails: { ...workDetails, sampleText: lyrics } })
+  await expect.element(screen.getByRole('button', { name: 'Show more' })).toBeVisible()
+  expect(fetch).not.toHaveBeenCalled()
+  await expect.element(screen.getByRole('radio', { name: /Lifetime License/ })).toBeChecked()
+  await screen.getByRole('button', { name: 'Show more' }).click()
+  await expect.element(screen.getByText(/Last verse/)).toBeVisible()
+  await expect.element(screen.getByRole('button', { name: 'Show less' })).toHaveAttribute('aria-expanded', 'true')
+  await screen.getByRole('radio', { name: /One-Time License/ }).click()
+  await screen.getByRole('button', { name: 'Buy License' }).click()
+  expect(purchaseLicenseMock).toHaveBeenCalledWith(
+    expect.objectContaining({ license: expect.objectContaining({ id: 'single-use', price: '25' }) }),
+  )
+})
+
+test('ignores unsupported licenses and disables buying without a supported choice', async () => {
+  const screen = await render(WorkPurchasePage, {
+    workDetails: {
+      ...workDetails,
+      licenses: [{ id: 'ai-training', name: 'AI Training', price: '50', description: '' }],
+      sample: undefined,
+    },
+  })
+  await expect.element(screen.getByText('No licensing options are currently available.')).toBeVisible()
+  await expect.element(screen.getByRole('button', { name: 'Buy License' })).not.toBeInTheDocument()
 })

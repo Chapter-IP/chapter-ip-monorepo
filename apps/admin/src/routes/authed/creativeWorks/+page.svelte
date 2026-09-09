@@ -12,6 +12,7 @@
   import { appendOriginalExtension } from '$lib/helpers/work-upload'
   import { createWorkUploadServices, getLicensePrices, goToFiles, openSuccessModal } from './service/work.helpers'
   import { onDestroy } from 'svelte'
+  import { uploadWorkPreviews } from './service/work-previews'
 
   let currentStep = $state(1)
   const { uploadService, uploadSessions } = createWorkUploadServices()
@@ -45,7 +46,7 @@
       authors: $workStore.authors,
       sample_text: $workStore.sampleText || undefined,
       files_name: filesName,
-      preview_files_name: previewUploads.map(({ name, file }) => appendOriginalExtension(name, file)),
+      preview_files_name: [],
       licensing: $workStore.licensing,
     }
 
@@ -71,7 +72,13 @@
         onUploadProgress: uploadSession.setProgress,
       })
 
-      await uploadService.uploadPreviewFiles({ trpcClient, contentId, uploads: previewUploads })
+      metadata.preview_files_name = await uploadWorkPreviews({
+        uploadService,
+        trpcClient,
+        contentId,
+        uploads: previewUploads,
+      })
+      await uploadService.updateContentMetadata({ trpcClient, contentId, metadata, tags })
 
       notify('Draft saved', ToastType.SUCCESS)
       await goToFiles()
@@ -102,7 +109,13 @@
         onUploadProgress: uploadSession.setProgress,
       })
 
-      await uploadService.uploadPreviewFiles({ trpcClient, contentId, uploads: previewUploads })
+      metadata.preview_files_name = await uploadWorkPreviews({
+        uploadService,
+        trpcClient,
+        contentId,
+        uploads: previewUploads,
+      })
+      await uploadService.updateContentMetadata({ trpcClient, contentId, metadata, tags })
 
       uploadSession.setProgress({ phase: 'minting', overallProgress: 1 })
       const tokenId = await uploadService.mintContent(getLicensePrices($workStore.licensing))
@@ -118,8 +131,6 @@
         trpcClient,
       })
 
-      uploadSession.end()
-
       openSuccessModal()
     } catch (error) {
       console.error('Error uploading file:', error)
@@ -134,16 +145,18 @@
   }
 </script>
 
-<div class="min-h-screen rounded-3xl p-5 shadow-md md:p-10 bg-[#f8f5f1]">
-  <UploadStepHeader {currentStep} />
+<div class="min-h-screen rounded-3xl p-5 shadow-md md:p-12.5 bg-[#f8f5f1]">
+  <div class="max-w-250">
+    <UploadStepHeader {currentStep} />
 
-  {#if currentStep === 1}
-    <UploadWorkStep bind:currentStep onSaveDraft={onSaveDraftClick} />
-  {:else if currentStep === 2}
-    <UploadLicensingStep bind:currentStep onSaveDraft={onSaveDraftClick} />
-  {:else}
-    <ConfirmWorkStep bind:currentStep onFormSubmit={onSubmitClick} onSaveDraft={onSaveDraftClick} />
-  {/if}
+    {#if currentStep === 1}
+      <UploadWorkStep bind:currentStep onSaveDraft={onSaveDraftClick} />
+    {:else if currentStep === 2}
+      <UploadLicensingStep bind:currentStep onSaveDraft={onSaveDraftClick} />
+    {:else}
+      <ConfirmWorkStep bind:currentStep onFormSubmit={onSubmitClick} onSaveDraft={onSaveDraftClick} />
+    {/if}
+  </div>
 </div>
 
 {#if $workStore.ui.uploadProgress}
