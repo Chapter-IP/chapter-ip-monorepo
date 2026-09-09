@@ -135,6 +135,15 @@
         </div>
       </div>
     {/if}
+    <div class="flex justify-end mb-4">
+      <button
+        disabled={$workStore.ui.loading}
+        onclick={() => (currentStep = 2)}
+        class="bg-primary text-white rounded-sm px-5 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"
+      >
+        Edit licensing
+      </button>
+    </div>
 
     <!-- Author(s) -->
     {#if $workStore.authors.length > 0}
@@ -167,65 +176,6 @@
       </div>
     {/if}
 
-    <!-- Preview File -->
-    {#if $workStore.existingFiles['preview-files'].length > 0 || $workStore.files['preview-files'].length > 0}
-      <div class="mb-8">
-        <span class="text-base font-semibold text-dark mb-1 w-full block">Preview File</span>
-        <div class="flex flex-wrap gap-2">
-          {#each $workStore.existingFiles['preview-files'] as file (file.id)}
-            <WorkFileChip name={file.name} />
-          {/each}
-          {#each $workStore.files['preview-files'] as file, i (file.name + i)}
-            <WorkFileChip name={file.name} />
-          {/each}
-        </div>
-      </div>
-    {/if}
-
-    <!-- Licensing Types -->
-    <div class="mb-6">
-      <div class="flex justify-end mb-4">
-        <button
-          disabled={$workStore.ui.loading}
-          onclick={() => (currentStep = 2)}
-          class="bg-primary text-white rounded-sm px-5 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"
-        >
-          Edit licensing
-        </button>
-      </div>
-
-      <h2 class="text-lg font-semibold text-dark font-heading mb-4">Licensing types</h2>
-      <div class="flex flex-col gap-5">
-        {#each enabledLicenseTypes as license (license.id)}
-          <div class="flex justify-between items-start gap-4">
-            <div class="flex-1">
-              <div class="flex items-center gap-2 mb-1">
-                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                  <path
-                    d="M1 4L3.5 6.5L9 1"
-                    stroke="#6734FF"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-                <span class="font-semibold text-dark">{license.label}</span>
-              </div>
-              <p class="text-[#747474] text-sm leading-relaxed pl-6">
-                {license.description}
-              </p>
-            </div>
-            <div class="shrink-0 text-right mt-0.5">
-              <span class="text-sm font-semibold text-dark">
-                $ {Number($workStore.licensing.licensePrices[license.id] || 0).toLocaleString()}
-              </span>
-              <span class="text-[10px] text-[#7a7a8a] ml-1"> USD </span>
-            </div>
-          </div>
-        {/each}
-      </div>
-    </div>
-
     <!-- Permitted uses -->
     {#if enabledPermittedUses.length > 0}
       <div class="mb-6">
@@ -253,6 +203,39 @@
         </div>
       </div>
     {/if}
+    <!-- Licensing Types -->
+    <div class="mb-6">
+      <h2 class="text-lg font-heading mb-4 font-medium text-dark">Licensing types</h2>
+      <div class="flex flex-col gap-5">
+        {#each enabledLicenseTypes as license (license.id)}
+          <div class="flex justify-between items-start gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                  <path
+                    d="M1 4L3.5 6.5L9 1"
+                    stroke="#6734FF"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                <span class="font-semibold text-dark">{license.label}</span>
+              </div>
+              <p class="pl-5 text-base font-medium text-[#747474]">
+                {license.description}
+              </p>
+            </div>
+            <div class="shrink-0 text-right mt-0.5">
+              <span class="text-sm font-semibold text-dark">
+                $ {Number($workStore.licensing.licensePrices[license.id] || 0).toLocaleString()}
+              </span>
+              <span class="text-[10px] text-[#7a7a8a] ml-1"> USD </span>
+            </div>
+          </div>
+        {/each}
+      </div>
+    </div>
   </div>
 </div>
 
