@@ -25,7 +25,7 @@
   const { uploadService, uploadSessions } = createWorkUploadServices()
 
   onMount(() => {
-    initialPreviewFileIds = data.existingPreviewFileIds ?? []
+    initialPreviewFileIds = (data.existingFiles?.['preview-files'] ?? []).map((file) => file.id)
     workStore.hydrateFromContent(data, data.existingFiles, data.existingPreviewUrl)
   })
   onDestroy(() => {
@@ -85,10 +85,7 @@
     (data.allExistingFiles?.works ?? data.existingFiles?.works ?? data.files ?? []) as ExistingContentFile[]
 
   const removeOldPreviewFiles = async (trpcClient: ReturnType<typeof uploadService.createTrpcClient>) => {
-    const shouldRemove =
-      $workStore.previewImage !== null || ($workStore.existingPreviewUrl === null && initialPreviewFileIds.length > 0)
-
-    if (!shouldRemove) return
+    if (initialPreviewFileIds.length === 0) return
 
     const keptPreviewFileIds = new Set($workStore.existingFiles['preview-files'].map((file) => file.id))
 
