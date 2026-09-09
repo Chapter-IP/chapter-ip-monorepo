@@ -24,27 +24,50 @@
   const workFileCount = $derived($workStore.existingFiles.works.length + $workStore.files.works.length)
   let sampleExpanded = $state(false)
 
-  onMount(() => {
-    if ($workStore.sampleText) return
-    const previewFile = $workStore.files['preview-files']?.[0]
-    const existingPreview = $workStore.existingFiles['preview-files']?.[0]
+  function extractFromFile(file: File, label: string) {
+    extractTextFromFile(file)
+      .then((text) => workStore.setSampleText(text))
+      .catch((error) => console.error(`Failed to extract sample text from ${label}:`, error))
+  }
 
-    if (previewFile) {
-      extractTextFromFile(previewFile)
-        .then((text) => workStore.setSampleText(text))
-        .catch((error) => console.error('Failed to extract sample text from preview file:', error))
-      return
-    }
-
-    if (!existingPreview?.url) return
-    fetch(existingPreview.url)
+  function extractFromUrl(file: { name: string; url: string }, label: string) {
+    fetch(file.url)
       .then((response) => {
         if (!response.ok) throw new Error(`Preview fetch failed: ${response.status}`)
         return response.blob()
       })
-      .then((blob) => extractTextFromFile(new File([blob], existingPreview.name, { type: blob.type })))
+      .then((blob) => extractTextFromFile(new File([blob], file.name, { type: blob.type })))
       .then((text) => workStore.setSampleText(text))
-      .catch((error) => console.error('Failed to extract sample text from existing preview:', error))
+      .catch((error) => console.error(`Failed to extract sample text from ${label}:`, error))
+  }
+
+  onMount(() => {
+    if ($workStore.sampleText) return
+
+    const previewFile = $workStore.files['preview-files']?.[0]
+    const existingPreview = $workStore.existingFiles['preview-files']?.[0]
+
+    if (previewFile) {
+      extractFromFile(previewFile, 'preview file')
+      return
+    }
+
+    if (existingPreview?.url) {
+      extractFromUrl(existingPreview, 'existing preview')
+      return
+    }
+
+    const workFile = $workStore.files.works?.[0]
+    const existingWork = $workStore.existingFiles.works?.[0]
+
+    if (workFile) {
+      extractFromFile(workFile, 'work file')
+      return
+    }
+
+    if (existingWork?.url) {
+      extractFromUrl(existingWork, 'existing work file')
+    }
   })
   const onSubmit = () => {
     modals.open<ModalProps & TConfirmModalProps>(ConfirmModal, {

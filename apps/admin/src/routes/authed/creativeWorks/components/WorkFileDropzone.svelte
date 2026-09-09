@@ -37,10 +37,13 @@
       if (current >= 1) return
       const acceptedFiles = accepted.slice(0, 1 - current)
       workStore.appendMediaFiles(bucket, acceptedFiles)
-      void extractSample(acceptedFiles[0])
+      void extractSample(acceptedFiles[0], 'preview file')
       return
     }
     workStore.appendMediaFiles(bucket, accepted)
+    if ($workStore.contentType === 'Lyrics') {
+      void extractSample(accepted[0], 'work file')
+    }
   }
 
   function openPicker(e: MouseEvent) {
@@ -75,22 +78,25 @@
     refreshSampleText()
   }
 
-  async function extractSample(file: File | undefined) {
-    if (!$workStore.contentType || $workStore.contentType !== 'Script' || !file) {
+  async function extractSample(file: File | undefined, label: string) {
+    if (!file) {
       workStore.setSampleText(null)
       return
     }
     try {
       workStore.setSampleText(await extractTextFromFile(file))
     } catch (error) {
-      console.error('Failed to extract sample text from preview file:', error)
+      console.error(`Failed to extract sample text from ${label}:`, error)
       workStore.setSampleText(null)
     }
   }
 
   function refreshSampleText() {
-    if (bucket !== 'preview-files') return
-    void extractSample($workStore.files['preview-files'][0])
+    if (bucket === 'preview-files') {
+      void extractSample($workStore.files['preview-files'][0], 'preview file')
+    } else if (bucket === 'works' && $workStore.contentType === 'Lyrics') {
+      void extractSample($workStore.files.works[0], 'work file')
+    }
   }
 </script>
 
