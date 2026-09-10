@@ -40,14 +40,24 @@
   }
 </script>
 
-<div class="space-y-12 mt-7.25 text-dark">
+{#snippet required({ text }: { text: string })}
+  <p class="text-sm text-[#72717b]">
+    <span class="text-[#f00] pr-1">{text}</span>required indicates required field
+  </p>
+{/snippet}
+
+<div class="space-y-12 mt-3.75 text-dark">
   <!-- Title -->
   <div>
-    <h2 class="mb-2 text-[22px] font-semibold text-left text-dark font-heading">Creative Works</h2>
-    <p class="mt-3 text-base text-left text-[#72717b]">
+    <div class="text-right">
+      {@render required({ text: '*' })}
+    </div>
+    <h2 class="text-[22px] font-semibold text-left text-dark font-heading">Creative Works</h2>
+    <p class="mt-1.25 mb-4.5 text-base text-left text-[#72717b] max-w-3xl">
       Add a written work to license for commercial and creative use. The details below are what creators see — and what
       every license is anchored to.
     </p>
+    {@render required({ text: '* required' })}
   </div>
 
   <!-- Form -->
@@ -55,7 +65,6 @@
     <label class="block space-y-3">
       <div class="flex justify-between">
         <span class=" block text-sm text-[#72717b]">Title <span class="text-[#ff0000]">*</span></span>
-        <span class="text-sm text-[#f00]">* required</span>
       </div>
       <input
         type="text"
@@ -69,7 +78,6 @@
     <label class="block space-y-3">
       <div class="flex justify-between">
         <span class=" block text-sm text-[#72717b]">Content Type <span class="text-[#ff0000]">*</span></span>
-        <span class="text-sm text-[#f00]">* required</span>
       </div>
       <div class="relative w-full">
         <select
