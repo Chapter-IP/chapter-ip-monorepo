@@ -46,14 +46,14 @@
   </p>
 {/snippet}
 
-<div class="space-y-12 mt-3.75 text-dark">
+<div class="space-y-4.75 mt-3.75 text-dark">
   <!-- Title -->
   <div>
     <div class="text-right">
       {@render required({ text: '*' })}
     </div>
-    <h2 class="text-[22px] font-semibold text-left text-dark font-heading">Creative Works</h2>
-    <p class="mt-1.25 mb-4.5 text-base text-left text-[#72717b] max-w-3xl">
+    <h2 class="text-[22px] font-semibold text-left text-dark font-heading mt-2">Creative Works</h2>
+    <p class=" mb-4.5 text-base text-left text-[#72717b] max-w-3xl">
       Add a written work to license for commercial and creative use. The details below are what creators see — and what
       every license is anchored to.
     </p>
@@ -61,8 +61,8 @@
   </div>
 
   <!-- Form -->
-  <div class="space-y-6 max-w-137.5">
-    <label class="block space-y-3">
+  <div class="space-y-8.75 max-w-137.5">
+    <label class="block space-y-2">
       <div class="flex justify-between">
         <span class=" block text-sm text-[#72717b]">Title <span class="text-[#ff0000]">*</span></span>
       </div>
@@ -70,12 +70,12 @@
         type="text"
         bind:value={$workStore.title}
         placeholder="Title"
-        class="w-full h-11.75 bg-white rounded border border-[#ddd] px-3.75 text-sm font-medium text-[#72717b]
+        class="w-full h-11.75 bg-white rounded border border-[#ddd] px-6.25 text-sm font-medium text-[#72717b]
           focus:border-primary focus:outline-none focus:shadow-[0_3px_6px_0_rgba(0,0,0,0.16)] transition-shadow"
       />
     </label>
 
-    <label class="block space-y-3">
+    <label class="block space-y-2">
       <div class="flex justify-between">
         <span class=" block text-sm text-[#72717b]">Content Type <span class="text-[#ff0000]">*</span></span>
       </div>
@@ -83,7 +83,7 @@
         <select
           value={$workStore.contentType}
           onchange={handleContentTypeChange}
-          class="w-full h-11.75 bg-white rounded border border-[#ddd] px-3.75 pr-10 text-sm font-medium text-[#72717b]
+          class="w-full h-11.75 bg-white rounded border border-[#ddd] px-6.25 pr-10 text-sm font-medium text-[#72717b]
             focus:border-primary focus:outline-none focus:shadow-[0_3px_6px_0_rgba(0,0,0,0.16)] transition-shadow appearance-none"
         >
           <option value="" disabled>Select one</option>
@@ -122,20 +122,15 @@
         onAdd={(name) => workStore.addAuthor(name)}
         onRemove={(i) => workStore.removeAuthor(i)}
       />
+      <div class="mt-19.75 space-y-12.5">
+        {#if isScript}
+          <!-- Preview File -->
 
-      {#if isScript}
-        <!-- Preview File -->
-        <WorkFileDropzone bucket="preview-files" title="Your sample content" required />
-      {/if}
-      <!-- Your Text File -->
-      <WorkFileDropzone
-        bucket="works"
-        title={isLyrics ? 'Your Text File' : 'Your Creative Work'}
-        subtitle={isLyrics
-          ? 'This file is shown as a public sample. Buyers download the original after purchase.'
-          : undefined}
-        required
-      />
+          <WorkFileDropzone bucket="preview-files" title="Your sample content" />
+        {/if}
+        <!-- Your Text File -->
+        <WorkFileDropzone bucket="works" title={isLyrics ? 'Your Text File' : 'Your Creative Work'} />
+      </div>
 
       <!-- Rights Confirmation -->
       <label class="flex items-start gap-3 cursor-pointer">

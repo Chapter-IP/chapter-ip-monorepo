@@ -10,12 +10,10 @@
     bucket,
     title,
     subtitle,
-    required = false,
   }: {
     bucket: WorkFileKey
     title: string
     subtitle?: string
-    required?: boolean
   } = $props()
 
   const files = $derived($workStore.files[bucket])
@@ -100,14 +98,19 @@
   }
 </script>
 
-<div class="block space-y-3">
-  <div class="flex justify-between gap-3">
-    <h2 class="text-sm font-semibold text-dark">
-      {title}{#if required}<span class="text-[#ff0000]"> *</span>{/if}
-    </h2>
-    {#if required}<span class="text-sm text-[#f00]">* required</span>{/if}
+<div class="block">
+  <div class="space-y-1.25 mb-8.75">
+    <h1 class="text-sm font-semibold text-dark">Upload your sample content</h1>
+    {#if subtitle}<p class="text-base leading-7.25 text-left text-[#72717b]">
+        {subtitle}
+      </p>{/if}
   </div>
-  {#if subtitle}<p class="text-base text-[#72717b]">{subtitle}</p>{/if}
+  <div class="flex justify-between mb-2.75">
+    <h2 class="text-sm text-[#707070] font-sans">
+      {title}<span class="text-[#ff0000] ml-0.75"> *</span>
+    </h2>
+    <span class="text-sm text-[#f00]">* required</span>
+  </div>
 
   <div
     class="border border-dashed rounded-lg border-[#1A1A2E33] p-8.75 flex flex-col items-center justify-center min-h-50"
