@@ -7,8 +7,8 @@
   const categories = [
     {
       id: 'written-works',
-      title: 'Written Works',
-      description: 'Scripts, articles and written works.',
+      title: 'Creative Works',
+      description: 'Scripts, articles and creative works.',
       icon: WrittenWorksIcon,
       path: '/authed/creativeWorks',
       disabled: false,

@@ -122,7 +122,7 @@
         onAdd={(name) => workStore.addAuthor(name)}
         onRemove={(i) => workStore.removeAuthor(i)}
       />
-      <div class="mt-19.75 space-y-12.5">
+      <div class="mt-19.75 space-y-12.5 mb-5">
         {#if isScript}
           <!-- Preview File -->
 

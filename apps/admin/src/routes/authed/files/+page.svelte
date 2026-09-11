@@ -23,12 +23,12 @@
   let updatingId = $state<string | null>(null)
 
   const pageSize = TABLE_PAGE_SIZE
-  const filters = ['All', 'Written works', 'Locations', 'Likeness'] as const
+  const filters = ['All', 'Creative works', 'Locations', 'Likeness'] as const
   const trpcClient = getTrpcClient()
   const DELETE_CONFIRM_PHRASE = 'I confirm to delete my content'
 
   const typeOrder = {
-    'Written works': 0,
+    'Creative works': 0,
     Locations: 1,
     Likeness: 2,
   }
@@ -40,9 +40,9 @@
 
     if (t.includes('likeness')) return 'Likeness'
     if (t.includes('location')) return 'Locations'
-    if (t.includes('written') || t.includes('works')) return 'Written works'
+    if (t.includes('written') || t.includes('works')) return 'Creative works'
 
-    return 'Written works'
+    return 'Creative works'
   }
 
   const getLicenseTypes = (metadata: TMetadata): string[] =>
@@ -78,7 +78,7 @@
   const totalPages = $derived(Math.max(1, Math.ceil(filteredRows.length / pageSize)))
   const safeCurrentPage = $derived(Math.min(currentPage, totalPages))
   const paginatedRows = $derived(filteredRows.slice((safeCurrentPage - 1) * pageSize, safeCurrentPage * pageSize))
-  const writtenWorksCount = $derived(rows.filter((row) => row.fileType === 'Written works').length)
+  const creativeWorksCount = $derived(rows.filter((row) => row.fileType === 'Creative works').length)
   const locationsCount = $derived(rows.filter((row) => row.fileType === 'Locations').length)
   const likenessCount = $derived(rows.filter((row) => row.fileType === 'Likeness').length)
   function openDeleteConfirm(rowId: string) {
@@ -148,7 +148,7 @@
         <div class="flex flex-col md:flex-row md:items-center md:gap-2.5">
           <h2 class="md:text-base text-sm font-semibold">My Listings</h2>
           <span class="text-[13px] font-medium text-dark/60">
-            Written works: {writtenWorksCount} | Locations: {locationsCount} | Likeness: {likenessCount}
+            Creative works: {creativeWorksCount} | Locations: {locationsCount} | Likeness: {likenessCount}
           </span>
         </div>
         <div class="flex md:gap-1">
