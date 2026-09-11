@@ -30,8 +30,13 @@
         },
       },
     })
-    await passport.init()
-    passportStore.set(passport)
+
+    try {
+      await passport.init()
+      passportStore.set(passport)
+    } catch (error) {
+      console.error('Wallet initialisation failed:', error)
+    }
 
     isMounted = true
     loading = false
