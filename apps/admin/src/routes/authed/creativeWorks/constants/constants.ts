@@ -19,17 +19,17 @@ export const ADDITIONAL_TERMS = [
   {
     key: 'allowAiTraining',
     label: 'Allow AI training',
-    description: 'In pretium malesuada lectus in interdum. Curabitur sollicitudin facilisis metus eget efficitur.',
+    description: '',
   },
   {
     key: 'attributionRequired',
     label: 'Attribution required?',
-    description: 'Nam id ex dolor. Praesent dolor augue, volutpat at sapien id, condimentum efficitur mauris.',
+    description: '',
   },
   {
     key: 'canBuyerModify',
     label: 'Can buyer modify?',
-    description: 'Aliquam erat volutpat. Duis dignissim quam at sem convallis tempus.',
+    description: '',
   },
 ] as const
 
