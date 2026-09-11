@@ -35,7 +35,7 @@
           ? 'bg-primary border-primary text-cream'
           : 'bg-[#eae6e2] border-[#71707a]/25 text-dark opacity-60 hover:opacity-100'}"
       >
-        <spam class="text-sm font-medium text-dark">{genre}</spam>
+        <span class="text-sm font-medium text-dark">{genre}</span>
         <PlusIcon class="shrink-0" />
       </button>
     {/each}

@@ -42,7 +42,7 @@
 
 {#snippet required({ text }: { text: string })}
   <p class="text-sm text-[#72717b]">
-    <span class="text-[#f00] pr-1">{text}</span>required indicates required field
+    <span class="text-[#f00] pr-1">{text}</span> indicates required field
   </p>
 {/snippet}
 
