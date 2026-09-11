@@ -19,17 +19,17 @@ export const ADDITIONAL_TERMS = [
   {
     key: 'allowAiTraining',
     label: 'Allow AI training',
-    description: 'In pretium malesuada lectus in interdum. Curabitur sollicitudin facilisis metus eget efficitur.',
+    description: 'Permit the buyer to use this work as training data for machine learning or generative AI models.',
   },
   {
     key: 'attributionRequired',
     label: 'Attribution required?',
-    description: 'Nam id ex dolor. Praesent dolor augue, volutpat at sapien id, condimentum efficitur mauris.',
+    description: 'The buyer must credit you as the original creator wherever this work is used or displayed.',
   },
   {
     key: 'canBuyerModify',
     label: 'Can buyer modify?',
-    description: 'Aliquam erat volutpat. Duis dignissim quam at sem convallis tempus.',
+    description: 'Allow the buyer to edit, adapt, or create derivative works from the original.',
   },
 ] as const
 

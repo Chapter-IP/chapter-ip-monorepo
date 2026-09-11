@@ -90,7 +90,14 @@ async function extractMarkdown(file: File): Promise<string> {
 
 async function extractPdf(file: File): Promise<string> {
   const data = new Uint8Array(await readArrayBuffer(file))
-  const { getDocument } = await import('pdfjs-dist')
+  const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist')
+
+  if (typeof window !== 'undefined' && !GlobalWorkerOptions.workerSrc) {
+    // @ts-ignore Vite asset query; typed via vite/client in app build projects
+    const { default: pdfWorkerUrl } = await import('pdfjs-dist/build/pdf.worker.min.mjs?url')
+    GlobalWorkerOptions.workerSrc = pdfWorkerUrl
+  }
+
   const loadingTask = getDocument({ data })
 
   try {

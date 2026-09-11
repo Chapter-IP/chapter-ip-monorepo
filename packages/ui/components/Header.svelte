@@ -26,7 +26,7 @@
 
   const NewBrowseAndPurchaseItems = [
     {
-      text: 'New Written Works',
+      text: 'New Creative Works',
       href: '/authed/creativeWorks',
     },
     {

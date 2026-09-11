@@ -6,7 +6,11 @@
     value,
     onToggle,
     onAdd,
-  }: { value: string[]; onToggle: (genre: string) => void; onAdd: (genre: string) => void } = $props()
+  }: {
+    value: string[]
+    onToggle: (genre: string) => void
+    onAdd: (genre: string) => void
+  } = $props()
 
   let genreInputActive = $state(false)
   let newGenre = $state('')
@@ -20,8 +24,8 @@
 </script>
 
 <div class="block space-y-3">
-  <span class="mb-2 block text-sm text-[#72717b]">Genre</span>
-  <div class="flex flex-wrap gap-2">
+  <span class="mb-1.25 block text-sm text-[#72717b]">Genre</span>
+  <div class="flex flex-wrap gap-1">
     {#each GENRE_OPTIONS as genre (genre)}
       <button
         type="button"
@@ -58,19 +62,19 @@
               submitCustomGenre()
             }
           }}
-          class="w-32 h-8.5 rounded-[14px] border border-[#71707a]/25 bg-white px-3 text-sm text-dark outline-none focus:border-primary"
+          class="w-32 h-7 rounded-[14px] border border-[#71707a]/25 bg-white px-3 text-sm text-dark outline-none focus:border-primary"
         />
         <button
           type="button"
           onclick={submitCustomGenre}
-          class="w-8.5 h-8.5 rounded-full bg-primary text-cream text-lg leading-none">+</button
+          class="w-7 h-7 rounded-full bg-primary text-cream text-lg leading-none">+</button
         >
       </div>
     {:else}
       <button
         type="button"
         onclick={() => (genreInputActive = true)}
-        class="px-3.75 h-8.5 rounded-[14px] text-sm font-medium bg-[#eae6e2] border border-[#71707a]/25 text-dark opacity-60 hover:opacity-100 inline-flex items-center gap-1.5"
+        class="px-5 h-7 rounded-[14px] text-sm font-medium bg-[#eae6e2] border border-[#71707a]/25 text-dark opacity-60 hover:opacity-100 inline-flex items-center gap-1.5"
       >
         Add
         <PlusIcon class="shrink-0" />
