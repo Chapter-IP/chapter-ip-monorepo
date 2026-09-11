@@ -4,3 +4,7 @@ export function formatPrice(cents: number): string {
     maximumFractionDigits: 2,
   }).format(cents / 100)}`
 }
+
+export function formatContentTypeLabel(type?: string): string {
+  return type === 'works' ? 'Creative Works' : (type ?? '')
+}

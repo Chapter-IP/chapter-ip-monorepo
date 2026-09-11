@@ -5,6 +5,7 @@
   import { getTrpcClient } from '$lib/stores/trpc-client'
   import { NOTIFICATION_TYPE } from '@repo/notifications'
   import { NotificationsMenuItems } from '../../routes/authed/notifications/constants'
+  import { formatContentTypeLabel } from '$lib/helpers/format'
 
   let activeMenuRow = $state<number | null>(null)
   let dropdownOpen = $state(false)
@@ -132,7 +133,7 @@
                 <div class="flex flex-col items-between justify-start w-full">
                   <div class="flex items-center justify-between w-full">
                     <p class="text-[13px] font-semibold flex-1 min-w-0 wrap-break-word leading-normal">
-                      {itemType ?? ''} [{fullLikenessName ?? fullLocationsName}] {tx.type ===
+                      {formatContentTypeLabel(itemType)} [{fullLikenessName ?? fullLocationsName}] {tx.type ===
                       NOTIFICATION_TYPE.CONTENT_CREATED
                         ? 'added to your products'
                         : 'was purchased'}

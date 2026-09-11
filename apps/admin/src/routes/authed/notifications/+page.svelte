@@ -10,6 +10,7 @@
   import { notificationStore } from '$lib/stores/notification.svelte'
   import { NOTIFICATION_TYPE } from '@repo/notifications'
   import { notify, ToastType } from '@repo/ui-components'
+  import { formatContentTypeLabel } from '$lib/helpers/format'
   import type { TNotificationItem } from '@repo/notifications'
 
   let activeMenuRow = $state<number | null>(null)
@@ -109,7 +110,7 @@
                   <td class="px-4 py-1.5">{formatDate(tx.createdAt)}</td>
                   <td class="px-4 py-1.5">
                     <p class="text-[13px] font-semibold">
-                      {itemType ?? ''} [{fullLikenessName ?? fullLocationsName ?? ''}] {tx.type ===
+                      {formatContentTypeLabel(itemType)} [{fullLikenessName ?? fullLocationsName ?? ''}] {tx.type ===
                       NOTIFICATION_TYPE.CONTENT_CREATED
                         ? 'added to your products'
                         : 'was purchased'}
