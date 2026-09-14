@@ -66,7 +66,7 @@ export const MEDIA_UPLOAD_GUIDELINES: MediaUploadGuideline[] = [
   {
     label: 'Headshots',
     description:
-      'Clear, recent photos of your face — front-on and profile, in good lighting. No filters, heavy makeup looks, sunglasses, or other people in frame.',
+      'Clear, recent photos of your face, front-on and profile, in good lighting. No filters, heavy makeup looks, sunglasses, logos, branding, or other people in frame.',
     fileKey: 'headshots',
     mediaKind: 'image',
     required: true,
@@ -89,7 +89,7 @@ export const MEDIA_UPLOAD_GUIDELINES: MediaUploadGuideline[] = [
     mediaKind: 'audio',
     required: false,
     header: 'Uploading Voice Samples',
-    headerLink: { text: 'Open ChapterIP voice script' },
+    headerLink: { text: 'Open our 10-Minute Recording Script' },
   },
   {
     label: 'Video reels',

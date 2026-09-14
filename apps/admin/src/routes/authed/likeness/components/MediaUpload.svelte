@@ -116,7 +116,7 @@
   {#if headerLink}
     <button
       type="button"
-      class="block text-base font-medium text-primary mt-6.25 cursor-pointer"
+      class="block text-sm font-medium text-primary mt-6.25 cursor-pointer"
       onclick={headerLink.onClick}>{headerLink.text}<span class="ml-1.25">↗</span></button
     >
   {/if}
