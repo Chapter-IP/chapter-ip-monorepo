@@ -148,7 +148,7 @@
             <span class="flex gap-2 items-center">
               <img src={WarningIcon} alt="" class="size-4 shrink-0" />
               {sampleExpanded ? 'Read less' : 'Read full sample'}
-              <img src={Arrow} alt="" class=" shrink-0 {sampleExpanded ? '-rotate-45' : '-rotate-135'}" />
+              <img src={Arrow} alt="" class="shrink-0 {sampleExpanded ? '-rotate-45' : '-rotate-135'}" />
             </span>
           </button>
         </div>
