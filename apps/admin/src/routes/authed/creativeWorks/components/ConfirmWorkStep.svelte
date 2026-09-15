@@ -5,6 +5,8 @@
   import { ConfirmModal, type TConfirmModalProps } from '@repo/ui-components'
   import { extractTextFromFile } from '@repo/fe-services'
   import { onMount } from 'svelte'
+  import WarningIcon from '$lib/assets/warning-icon.svg'
+  import Arrow from '$lib/assets/arrow-down-left.svg'
 
   let {
     currentStep = $bindable(),
@@ -131,28 +133,30 @@
     {/if}
     <!-- Sample Preview -->
     {#if $workStore.sampleText}
-      <div class="mb-8">
-        <p class="text-base text-[#72717b] leading-7{sampleExpanded ? '' : 'line-clamp-12'}">
+      <div class="mb-7.5">
+        <p class="text-base text-[#72717b] leading-7 {sampleExpanded ? '' : 'line-clamp-12'}">
           {$workStore.sampleText}
         </p>
-        {#if $workStore.contentType === 'Lyrics'}
-          <div class="mt-8.75 flex items-center gap-2">
-            <button
-              type="button"
-              onclick={() => (sampleExpanded = !sampleExpanded)}
-              class="inline-flex items-center gap-1.5 text-base bg-transparent cursor-pointer text-primary"
-            >
-              {sampleExpanded ? 'Show less' : 'Show more'}
-            </button>
-          </div>
-        {/if}
+        <div class="mt-7.25 flex items-center gap-2">
+          <button
+            type="button"
+            onclick={() => (sampleExpanded = !sampleExpanded)}
+            class="inline-flex items-center gap-1.5 text-base bg-transparent cursor-pointer text-primary"
+          >
+            <div class="flex gap-2 items-center">
+              <img src={WarningIcon} alt="" class="size-4 shrink-0" />
+              {sampleExpanded ? 'Read less' : 'Read full sample'}
+              <img src={Arrow} alt="" class=" shrink-0 {sampleExpanded ? '-rotate-45' : '-rotate-135'}" />
+            </div>
+          </button>
+        </div>
       </div>
     {/if}
-    <div class="flex justify-end mb-4">
+    <div class="flex justify-end mb-7.5">
       <button
         disabled={$workStore.ui.loading}
         onclick={() => (currentStep = 2)}
-        class="bg-primary text-white rounded-sm px-5 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"
+        class="bg-primary text-white rounded-sm px-7.5 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"
       >
         Edit licensing
       </button>
@@ -160,12 +164,12 @@
 
     <!-- Licensing Types -->
     <div class="mb-6">
-      <h2 class="text-lg font-heading mb-4 font-medium text-dark">Licensing types</h2>
+      <h2 class="text-lg font-heading mb-3 font-medium text-dark">Licensing types</h2>
       <div class="flex flex-col gap-5">
         {#each enabledLicenseTypes as license (license.id)}
           <div class="flex justify-between items-start gap-4">
             <div class="flex-1">
-              <div class="flex items-center gap-2 mb-1">
+              <div class="flex items-center gap-2 mb-2">
                 <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
                   <path
                     d="M1 4L3.5 6.5L9 1"
@@ -177,12 +181,12 @@
                 </svg>
                 <span class="font-semibold text-dark">{license.label}</span>
               </div>
-              <p class="pl-5 text-base font-medium text-[#747474]">
+              <p class="pl-5 text-base font-medium text-[#747474] max-w-132.5">
                 {license.description}
               </p>
             </div>
-            <div class="shrink-0 text-right mt-0.5">
-              <span class="text-sm font-semibold text-dark">
+            <div class="shrink-0 text-[#30364b] mt-0.75">
+              <span class="text-sm font-medium text-dark">
                 $ {Number($workStore.licensing.licensePrices[license.id] || 0).toLocaleString('en-US')}
               </span>
               <span class="text-[10px] text-[#7a7a8a] ml-1"> USD </span>
@@ -194,7 +198,7 @@
     <!-- Permitted uses -->
     {#if enabledPermittedUses.length > 0}
       <div class="mb-6">
-        <h2 class="text-lg font-semibold text-dark font-heading mb-4.5">Permitted uses</h2>
+        <h2 class="text-lg font-semibold text-dark font-heading mb-3">Permitted uses</h2>
         <div class="flex flex-col">
           {#each enabledPermittedUses as use (use.id)}
             <p class="text-[#747474] text-sm leading-relaxed pl-6">
@@ -208,7 +212,7 @@
     <!-- Additional information -->
     {#if enabledAdditionalTerms.length > 0}
       <div class="mb-6">
-        <h2 class="text-lg font-semibold text-dark font-heading mb-4">Additional information</h2>
+        <h2 class="text-lg font-semibold text-dark font-heading mb-3">Additional information</h2>
         <div class="flex flex-col">
           {#each enabledAdditionalTerms as term (term.key)}
             <p class="text-[#747474] text-sm leading-relaxed pl-6">
