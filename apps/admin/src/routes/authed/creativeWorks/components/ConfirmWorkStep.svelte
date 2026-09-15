@@ -81,30 +81,30 @@
   }
 </script>
 
-<div class="space-y-8.75 mt-7.25 text-dark">
+<div class="space-y-5.5 mt-11 text-dark">
   <!-- Title Section -->
   <div>
-    <h2 class="mb-2 text-[22px] font-semibold text-left text-dark font-heading">Confirm your Creative Work</h2>
-    <p class="mt-3 text-base text-left text-[#72717b]">
+    <h2 class="text-[22px] font-semibold text-left text-dark font-heading">Confirm your Creative Work</h2>
+    <p class="text-base text-left text-[#72717b]">
       You're almost done. Before completing your written work, take a moment to review the information you've provided.
     </p>
   </div>
 
   <!-- Review Card -->
-  <div class="border border-dashed border-[#1a1a2e33] bg-cream rounded-lg py-6 px-5 sm:px-13.25">
+  <div class="border border-dashed border-[#1a1a2e33] bg-cream rounded-lg py-5.5 px-5 sm:px-13.25">
     <!-- Edit Details Button -->
-    <div class="flex justify-end mb-8.75">
+    <div class="flex justify-end mb-7.75">
       <button
         disabled={$workStore.ui.loading}
         onclick={() => (currentStep = 1)}
-        class="bg-primary text-white rounded-sm px-5 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"
+        class="bg-primary text-white rounded-sm px-7.5 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer"
       >
         Edit details
       </button>
     </div>
 
     <!-- Title & Description -->
-    <div class="mb-8.75">
+    <div class="mb-7.5">
       <h1 class="text-2xl font-semibold text-dark">
         {$workStore.title || 'Untitled Work'}
       </h1>
@@ -115,7 +115,7 @@
         <div class="flex flex-wrap mt-2.5 gap-1.5">
           {#each $workStore.genre as g (g)}
             <span
-              class="h-7.25 px-6 inline-flex items-center justify-center rounded-full text-sm font-semibold text-dark/50 bg-[#eae6e2]"
+              class="h-7.25 px-6 inline-flex items-center justify-center rounded-full text-base font-semibold text-dark/50 bg-[#eae6e2]"
             >
               {g}
             </span>
@@ -132,11 +132,7 @@
     <!-- Sample Preview -->
     {#if $workStore.sampleText}
       <div class="mb-8">
-        <p
-          class="text-base text-[#72717b] leading-7 whitespace-pre-line wrap-break-word {sampleExpanded
-            ? ''
-            : 'line-clamp-12'}"
-        >
+        <p class="text-base text-[#72717b] leading-7{sampleExpanded ? '' : 'line-clamp-12'}">
           {$workStore.sampleText}
         </p>
         {#if $workStore.contentType === 'Lyrics'}
