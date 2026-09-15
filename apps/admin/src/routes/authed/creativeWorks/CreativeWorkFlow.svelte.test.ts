@@ -119,8 +119,8 @@ test('confirmation places the author below the title and expands Lyrics', async 
   workStore.addAuthor('Test Author')
   const screen = await render(ConfirmWorkStep, { currentStep: 3, onFormSubmit: vi.fn() })
   await expect.element(screen.getByText(/Lyrics by Test Author/)).toBeVisible()
-  await screen.getByRole('button', { name: 'Show more' }).click()
-  await expect.element(screen.getByRole('button', { name: 'Show less' })).toBeVisible()
+  await screen.getByRole('button', { name: 'Read full sample' }).click()
+  await expect.element(screen.getByRole('button', { name: 'Read less' })).toBeVisible()
 })
 
 test('successful publishing ends the upload session exactly once', async () => {

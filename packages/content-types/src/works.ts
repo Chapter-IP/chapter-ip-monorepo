@@ -47,7 +47,7 @@ export const LICENSE_TYPE_OPTIONS = [
 ] as const
 
 export const WORK_LICENSE_DESCRIPTIONS: Record<string, string> = {
-  'single-use': 'A single use at a flat price.',
+  'single-use': 'Clears this location for a single project. One use, one payment — no ongoing rights.',
   perpetual: 'Unlimited use, forever, at a premium price.',
 }
 
