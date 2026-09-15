@@ -134,20 +134,22 @@
     <!-- Sample Preview -->
     {#if $workStore.sampleText}
       <div class="mb-7.5">
-        <p class="text-base text-[#72717b] leading-7 {sampleExpanded ? '' : 'line-clamp-12'}">
+        <p id="sample-text" class="text-base text-[#72717b] leading-7 {sampleExpanded ? '' : 'line-clamp-12'}">
           {$workStore.sampleText}
         </p>
         <div class="mt-7.25 flex items-center gap-2">
           <button
             type="button"
+            aria-expanded={sampleExpanded}
+            aria-controls="sample-text"
             onclick={() => (sampleExpanded = !sampleExpanded)}
             class="inline-flex items-center gap-1.5 text-base bg-transparent cursor-pointer text-primary"
           >
-            <div class="flex gap-2 items-center">
+            <span class="flex gap-2 items-center">
               <img src={WarningIcon} alt="" class="size-4 shrink-0" />
               {sampleExpanded ? 'Read less' : 'Read full sample'}
               <img src={Arrow} alt="" class=" shrink-0 {sampleExpanded ? '-rotate-45' : '-rotate-135'}" />
-            </div>
+            </span>
           </button>
         </div>
       </div>
