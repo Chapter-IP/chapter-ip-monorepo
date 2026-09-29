@@ -40,7 +40,7 @@ export type WorkContent = Content<WorkMetadataInput> & {
   contractAddress: string
 }
 
-export const WORK_CONTENT_TYPES = ['Script', 'Lyrics', 'Books'] as const
+export const WORK_CONTENT_TYPES = ['Script', 'Lyrics'] as const
 export const LICENSE_TYPE_OPTIONS = [
   { value: 'single-use', label: 'One-Time License - Single use' },
   { value: 'perpetual', label: 'Lifetime License - Perpetual use' },

@@ -115,14 +115,6 @@ test('Script has distinct sample and creative work uploads', async () => {
   await expect.element(screen.getByPlaceholder('Description')).toBeVisible()
 })
 
-test('Books has distinct sample and creative work uploads (like Script)', async () => {
-  workStore.setContentType('Books')
-  const screen = await render(UploadWorkStep, { currentStep: 1 })
-  await expect.element(screen.getByRole('heading', { name: 'Your sample content' })).toBeVisible()
-  await expect.element(screen.getByRole('heading', { name: 'Your Creative Work' })).toBeVisible()
-  await expect.element(screen.getByPlaceholder('Description')).toBeVisible()
-})
-
 test('confirmation places the author below the title and expands Lyrics', async () => {
   workStore.addAuthor('Test Author')
   const screen = await render(ConfirmWorkStep, { currentStep: 3, onFormSubmit: vi.fn() })

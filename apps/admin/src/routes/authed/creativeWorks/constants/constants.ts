@@ -33,7 +33,7 @@ export const ADDITIONAL_TERMS = [
   },
 ] as const
 
-export const WORK_CONTENT_TYPES = ['Script', 'Lyrics', 'Books'] as const
+export const WORK_CONTENT_TYPES = ['Script', 'Lyrics'] as const
 
 export const GENRE_OPTIONS = [
   'Comedy',

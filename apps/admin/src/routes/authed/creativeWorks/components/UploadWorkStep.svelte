@@ -16,8 +16,7 @@
 
   const isScript = $derived($workStore.contentType === 'Script')
   const isLyrics = $derived($workStore.contentType === 'Lyrics')
-  const isBooks = $derived($workStore.contentType === 'Books')
-  const isFileContentType = $derived(isScript || isLyrics || isBooks)
+  const isFileContentType = $derived(isScript || isLyrics)
 
   const hasWorkFiles = $derived($workStore.files.works.length > 0 || ($workStore.existingFiles.works ?? []).length > 0)
   const hasPreviewFiles = $derived(
@@ -30,13 +29,13 @@
       $workStore.title &&
       $workStore.contentType &&
       (!isFileContentType ||
-        (hasWorkFiles && ((!isScript && !isBooks) || hasPreviewFiles) && $workStore.confirmations.rightsConfirmed)),
+        (hasWorkFiles && (!isScript || hasPreviewFiles) && $workStore.confirmations.rightsConfirmed)),
     ),
   )
 
   function handleContentTypeChange(event: Event) {
     const value = (event.target as HTMLSelectElement).value
-    if (value !== 'Script' && value !== 'Books') workStore.clearPreviewFiles()
+    if (value !== 'Script') workStore.clearPreviewFiles()
     workStore.setContentType(value)
   }
 </script>
@@ -96,8 +95,8 @@
       </div>
     </label>
 
-    {#if isScript || isLyrics || isBooks}
-      {#if isScript || isBooks}
+    {#if isScript || isLyrics}
+      {#if isScript}
         <!-- Description -->
         <label class="block space-y-3">
           <span class="mb-2 block text-sm text-[#72717b]">Description</span>
@@ -124,7 +123,7 @@
         onRemove={(i) => workStore.removeAuthor(i)}
       />
       <div class="mt-19.75 space-y-12.5 mb-5">
-        {#if isScript || isBooks}
+        {#if isScript}
           <!-- Preview File -->
 
           <WorkFileDropzone bucket="preview-files" title="Your sample content" />
