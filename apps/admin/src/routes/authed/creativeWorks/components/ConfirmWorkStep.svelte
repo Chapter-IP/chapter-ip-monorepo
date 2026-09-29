@@ -113,7 +113,7 @@
       <p class="text-sm text-[#72717b]">
         {$workStore.contentType}{$workStore.authors.length ? ` by ${$workStore.authors.join(', ')}` : ''}
       </p>
-      {#if $workStore.contentType === 'Script' && $workStore.genre.length > 0}
+      {#if ($workStore.contentType === 'Script' || $workStore.contentType === 'Books') && $workStore.genre.length > 0}
         <div class="flex flex-wrap mt-2.5 gap-1.5">
           {#each $workStore.genre as g (g)}
             <span
@@ -126,7 +126,7 @@
       {/if}
     </div>
 
-    {#if $workStore.contentType === 'Script' && $workStore.description}
+    {#if ($workStore.contentType === 'Script' || $workStore.contentType === 'Books') && $workStore.description}
       <p class="mb-8 whitespace-pre-line text-base leading-7 text-[#72717b] wrap-break-word">
         {$workStore.description}
       </p>
