@@ -48,7 +48,20 @@
   const selectedFiles = $derived($locationStore.files.locations ?? [])
   const existingFiles = $derived($locationStore.existingFiles.locations ?? [])
   const hasMedia = $derived(selectedFiles.length > 0 || existingFiles.length > 0)
-  const supportedFileExtensions = ['.mp4', '.mov', '.webm', '.splat', '.ply', '.obj', '.mtl', '.glb']
+  const supportedFileExtensions = [
+    '.jpeg',
+    '.jpg',
+    '.png',
+    '.webp',
+    '.mp4',
+    '.mov',
+    '.webm',
+    '.splat',
+    '.ply',
+    '.obj',
+    '.mtl',
+    '.glb',
+  ]
   const supportedFileExtensionsWithUppercase = supportedFileExtensions.flatMap((extension) => [
     extension,
     extension.toUpperCase(),
@@ -421,7 +434,7 @@
       </div>
 
       <span class="text-[10px] text-right text-[#747474] w-full block">
-        .mp4, .mov, .webm, .splat, .ply, .obj, .mtl, .glb files accepted
+        .jpeg, .jpg, .png, .webp, .mp4, .mov, .webm, .splat, .ply, .obj, .mtl, .glb files accepted
       </span>
     </div>
   </div>

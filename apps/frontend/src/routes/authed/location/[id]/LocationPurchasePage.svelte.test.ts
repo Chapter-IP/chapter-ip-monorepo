@@ -32,7 +32,7 @@ const locationDetails: LocationPurchase = {
     src: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
     alt: 'Citi Field',
   },
-  files: ['location_1.mov', 'location_2.mp4'],
+  files: ['location_1.mov', 'location_2.mp4', 'location_3.jpg'],
 }
 
 beforeEach(() => {
@@ -52,6 +52,8 @@ test('renders location metadata, compatible platforms, and purchase action', asy
   await expect.element(screen.getByText('41 Seaver Way')).toBeVisible()
   await expect.element(screen.getByText('Compatible with')).toBeVisible()
   await expect.element(screen.getByText('Baseball')).toBeVisible()
+  await expect.element(screen.getByText('location_1.mov')).toBeVisible()
+  await expect.element(screen.getByText('location_3.jpg')).toBeVisible()
 
   const purchaseButton = screen.getByRole('button', { name: 'Purchase' })
   await expect.element(purchaseButton).toBeVisible()

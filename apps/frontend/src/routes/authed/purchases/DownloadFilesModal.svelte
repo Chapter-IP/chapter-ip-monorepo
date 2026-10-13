@@ -13,6 +13,11 @@
     onClose: () => void
   } = $props()
 
+  function downloadName(file: DownloadableContentFile) {
+    const safeLabel = file.label.replace(/[/\\]/g, '_')
+    return safeLabel.includes('.') ? safeLabel : `${safeLabel}.${mime.getExtension(file.mimetype) ?? 'bin'}`
+  }
+
   function closeOnBackdrop(event: MouseEvent) {
     if (event.target === event.currentTarget) onClose()
   }
@@ -57,7 +62,7 @@
             href={file.url}
             target="_blank"
             rel="noreferrer"
-            download={`${file.label.replace(/[/\\]/g, '_')}.${mime.getExtension(file.mimetype) ?? 'bin'}`}
+            download={downloadName(file)}
             class="text-primary no-underline hover:underline"
           >
             Download

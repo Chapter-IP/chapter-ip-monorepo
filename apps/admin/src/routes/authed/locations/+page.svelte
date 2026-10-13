@@ -65,13 +65,14 @@
       const trpcClient = uploadService.createTrpcClient()
       const { uploads, metadata, tags } = buildLocationPayload()
 
-      startUploadingPhase(uploadSession.setProgress, uploads)
+      startUploadingPhase(uploadSession.setProgress, uploads, false)
 
       const { contentId } = await uploadService.saveDraftContent({
         trpcClient,
         uploads,
         metadata,
         tags,
+        includePreviews: false,
         withWatermark: false,
         onUploadProgress: uploadSession.setProgress,
       })
@@ -106,13 +107,14 @@
       const trpcClient = uploadService.createTrpcClient()
       const { uploads, metadata, tags } = buildLocationPayload()
 
-      startUploadingPhase(uploadSession.setProgress, uploads)
+      startUploadingPhase(uploadSession.setProgress, uploads, false)
 
       const { contentId, keys } = await uploadService.saveDraftContent({
         trpcClient,
         uploads,
         metadata,
         tags,
+        includePreviews: false,
         withWatermark: false,
         onUploadProgress: uploadSession.setProgress,
       })
