@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@credenza3/contracts": "^0.0.21",
-    "@credenza3/passport-evm": "^0.4.38",
+    "@credenza3/passport-evm": "^0.4.39",
     "@tailwindcss/vite": "^4.3.3",
     "client-zip": "^2.5.1",
     "daisyui": "^5.7.50",

@@ -6,9 +6,6 @@ importers:
   .:
     configDependencies: {}
     packageManagerDependencies:
-      '@pnpm/exe':
-        specifier: 12.3.4
-        version: 12.3.4
       pnpm:
         specifier: 12.3.4
         version: 12.3.4
@@ -59,11 +56,6 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@pnpm/exe@12.3.4':
-    resolution: {integrity: sha512-Rq7JokWAyYF9IFfn8zofB/q2AgnZlmoMuH5fMHB2+Ta61I9aD7sNm+woZpx6iH+5vb38chdSoYRvOtSqlH72YQ==}
-    engines: {node: '>=18.*'}
-    hasBin: true
-
   pnpm@12.3.4:
     resolution: {integrity: sha512-lhqkH7B32joEpEHZ+OFevAyW2o73ELLrZ7+e58sGEOq9SPH9hfUc/+c4RnhfoPh8VqOocqHYk/hEZ0G1zORUVw==}
     engines: {node: '>=18.*'}
@@ -94,17 +86,6 @@ snapshots:
 
   '@pnpm/exe.win32-x64@12.3.4':
     optional: true
-
-  '@pnpm/exe@12.3.4':
-    optionalDependencies:
-      '@pnpm/exe.darwin-arm64': 12.3.4
-      '@pnpm/exe.darwin-x64': 12.3.4
-      '@pnpm/exe.linux-arm64': 12.3.4
-      '@pnpm/exe.linux-arm64-musl': 12.3.4
-      '@pnpm/exe.linux-x64': 12.3.4
-      '@pnpm/exe.linux-x64-musl': 12.3.4
-      '@pnpm/exe.win32-arm64': 12.3.4
-      '@pnpm/exe.win32-x64': 12.3.4
 
   pnpm@12.3.4:
     optionalDependencies:
@@ -389,8 +370,8 @@ importers:
         specifier: ^0.0.21
         version: 0.0.21
       '@credenza3/passport-evm':
-        specifier: ^0.4.38
-        version: 0.4.38(@toruslabs/openlogin@6.2.11(@babel/runtime@7.29.7)(supports-color@10.2.2))(@typescript-eslint/types@8.67.0)
+        specifier: ^0.4.39
+        version: 0.4.39(@toruslabs/openlogin@6.2.11(@babel/runtime@7.29.7)(supports-color@10.2.2))(@typescript-eslint/types@8.67.0)
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.3.4(@types/node@26.6.5)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.1))
@@ -773,8 +754,8 @@ packages:
   '@credenza3/evm-provider@0.0.2':
     resolution: {integrity: sha512-gRi2uIJvzEti9z/c5bUqlSCBlUW28OhGc+Q4TmodfCM2Ob+5gSnDyX3sj8impg0l2pHsC+tvd7x9YNGCwrG6sQ==}
 
-  '@credenza3/passport-evm@0.4.38':
-    resolution: {integrity: sha512-juIa/CwLRZ0Xb9MUJJDpAz3c9xbhEafoGibQq6BxO70SHvNQL0tpvyA9p1Gil2LOLDQWIVmWC5YoOycwBoSloQ==}
+  '@credenza3/passport-evm@0.4.39':
+    resolution: {integrity: sha512-kmhTuAkdEoEI8VE+LfMGMl7o5tlKkbvp7ePjPrO+QQW2y7OlXq6V0Oi3QJwAov0Z4+/G4pogkyiNbfqab6KMRw==}
     engines: {node: '>=20.10.0', pnpm: '>=9'}
     peerDependencies:
       '@toruslabs/openlogin': ^6.1.0
@@ -5365,7 +5346,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@credenza3/passport-evm@0.4.38(@toruslabs/openlogin@6.2.11(@babel/runtime@7.29.7)(supports-color@10.2.2))(@typescript-eslint/types@8.67.0)':
+  '@credenza3/passport-evm@0.4.39(@toruslabs/openlogin@6.2.11(@babel/runtime@7.29.7)(supports-color@10.2.2))(@typescript-eslint/types@8.67.0)':
     dependencies:
       '@credenza3/contracts': 0.0.19
       '@credenza3/core-web-evm-ext': 0.0.13
@@ -6674,7 +6655,6 @@ snapshots:
       - msw
       - utf-8-validate
       - vite
-    optional: true
 
   '@vitest/browser-playwright@5.0.4(playwright@1.64.1)(vite@8.3.4(@types/node@26.6.5)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.1))(vitest@5.0.4)':
     dependencies:
@@ -6688,6 +6668,19 @@ snapshots:
       - msw
       - utf-8-validate
       - vite
+
+  '@vitest/browser-playwright@5.0.4(vite@8.3.4(@types/node@26.4.0)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0))(vitest@5.0.4)':
+    dependencies:
+      '@vitest/browser': 5.0.4(vite@8.3.4(@types/node@26.4.0)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0))(vitest@5.0.4)
+      '@vitest/mocker': 5.0.4(vite@8.3.4(@types/node@26.4.0)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0))
+      tinyrainbow: 3.2.0
+      vitest: 5.0.4(@types/node@26.4.0)(@vitest/browser-playwright@5.0.4)(@vitest/ui@5.0.4)(vite@8.3.4(@types/node@26.4.0)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0))
+    transitivePeerDependencies:
+      - bufferutil
+      - msw
+      - utf-8-validate
+      - vite
+    optional: true
 
   '@vitest/browser@4.1.11(vite@8.3.4(@types/node@26.4.0)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0))(vitest@4.1.11)':
     dependencies:
@@ -9483,7 +9476,7 @@ snapshots:
       why-is-node-running: 3.2.1
     optionalDependencies:
       '@types/node': 26.4.0
-      '@vitest/browser-playwright': 5.0.4(playwright@1.64.1)(vite@8.3.4(@types/node@26.4.0)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0))(vitest@5.0.4)
+      '@vitest/browser-playwright': 5.0.4(vite@8.3.4(@types/node@26.4.0)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0))(vitest@5.0.4)
       '@vitest/ui': 5.0.4(vitest@5.0.4)
     transitivePeerDependencies:
       - msw
